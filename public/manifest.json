@@ -1,7 +1,7 @@
 {
   "name": "Herbal Leaf Market",
   "short_name": "Herbal Leaf",
-  "description": "A neo-hippy boutique of certified-organic CBD, CBG, herbal blends, ceremonial elixirs, hand-rolled smokes, and single herbs.",
+  "description": "A neo-hippy boutique of CBD, CBG, herbal blends, ceremonial elixirs, hand-rolled smokes, and single herbs.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
