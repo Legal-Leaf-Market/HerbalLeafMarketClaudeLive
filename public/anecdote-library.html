@@ -280,5 +280,81 @@
   }
   hlmFilter('all',document.querySelector('#filters .chip'));
 </script>
+<!-- ============ FLIP STORIES (added additively; see sister sites) ============
+     Quote on the front, the fuller summary + source on the back. The card
+     frame (background/border) stays static and only the content rotates
+     inside it, so none of the existing .story CSS changes. Restructured at
+     runtime because this page is fully static: hlmFilter only toggles
+     display, never rebuilds, so a one-time wrap survives forever. -->
+<style>
+  .story{perspective:1200px;cursor:pointer}
+  .story-in{position:relative;flex:1;display:flex;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.22,.72,.24,1)}
+  .story.on .story-in{transform:rotateY(180deg)}
+  .story-face{-webkit-backface-visibility:hidden;backface-visibility:hidden;display:flex;flex-direction:column;min-width:100%}
+  .story-front{position:relative;flex:1}
+  .story-back{position:absolute;inset:0;transform:rotateY(180deg);background:var(--card);display:flex;flex-direction:column}
+  .story-back-in{flex:1;overflow-y:auto;scrollbar-width:thin;padding-right:2px}
+  .story-back .badge-src{margin-bottom:10px}
+  .story-back p{margin:0 0 10px;color:var(--ink);font-size:.92rem;line-height:1.55}
+  .story-back .src{margin-top:auto;padding-top:10px}
+  .story-turn{align-self:flex-start;margin-top:12px;font-size:.78rem;background:none;border:0;color:var(--muted);cursor:pointer;padding:2px 0;text-decoration:underline;text-underline-offset:3px;display:inline-flex;align-items:center;gap:5px;font-family:var(--sans);transition:color .16s}
+  .story:hover .story-turn{color:var(--terracotta)}
+  .story-turn .ico{transition:transform .3s;display:inline-block}
+  .story:hover .story-turn .ico{transform:rotate(180deg)}
+  .story-turnback{align-self:flex-start;margin-top:10px;font-size:.78rem;background:none;cursor:pointer;border:1px solid rgba(224,107,66,.45);color:var(--terracotta);border-radius:999px;padding:7px 12px;line-height:1;transition:.16s}
+  .story-turnback:hover{border-color:var(--gold);color:var(--gold)}
+  /* Nicotia's pink wash, scoped to the QUOTE rather than the whole face:
+     the quote is this card's hero image. It is a local literal, never a
+     shared token; the same rule the whole family follows. */
+  .story blockquote{position:relative}
+  .story blockquote::after{content:"Click for details";position:absolute;inset:-6px;z-index:4;pointer-events:none;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px;border-radius:8px;background:rgba(255,64,146,.44);color:#fff;font-weight:800;font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;text-shadow:0 1px 10px rgba(0,0,0,.6);opacity:0;transition:opacity .15s ease}
+  .story:hover blockquote::after,.story:focus-visible blockquote::after{opacity:1}
+  .story.on blockquote::after{opacity:0}
+  .story:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  @media (hover:none){
+    .story blockquote::after{content:"Tap for details"}
+    .story:active blockquote::after{opacity:1;transition:none}
+    .story-turn{border:1.5px solid rgba(224,107,66,.5);border-radius:999px;padding:7px 12px;text-decoration:none;color:var(--terracotta);font-weight:600}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .story-in{transition:none}
+    .story.on .story-in{transform:none}
+    .story-face{transition:opacity .18s}
+    .story-back{transform:none;opacity:0;pointer-events:none}
+    .story.on .story-front{opacity:0;pointer-events:none}
+    .story.on .story-back{opacity:1;pointer-events:auto}
+  }
+</style>
+<script>
+(function(){
+  var grid=document.getElementById("grid"); if(!grid) return;
+  grid.querySelectorAll(".story").forEach(function(card){
+    var front=document.createElement("div"); front.className="story-face story-front";
+    var back=document.createElement("div"); back.className="story-face story-back";
+    var backIn=document.createElement("div"); backIn.className="story-back-in";
+    Array.prototype.slice.call(card.childNodes).forEach(function(n){
+      if(n.nodeType===1&&(n.matches(".badge-src")||n.matches("p")||n.matches(".src"))) backIn.appendChild(n);
+      else front.appendChild(n);
+    });
+    var turn=document.createElement("button");
+    turn.className="story-turn"; turn.innerHTML='<span class="ico">\u21bb</span> The fuller story';
+    front.appendChild(turn);
+    var turnback=document.createElement("button");
+    turnback.className="story-turnback"; turnback.textContent="\u21a9 Back to the quote";
+    back.appendChild(backIn); back.appendChild(turnback);
+    var inw=document.createElement("div"); inw.className="story-in";
+    inw.appendChild(front); inw.appendChild(back);
+    card.appendChild(inw);
+    card.setAttribute("tabindex","0"); card.setAttribute("role","button");
+    card.setAttribute("aria-label","Turn the card for the fuller story");
+  });
+  grid.addEventListener("click",function(e){ var t=e.target; if(!t||!t.closest) return;
+    if(t.closest("a")) return;
+    var s=t.closest(".story"); if(s) s.classList.toggle("on"); });
+  grid.addEventListener("keydown",function(e){ if(e.key!=="Enter"&&e.key!==" ") return;
+    var t=e.target; if(!t||!t.classList||!t.classList.contains("story")) return;
+    e.preventDefault(); t.classList.toggle("on"); });
+})();
+</script>
 </body>
 </html>

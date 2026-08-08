@@ -714,6 +714,31 @@ function ritualAddBundle(bundleIdx){ var bundle=_ritualBundles[bundleIdx]; if(!b
   hlmTrack("ritual-add",{category:_ritualGoal, product:bundle.map(function(x){return x.p.name;}).join(", "), price:bundle.reduce(function(a,x){return a+(Number(x.p.price)||0);},0)});
   closeRitual(); openCart(); }
 
+/* Strongest matching knowledge.js compound for a product, reusing the same
+ * match-regex convention as productsForCompound(). Returns the compound
+ * object or null; the card back uses it for the evidence note. Only
+ * structureFn is ever shown as a claim (knowledge.js's own header marks it
+ * the compliant STRUCTURE/FUNCTION wording); tierLabel + cite ride along so
+ * the claim carries its receipts. */
+function cardCompound(p){ var k=K(); if(!k||!k.compounds) return null;
+  var hay=(p.name||"")+" "+(p.blurb||"")+" "+(p.category||""); var best=null,bestRank=-Infinity;
+  Object.keys(k.compounds).forEach(function(cid){ var c=k.compounds[cid]; if(!c||c.enabled===false||!c.match||!c.structureFn) return;
+    if(!c.match.test(hay)) return; var r=0; try{ r=Math.max.apply(null,Object.keys(c.goals||{}).map(function(g){ return k.evidenceRank[c.goals[g]]||0; })); }catch(e){}
+    if(!best||r>bestRank){ bestRank=r; best=c; } });
+  return best; }
+function hlmFlipCard(el){ try{ var c=el&&el.closest?el.closest(".card"):null; if(c) c.classList.toggle("on"); }catch(e){} }
+/* Flip wiring: ONE delegated listener on #grid so it survives every render()
+ * innerHTML wipe (the same reasoning as Nicotia's document-level handler).
+ * Real controls -- buttons, links, selects -- pass through untouched; a click
+ * anywhere else on the card turns it over. The front face is focusable and
+ * Enter/Space turn it for keyboards. */
+function hlmWireFlip(){ var grid=document.getElementById("grid"); if(!grid||grid.__hlmFlipWired) return; grid.__hlmFlipWired=true;
+  grid.addEventListener("click",function(e){ var t=e.target; if(!t||!t.closest) return;
+    if(t.closest("button,a,select,input,label,summary")) return;
+    var c=t.closest(".card"); if(c) c.classList.toggle("on"); });
+  grid.addEventListener("keydown",function(e){ if(e.key!=="Enter"&&e.key!==" ") return; var f=e.target;
+    if(!f||!f.classList||!f.classList.contains("card-front")) return; e.preventDefault(); hlmFlipCard(f); }); }
+
 function render(){
   var grid=document.getElementById("grid"); if(!grid)return;
   var q=searchQuery();
@@ -747,7 +772,22 @@ function render(){
      * long-press and no-JS all still reach the document directly. */
     var coaHtml=p.coa?('<a class="coa-link" href="'+String(p.coa).replace(/"/g,"&quot;")+'" rel="noopener" title="View the maker\'s certificate of analysis for this strain" onclick="event.stopPropagation();event.preventDefault();openCoaModal(\''+p.id+'\')">\ud83d\udd2c Lab report (COA)</a>'):"";
     var xtag = isCBD(p) ? '<a class="cbd-xtag" href="'+SISTER_URL+'" target="_blank" rel="noopener" title="More CBD options &amp; better prices at Legal Leaf Market" onclick="hlmTrack(\'sister-card\',{vendor:\'Legal Leaf Market\',product:'+JSON.stringify(p.name)+',category:\'CBD\'})">More CBD &amp; better prices at our sister shop \u2197</a>' : "";
-    return header+'<article class="card" id="'+p.id+'" data-id="'+p.id+'"><div class="thumb">'+(p.badge?'<span class="badge">'+p.badge+'</span>':"")+wbtn+imgHtml+'</div><div class="card-body"><div class="vendor">'+p.vendor+'</div><h3>'+p.name+'</h3>'+(canna?('<div class="canna-wrap">'+canna+'</div>'):"")+'<p class="blurb">'+p.blurb+'</p><div class="meta">'+priceHtml+'<span class="unit">'+unitTxt+'</span></div>'+couponHtml+coaHtml+sizeHtml+'<button class="add-cart" onclick="addToCart(\''+p.id+'\')">Add to Herbal Leaf Market Cart</button>'+xtag+'</div></article>'; }).join("");
+    /* Flip card, Nicotia-style: the front face keeps the whole legacy card;
+     * the back carries what the front has no room for -- the compliant
+     * structure/function note from knowledge.js, sizes, the maker's real
+     * shipping terms from SHIPPING (a promise only the cart used to show),
+     * the coupon and the COA. Built inside this template because render()
+     * wipes the grid on every filter change; anything patched on afterwards
+     * would die there. */
+    var comp=cardCompound(p);
+    var ship=shipInfo(p.vendor,orig);
+    var shipTxt=ship.free?"Free shipping":("$"+ship.cost.toFixed(2)+(ship.freeOver>0?(" · free over $"+ship.freeOver):""));
+    var sizesTxt=""; if(p.variants&&p.variants.length>1){ var vps=p.variants.map(function(v){return Number(v.price)||0;}).filter(function(n){return n>0;}); var vmn=vps.length?Math.min.apply(null,vps):0; sizesTxt=p.variants.length+" options"+(vmn>0?(" from $"+vmn.toFixed(2)):""); }
+    var knowHtml=comp?('<div class="bk-know"><b>'+comp.label+'</b> '+comp.structureFn+'<span class="bk-cite">'+comp.tierLabel+' · '+comp.cite+'</span></div>'):"";
+    var specHtml='<dl class="bk-spec"><dt>Maker</dt><dd>'+p.vendor+'</dd>'+(p.category?('<dt>Category</dt><dd>'+p.category+'</dd>'):"")+(sizesTxt?('<dt>Sizes</dt><dd>'+sizesTxt+'</dd>'):"")+'<dt>Shipping</dt><dd>'+shipTxt+'</dd>'+(coupon?('<dt>Coupon</dt><dd>'+coupon.code+' · '+coupon.percent+'% off</dd>'):"")+'</dl>';
+    var backCoa=p.coa?('<a class="bk-coa" href="'+String(p.coa).replace(/"/g,"&quot;")+'" rel="noopener" onclick="event.stopPropagation();event.preventDefault();openCoaModal(\''+p.id+'\')">🔬 View lab report (COA)</a>'):"";
+    var back='<div class="card-face card-back"><div class="back-in"><div class="bk-vendor">'+p.vendor+'</div><h4>'+p.name+'</h4><p class="bk-desc">'+(p.blurb||"")+'</p>'+knowHtml+specHtml+backCoa+'</div><div class="back-foot"><button class="bk-add" onclick="addToCart(\''+p.id+'\')">Add to cart</button><button class="card-turnback" onclick="hlmFlipCard(this)" aria-label="Turn back to the front">↩</button></div></div>';
+    return header+'<article class="card" id="'+p.id+'" data-id="'+p.id+'"><div class="card-in"><div class="card-face card-front" tabindex="0" role="button" aria-label="Show details for '+String(p.name).replace(/"/g,"&quot;")+'"><div class="thumb">'+(p.badge?'<span class="badge">'+p.badge+'</span>':"")+wbtn+imgHtml+'</div><div class="card-body"><div class="vendor">'+p.vendor+'</div><h3>'+p.name+'</h3>'+(canna?('<div class="canna-wrap">'+canna+'</div>'):"")+'<p class="blurb">'+p.blurb+'</p><div class="meta">'+priceHtml+'<span class="unit">'+unitTxt+'</span></div>'+couponHtml+coaHtml+sizeHtml+'<button class="card-turn" onclick="hlmFlipCard(this)"><span class="ico">↻</span> Details</button><button class="add-cart" onclick="addToCart(\''+p.id+'\')">Add to Herbal Leaf Market Cart</button>'+xtag+'</div></div>'+back+'</div></article>'; }).join("");
   grid.innerHTML=(showXsell?cbdCrossBanner():"")+body;
   try{ document.dispatchEvent(new CustomEvent("hlm:render",{detail:{count:items.length,inventoryLoaded:!!window.__hlmInvLoaded}})); }catch(e){} }
 
@@ -805,6 +845,7 @@ function hlmInit(){ try{ if(hlmHandleGo()) return; var y=document.getElementById
   var _openCartFromAdd=hlmHandleAdd();
   buildFilters(); buildStoreFilter(); render(); updateCartBadge(); renderCart(); updateAccountUI(); setAuthMode("signup");
   if(_openCartFromAdd) openCart();
+  hlmWireFlip();
   setHeaderHeightVar(); window.addEventListener("resize", setHeaderHeightVar);
   loadLiveInventory(); loadNSSIds(); loadMatrixRules();
 }catch(e){} setTimeout(hideLoader, 3500); }
