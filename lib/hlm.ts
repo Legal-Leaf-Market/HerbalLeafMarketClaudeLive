@@ -740,7 +740,7 @@ function emailShell(heading: string, intro: string, cardsHtml: string, email: st
     cardsHtml +
     '</table></td></tr><tr><td style="padding:16px 26px;background:#f6f1e4;border-top:1px solid #e6dcc4"><div style="font:400 11px sans-serif;color:#9c9a84;line-height:1.6">You are receiving this because you created or updated a Garden at Herbal Leaf Market. We link you to independent makers; you complete purchases on their sites. Statements have not been evaluated by the FDA and are not intended to diagnose, treat, cure, or prevent any disease. 21+.<br /><a href="' +
     unsubE +
-    '" style="color:#9c3d1a;text-decoration:underline">Unsubscribe</a> at any time.</div></td></tr></table></body></html>'
+    '" style="color:#9c3d1a;text-decoration:underline">Unsubscribe</a> at any time. <a href="https://herballeafmarket.com/privacy.html" style="color:#9c9a84;text-decoration:underline">Privacy</a> &middot; <a href="https://herballeafmarket.com/terms.html" style="color:#9c9a84;text-decoration:underline">Terms</a></div></td></tr></table></body></html>'
   )
 }
 
