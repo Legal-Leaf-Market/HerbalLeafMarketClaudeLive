@@ -106,15 +106,144 @@ export async function getInventory(): Promise<any[]> {
   }
   let out: any[] = []
   try {
-    const batches = await Promise.all(SHOPIFY_STORES.map((s) => fetchStoreProducts(s)))
+    const [batches, snCoas] = await Promise.all([
+      Promise.all(SHOPIFY_STORES.map((s) => fetchStoreProducts(s))),
+      fetchSecretNatureCoas().catch(() => new Map<string, SnDoc[]>()),
+    ])
     for (let i = 0; i < batches.length; i++) {
       out = out.concat(mapShopify(SHOPIFY_STORES[i], batches[i]))
     }
+    attachSecretNatureCoas(out, snCoas)
   } catch {}
   if (out.length) {
     await kvPut("hlm_live_v3", JSON.stringify(out), 21600)
   }
   return out
+}
+
+/* =========================================================================
+ * Secret Nature COAs — join the store's own published lab PDFs to products
+ *
+ * Secret Nature's product feed and product pages carry ZERO COA links (probed
+ * 2026-08-08: 0 lab-named images, 0 pdf hrefs in 207 body_htmls), but their
+ * footer page /pages/laboratory-test-results hosts ~93 per-strain PDFs with
+ * the strain in the filename. Same situation as Legal Leaf's THCA King COA
+ * folder, so this is that join, ported.
+ *
+ * The matcher is deliberately conservative: a wrong certificate on a card is
+ * far worse than a missing link. Identity is (strain key, form, cannabinoid):
+ *  - strain key: camelCase-split tokens minus grade/form/chemistry noise,
+ *    sorted. Empty keys NEVER match (a "D8 Live Resin" title once matched an
+ *    unrelated file because both keys normalised to nothing).
+ *  - form: gummy/tube/preroll/vape/drink/extract/flower. A gummy product must
+ *    never link a flower certificate even for the same strain -- Secret Nature
+ *    publishes Cherry Kush as flower COA, CBD-gummy COA and THC-gummy COA.
+ *  - cannabinoid: a file marked with a DIFFERENT cannabinoid is never
+ *    acceptable (BloodDiamondCBD must not receive BloodDiamondTHCA.pdf; the
+ *    newest-first tiebreak alone made exactly that mistake in prototyping).
+ * Measured against the live feed on 2026-08-08: 90 of 207 products matched,
+ * every one hand-audited, zero cross-cannabinoid or cross-form joins.
+ * ========================================================================= */
+const SN_LAB_PAGE = "https://secretnature.com/pages/laboratory-test-results"
+
+const SN_STOP = new Set([
+  "thca", "thc", "cbd", "cbg", "cbn", "thcv", "d8", "d9", "delta", "live", "resin",
+  "rosin", "infused", "flower", "flowers", "preroll", "prerolls", "pre", "roll",
+  "rolls", "vape", "vapes", "cart", "cartridge", "gummy", "gummies", "smokes",
+  "blunt", "blunts", "joint", "joints", "pack", "ct", "count", "oz", "gram",
+  "grams", "g", "mg", "premium", "exotic", "indoor", "greenhouse", "organic",
+  "hemp", "cannabis", "sungrown", "smalls", "bud", "buds", "grade", "tube",
+  "tubes", "pdf", "rdf", "pt", "rd", "gh", "final", "copy", "updated", "new",
+  "coa", "secret", "nature", "sa", "at", "drink", "drinks", "wholesale",
+])
+const SN_GUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g
+
+function snWords(s: string): string[] {
+  let t = s.replace(SN_GUID, " ")
+  t = t.replace(/([a-z])([A-Z])/g, "$1 $2")   // camelCase: AnimalRuntzTHCA
+  t = t.replace(/([A-Za-z])(\d)/g, "$1 $2")
+  t = t.replace(/(\d)([A-Za-z])/g, "$1 $2")
+  t = t.toLowerCase().replace(/[_\-.]+/g, " ").replace(/[^a-z0-9 ]/g, " ")
+  return t.split(/\s+/).filter(Boolean)
+}
+function snKey(s: string): string {
+  return snWords(s).filter((t) => !/^\d+$/.test(t) && !SN_STOP.has(t)).sort().join(" ")
+}
+function snCann(s: string): string {
+  const w = new Set(snWords(s))
+  if (w.has("thca")) return "thca"
+  if (w.has("cbd")) return "cbd"
+  if (w.has("cbg")) return "cbg"
+  if (w.has("thcv")) return "thcv"
+  if (w.has("d8") || (w.has("delta") && w.has("8")) || (w.has("d") && w.has("8"))) return "d8"
+  if (w.has("d9") || (w.has("delta") && w.has("9")) || (w.has("d") && w.has("9")) || w.has("thc")) return "thc"
+  return ""
+}
+function snForm(s: string): string {
+  const t = s.toLowerCase()
+  if (/gumm|60\s*_?ct|smacker/.test(t)) return "gummy"
+  if (/tube/.test(t)) return "tube"
+  if (/pre[-_ ]?roll|blunt|joint|cigarette/.test(t)) return "preroll"
+  if (/vape|cart(ridge)?\b|pod|disposable/.test(t)) return "vape"
+  if (/drink|soda|beverage|seltzer|tonic/.test(t)) return "drink"
+  if (/distillate|extract|diamond|sauce|badder|concentrate|tincture|oil\b/.test(t)) return "extract"
+  return "flower"
+}
+
+type SnDoc = { cann: string; ver: number; url: string }
+
+async function fetchSecretNatureCoas(): Promise<Map<string, SnDoc[]>> {
+  const map = new Map<string, SnDoc[]>()
+  const r = await fetch(SN_LAB_PAGE, { headers: { "User-Agent": "Mozilla/5.0", Accept: "text/html" } })
+  if (r.status !== 200) return map
+  const html = await r.text()
+  const rx = /href=["']([^"']+\.pdf[^"']*)["']/g
+  const seen = new Set<string>()
+  let m: RegExpExecArray | null
+  while ((m = rx.exec(html))) {
+    let u = m[1]
+    if (u.startsWith("//")) u = "https:" + u
+    if (!/^https?:\/\//.test(u)) u = "https://secretnature.com" + u
+    if (seen.has(u)) continue
+    seen.add(u)
+    const name = (u.split("/").pop() || "").split("?")[0]
+    if (/legal_opinion/i.test(name)) continue
+    const base = name.replace(/\.pdf/gi, "")
+    const k = snKey(base)
+    if (!k) continue
+    const vm = u.match(/[?&]v=(\d+)/)
+    const mk = k + " " + snForm(name)
+    const arr = map.get(mk) || []
+    arr.push({ cann: snCann(base), ver: vm ? Number(vm[1]) : 0, url: u })
+    map.set(mk, arr)
+  }
+  return map
+}
+
+function snPick(cands: SnDoc[] | undefined, pcann: string): string {
+  if (!cands || !cands.length) return ""
+  const newest = (list: SnDoc[]) => list.slice().sort((a, b) => b.ver - a.ver)[0].url
+  const exact = cands.filter((c) => c.cann === pcann)
+  if (exact.length) return newest(exact)
+  const unmarked = cands.filter((c) => c.cann === "")
+  if (unmarked.length) return newest(unmarked)
+  // product title silent on cannabinoid: accept only an unambiguous folder
+  if (pcann === "" && new Set(cands.map((c) => c.cann)).size === 1) return newest(cands)
+  return ""
+}
+
+function attachSecretNatureCoas(products: any[], coas: Map<string, SnDoc[]>): void {
+  if (!coas.size) return
+  let attached = 0
+  for (const p of products) {
+    if (p.vendor !== "Secret Nature") continue
+    const k = snKey(p.name || "")
+    if (!k) continue
+    const f = snForm((p.name || "") + " " + (p.category || ""))
+    const url = snPick(coas.get(k + " " + f), snCann(p.name || ""))
+    if (url) { p.coa = url; attached++ }
+  }
+  console.log(`[inventory] Secret Nature COAs: ${coas.size} document keys, ${attached} products linked`)
 }
 
 export async function refreshInventory(): Promise<string> {
