@@ -209,6 +209,18 @@ read the `Age:` header for CDN copy age.
 a real click and pollutes the owner's conversion stats with our own traffic.
 Inspect the URL string; do not follow it.
 
+**Coupons are verified at the till, not assumed** (tested 2026-08-08 at each
+maker's own checkout): `JACOBKENNEDY` is live ONLY at Natural Smoke Shop.
+Bear Blend, Puff Herbals, Secret Nature and Soul CBD all reject it, so their
+`BRAND_AFFILIATES` entries are `percent:0` and the cards advertise nothing.
+Bear Blend's `JAC6375` is an affiliate code their cart accepts
+(`type:"affiliate"`) but it does not move the total; the desktop bookmarklet
+applies it for attribution. Before advertising any coupon, load the maker's
+cart permalink and apply the code at the real checkout: Shopify silently drops
+invalid `?discount=` codes, so only the checkout's own "valid/invalid" verdict
+counts. A struck-through price the checkout refuses to honour is the worst bug
+this storefront can ship.
+
 ---
 
 ## 9. Secret Nature COA join

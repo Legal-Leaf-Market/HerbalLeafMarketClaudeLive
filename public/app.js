@@ -6,11 +6,21 @@ var SISTER_URL="https://legal-leafmarket.com";
 var FACTS_URL="?page=facts";
 var HLM_SHOP_URL="https://herballeafmarket.com";  /* email/button fallback */
 const AWIN_PUBLISHER_ID = "3004653";
+/* Coupon reality check, 2026-08-08, tested at each maker's own checkout:
+ * JACOBKENNEDY is VALID only at Natural Smoke Shop (their Store API accepts it
+ * as a percent coupon). Bear Blend ("Invalid code", tested with an item in the
+ * cart), Secret Nature, Soul CBD and Puff Herbals ("Enter a valid discount
+ * code") all REJECT it. Those four are percent:0 / couponCode:"" until the
+ * maker issues a code that actually works — an advertised discount that dies
+ * at the till is worse than no discount: the card shows a struck-through
+ * price the shopper can never have. Re-test at the checkout itself before
+ * re-enabling any of them. (Bear Blend's JAC6375 is an AFFILIATE code, not a
+ * shopper discount — their cart accepts it but the total does not move.) */
 const BRAND_AFFILIATES = {
-  "Bear Blend":{awinmid:"",ref:"JAC6375",couponCode:"JACOBKENNEDY",percent:10},
-  "Puff Herbals":{awinmid:"74076",couponCode:"JACOBKENNEDY",percent:15},
-  "Secret Nature":{awinmid:"",couponCode:"JACOBKENNEDY",percent:15},
-  "Soul CBD":{awinmid:"",couponCode:"JACOBKENNEDY",percent:20},
+  "Bear Blend":{awinmid:"",ref:"JAC6375",couponCode:"",percent:0},
+  "Puff Herbals":{awinmid:"74076",couponCode:"",percent:0},
+  "Secret Nature":{awinmid:"",couponCode:"",percent:0},
+  "Soul CBD":{awinmid:"",couponCode:"",percent:0},
   "Natural Smoke Shop":{awinmid:"",trackParam:{key:"tr",val:"138"},couponCode:"JACOBKENNEDY",percent:10},
   "Charlotte's Web":{awinmid:"",couponCode:"",percent:0},
   /* Rishi Tea & Botanicals — Awin merchant 53225, approved 2026-08-08. (They
@@ -31,8 +41,10 @@ function vendorCode(vendor){ var c=BRAND_AFFILIATES[vendor]; return (c&&c.coupon
  * never made. Rishi: $8 flat, free over $60 (their Sparkling Botanicals and
  * Concentrates ship at $12 instead, which is exactly why those product types
  * are excluded from the feed in lib/hlm.ts — one flat rate per vendor is all
- * this map can express). */
-var SHIPPING={ "Bear Blend":{flat:6.95,freeOver:75},"Puff Herbals":{flat:5.99,freeOver:50},"Secret Nature":{flat:6.00,freeOver:50},"Soul CBD":{flat:5.95,freeOver:60},"Natural Smoke Shop":{flat:5.95,freeOver:35},"Charlotte's Web":{flat:5.99,freeOver:50},"Rishi Tea":{flat:8.00,freeOver:60} };
+ * this map can express). Bear Blend's free-shipping threshold is $69, read
+ * from their own cart API (free_shipping_threshold:69) on 2026-08-08 — it was
+ * listed here as 75, which overstated the spend needed for free postage. */
+var SHIPPING={ "Bear Blend":{flat:6.95,freeOver:69},"Puff Herbals":{flat:5.99,freeOver:50},"Secret Nature":{flat:6.00,freeOver:50},"Soul CBD":{flat:5.95,freeOver:60},"Natural Smoke Shop":{flat:5.95,freeOver:35},"Charlotte's Web":{flat:5.99,freeOver:50},"Rishi Tea":{flat:8.00,freeOver:60} };
 function shipInfo(vendor,after){ var s=SHIPPING[vendor]; if(!s) return {cost:0,free:true,freeOver:0}; var free=(s.freeOver>0&&after>=s.freeOver)||!(s.flat>0); return {cost:free?0:s.flat,free:free,freeOver:s.freeOver||0}; }
 function appendParam(url,key,val){ if(!url||url==="#"||!/^https?:\/\//i.test(url)) return url; if(new RegExp("[?&]"+key+"=").test(url)) return url; return url+(url.indexOf("?")===-1?"?":"&")+key+"="+encodeURIComponent(val); }
 function withAffiliate(product){ var base=(product&&product.url)?product.url:"#"; var cfg=BRAND_AFFILIATES[product.vendor];
@@ -55,7 +67,10 @@ function hlmHandleAdd(){ var raw=""; try{ var m=(window.location.search||"").mat
   var key=raw, id=baseId(raw), p=productById(id); if(!p) return false;
   /* Fallback: bare id but product needs a size -> single variant, else drop-down default (SELV). */
   if(key.indexOf("::")===-1 && p.variants && p.variants.length){
-    var v = p.variants.length===1 ? p.variants[0] : p.variants[parseInt(SELV[id],10)||0];
+    /* availableIdx skips sold-out sizes the same way addToCart does; a dead
+     * default here would poison the checkout permalink. */
+    var ai = availableIdx(p, parseInt(SELV[id],10)||0);
+    var v = p.variants[ai===-1?(parseInt(SELV[id],10)||0):ai];
     if(v&&v.id) key=id+"::"+v.id;
   }
   CART[key]=(CART[key]||0)+1; saveCart();
@@ -377,14 +392,36 @@ function baseId(lineKey){ return String(lineKey).split("::")[0]; }
 function variantOfKey(lineKey){ var p=String(lineKey).split("::"); return p.length>1?p[1]:""; }
 function productById(id){ id=baseId(id); return PRODUCTS.find(function(p){return p.id===id;}); }
 function variantById(p,vid){ if(!p||!p.variants)return null; for(var i=0;i<p.variants.length;i++){ if(p.variants[i].id===vid) return p.variants[i]; } return null; }
-function lineInfo(lineKey){ var p=productById(lineKey); if(!p)return {p:null,variantId:"",price:0,sizeTxt:"",wooId:""}; var vid=variantOfKey(lineKey); var v=vid?variantById(p,vid):null;
-  var price=v?v.price:(Number(p.price)||0); var sizeTxt=v?v.title:((p.unit&&p.unit!=="from")?p.unit:""); var wooId=v&&v.wooId?v.wooId:(p.variants&&p.variants.length===1&&p.variants[0].wooId?p.variants[0].wooId:""); return {p:p,variantId:vid,price:price,sizeTxt:sizeTxt,wooId:wooId}; }
-function cartItemsForVendor(v){ var o=[]; for(var k in CART){var p=productById(k);if(p&&p.vendor===v){var li=lineInfo(k);o.push({p:p,qty:CART[k],key:k,variantId:li.variantId,price:li.price,sizeTxt:li.sizeTxt,wooId:li.wooId});}} return o; }
+/* The variant index to actually use: `pref` if that size is available, else the
+ * first available size, else -1 (nothing buyable). Product-level inStock only
+ * says SOME size is available, so a card can pass the grid filter while its
+ * first variant is sold out — and a <select> happily renders a disabled option
+ * as the selection. Secret Nature had 12 such products live the day a shopper
+ * hit it: the sold-out default went into the cart and Shopify refused the whole
+ * cart permalink at their end. */
+function availableIdx(p,pref){ if(!p||!p.variants||!p.variants.length) return -1;
+  var v=p.variants[pref]; if(v&&v.available!==false) return pref;
+  for(var i=0;i<p.variants.length;i++){ if(p.variants[i].available!==false) return i; } return -1; }
+function lineInfo(lineKey){ var p=productById(lineKey); if(!p)return {p:null,variantId:"",price:0,sizeTxt:"",wooId:"",avail:false}; var vid=variantOfKey(lineKey); var v=vid?variantById(p,vid):null;
+  var price=v?v.price:(Number(p.price)||0); var sizeTxt=v?v.title:((p.unit&&p.unit!=="from")?p.unit:""); var wooId=v&&v.wooId?v.wooId:(p.variants&&p.variants.length===1&&p.variants[0].wooId?p.variants[0].wooId:"");
+  /* Availability as our data currently knows it: the picked variant's flag, or
+   * the product's when no variant is keyed. Seed products carry neither flag
+   * and stay truthy, which is right — we have no evidence against them. */
+  var avail=v?(v.available!==false):(p.inStock!==false);
+  return {p:p,variantId:vid,price:price,sizeTxt:sizeTxt,wooId:wooId,avail:avail}; }
+function cartItemsForVendor(v){ var o=[]; for(var k in CART){var p=productById(k);if(p&&p.vendor===v){var li=lineInfo(k);o.push({p:p,qty:CART[k],key:k,variantId:li.variantId,price:li.price,sizeTxt:li.sizeTxt,wooId:li.wooId,avail:li.avail});}} return o; }
 function selVariant(id,idx){ SELV[id]=parseInt(idx,10)||0; saveSelv(); var p=productById(id); if(!p||!p.variants)return; var v=p.variants[SELV[id]];
   var el=document.getElementById("price-"+id); if(el&&v){ var cp=getCoupon(p.vendor); if(cp){var d=v.price*(1-cp.percent/100); el.innerHTML='<span style="text-decoration:line-through;color:var(--muted);font-weight:400;font-size:.85rem;margin-right:7px;">$'+v.price.toFixed(2)+'</span>$'+d.toFixed(2);} else { el.textContent="$"+v.price.toFixed(2); } } }
 function addToCart(id){ var p=productById(id); var key=id;
-  if(p&&p.variants&&p.variants.length>1){ var idx=SELV[id]||0; var v=p.variants[idx]; if(v&&v.id) key=id+"::"+v.id; }
-  else if(p&&p.variants&&p.variants.length===1&&p.variants[0].id){ key=id+"::"+p.variants[0].id; }
+  /* Refuse what the maker cannot sell. Without this, a sold-out size (or a
+   * product that went out of stock after our 6h scrape) rides along to the
+   * Shopify cart permalink, and Shopify rejects the ENTIRE cart, not just the
+   * dead line. Better an honest toast here than a broken checkout there. */
+  if(p&&p.variants&&p.variants.length){ var idx=availableIdx(p,SELV[id]||0);
+    if(idx===-1){ hlmToast(p.name+" is sold out at "+p.vendor+" right now"); return; }
+    if(idx!==(SELV[id]||0)){ SELV[id]=idx; saveSelv(); var selEl=document.querySelector('#'+(CSS&&CSS.escape?CSS.escape(id):id)+' .size-sel'); if(selEl)selEl.value=idx; }
+    var v=p.variants[idx]; if(v&&v.id) key=id+"::"+v.id; }
+  else if(p&&p.inStock===false){ hlmToast(p.name+" is sold out at "+p.vendor+" right now"); return; }
   CART[key]=(CART[key]||0)+1; saveCart(); updateCartBadge(); renderCart(); hlmToast((p?p.name:"Item")+" added to your cart"); pulseCart(); }
 function setQty(id,q){ q=parseInt(q,10); if(isNaN(q)||q<=0)delete CART[id]; else CART[id]=q; saveCart(); updateCartBadge(); renderCart(); }
 function bumpQty(id,d){ setQty(id,(CART[id]||0)+d); }
@@ -436,14 +473,26 @@ function submitAuth(){ var email=(document.getElementById("authEmail").value||""
    * successful sign-up. The toast renders fine either way. */
   var fn=PENDING; PENDING=null; if(typeof fn==="function")fn(); }
 
-var SHOPIFY_VENDORS=["Puff Herbals","Secret Nature","Soul CBD","Charlotte's Web"];
+/* Every Shopify vendor must be listed here or doCheckout() falls into the
+ * non-Shopify branch and opens the maker's bare homepage instead of a filled
+ * cart. Rishi was missing at first (added to lib/hlm.ts but not here), which
+ * is exactly how that failure looks: "checkout" lands on rishi-tea.com with
+ * nothing in the cart. Registration #4 for a Shopify vendor, in effect. */
+var SHOPIFY_VENDORS=["Puff Herbals","Secret Nature","Soul CBD","Charlotte's Web","Rishi Tea"];
 var HOUSE_CODE="JACOBKENNEDY";
-function copyCode(){ try{ navigator.clipboard && navigator.clipboard.writeText(HOUSE_CODE); }catch(e){} }
-function copyText(t){ try{ if(navigator.clipboard){ navigator.clipboard.writeText(t); return true; } }catch(e){} return false; }
-function hlmShare(title,text,url){ try{ if(navigator.share){ navigator.share(url?{title:title,text:text,url:url}:{title:title,text:text}).catch(function(){}); return true; } }catch(e){} copyText(text+(url?("\n"+url):"")); hlmToast("Cart list + code copied"); return false; }
+/* writeText rejects (not throws) when the document lacks focus or permission,
+ * so the promise needs its own catch or the console fills with unhandled
+ * rejections; the try/catch alone only covers the synchronous call. */
+function copyCode(){ try{ navigator.clipboard && navigator.clipboard.writeText(HOUSE_CODE).catch(function(){}); }catch(e){} }
+function copyText(t){ try{ if(navigator.clipboard){ navigator.clipboard.writeText(t).catch(function(){}); return true; } }catch(e){} return false; }
+function hlmShare(title,text,url){ try{ if(navigator.share){ navigator.share(url?{title:title,text:text,url:url}:{title:title,text:text}).catch(function(){}); return true; } }catch(e){} copyText(text+(url?("\n"+url):"")); hlmToast("Cart list copied"); return false; }
 function vendorOrigin(vendor){ var it=PRODUCTS.find(function(p){return p.vendor===vendor&&p.url;}); if(!it)return ""; try{return new URL(it.url).origin;}catch(e){return it.url;} }
 function buildShopifyCheckoutUrl(vendor){ var origin=vendorOrigin(vendor)||HLM_SHOP_URL, items=cartItemsForVendor(vendor), code=vendorCode(vendor);
-  var parts=items.map(function(x){ var vid=x.variantId||x.p.variantId; return vid?(encodeURIComponent(vid)+":"+x.qty):null; }).filter(function(x){return x;});
+  /* Sold-out lines are dropped from the permalink: Shopify rejects the WHOLE
+   * /cart/ URL if any one variant in it is unavailable, so a single stale line
+   * would break checkout for everything else the shopper picked. doCheckout
+   * warns about what was left behind. */
+  var parts=items.filter(function(x){return x.avail!==false;}).map(function(x){ var vid=x.variantId||x.p.variantId; return vid?(encodeURIComponent(vid)+":"+x.qty):null; }).filter(function(x){return x;});
   if(parts.length) return origin+"/cart/"+parts.join(",")+(code?("?discount="+encodeURIComponent(code)):"");
   return code?(origin+"/discount/"+encodeURIComponent(code)+"?redirect=/cart"):(origin+"/cart"); }
 function hlmTrack(type,extra){ try{ if(typeof google==="undefined"||!google.script||!google.script.run) return;
@@ -454,15 +503,26 @@ function hlmTrack(type,extra){ try{ if(typeof google==="undefined"||!google.scri
 }catch(e){} }
 function trackVendorCheckout(vendor){ var items=cartItemsForVendor(vendor); var names=items.map(function(x){return x.p.name;}).slice(0,3).join(", ");
   var total=items.reduce(function(a,x){return a+(x.price*x.qty);},0); hlmTrack("checkout",{vendor:vendor,product:names+(items.length>3?" +"+(items.length-3):""),price:total,category:"cart"}); }
-function doCheckout(vendor){ var items=cartItemsForVendor(vendor); if(!items.length)return; var code=vendorCode(vendor); if(code)copyCode();
-  trackVendorCheckout(vendor); var isShop=SHOPIFY_VENDORS.indexOf(vendor)!==-1; var url=isShop?buildShopifyCheckoutUrl(vendor):(vendorOrigin(vendor)||HLM_SHOP_URL);
-  hlmToast(isShop?("Cart sent to "+vendor+(code?(" - code "+code+" applied"):"")):("Opening "+vendor+(code?(" - code "+code+" copied"):"")));
+function doCheckout(vendor){ var items=cartItemsForVendor(vendor); if(!items.length)return; var code=vendorCode(vendor);
+  var isShop=SHOPIFY_VENDORS.indexOf(vendor)!==-1;
+  var dead=isShop?items.filter(function(x){return x.avail===false;}):[];
+  if(isShop&&dead.length===items.length){ hlmToast("Everything in your "+vendor+" cart is sold out at the maker right now"); return; }
+  if(code)copyCode();
+  trackVendorCheckout(vendor); var url=isShop?buildShopifyCheckoutUrl(vendor):(vendorOrigin(vendor)||HLM_SHOP_URL);
+  var msg=isShop?("Cart sent to "+vendor+(code?(" - code "+code+" applied"):"")):("Opening "+vendor+(code?(" - code "+code+" copied"):""));
+  if(dead.length) msg+=" - "+dead.map(function(x){return x.p.name;}).join(", ")+" left out (sold out)";
+  hlmToast(msg);
   window.open(withAffiliate({vendor:vendor,url:url}),"_blank","noopener"); }
 function checkoutVendor(v){ if(v==="Bear Blend"){ requireLoginThen(bearBlendCheckout); return; } if(v==="Natural Smoke Shop"){ requireLoginThen(naturalSmokeCheckout); return; } requireLoginThen(function(){ doCheckout(v); }); }
 
 function isMobileDevice(){ return /Android|iPhone|iPad|iPod|Mobile|Silk/i.test(navigator.userAgent||""); }
 function buildBearBlendBookmarklet(pairs){ var items=JSON.stringify(pairs);
-  return "javascript:(function(){var ITEMS="+items+",CODE='"+HOUSE_CODE+"',AFF='herballeafmarket';"+
+  /* The code the bookmarklet applies is Bear Blend's AFFILIATE code (JAC6375),
+   * not the house coupon: their /cart/apply-code rejects JACOBKENNEDY
+   * ("Invalid code") but accepts JAC6375 as type:"affiliate", which registers
+   * the referral server-side — belt and braces with the hlm_ref cookie. */
+  var bbRef=(BRAND_AFFILIATES["Bear Blend"]&&BRAND_AFFILIATES["Bear Blend"].ref)||"";
+  return "javascript:(function(){var ITEMS="+items+",CODE='"+bbRef+"',AFF='herballeafmarket';"+
     "var t=(document.querySelector('meta[name=\\'csrf-token\\']')||{}).content||'';"+
     "if(!t){alert('Open bearblend.com first, then click this.');return;}"+
     "var b=document.createElement('div');b.style.cssText='position:fixed;top:16px;right:16px;z-index:999999;background:#1c1712;color:#8fe0a8;font:14px sans-serif;padding:14px 18px;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.4)';b.textContent='Building your Herbal Leaf Market cart...';document.body.appendChild(b);"+
@@ -472,7 +532,10 @@ function buildBearBlendBookmarklet(pairs){ var items=JSON.stringify(pairs);
     "function code(){b.textContent='Applying '+CODE+'...';if(window.bbCart&&window.bbCart.applyCode){Promise.resolve(window.bbCart.applyCode(CODE)).then(fin).catch(fin)}else{P('/cart/apply-code',{code:CODE}).then(fin).catch(fin)}}"+
     "function fin(){b.textContent='Done! Opening cart...';setTimeout(function(){location.href='/cart'},700)}add(0)})();"; }
 function bearBlendCartPairs(){ var pairs=[], missing=0; for(var k in CART){ var p=productById(k); if(!p||p.vendor!=="Bear Blend")continue; var bid=bbIdFor(p); if(bid){pairs.push([bid,CART[k]]);}else{missing++;} } return { pairs:pairs, missing:missing }; }
-function bearBlendMobileText(){ var items=cartItemsForVendor("Bear Blend"); return "Herbal Leaf Market - Bear Blend cart:\n"+items.map(function(x){return "- "+x.qty+"x "+x.p.name;}).join("\n")+"\n\nCoupon: "+HOUSE_CODE; }
+/* No coupon line here: Bear Blend has no working shopper code (JACOBKENNEDY
+ * is rejected at their cart; JAC6375 is attribution-only). Promising one in
+ * the shared list would send people hunting for a discount that cannot land. */
+function bearBlendMobileText(){ var items=cartItemsForVendor("Bear Blend"); return "Herbal Leaf Market - Bear Blend cart:\n"+items.map(function(x){return "- "+x.qty+"x "+x.p.name;}).join("\n"); }
 function shareBearBlend(){ hlmShare("Bear Blend cart", bearBlendMobileText(), withAffiliate({vendor:"Bear Blend",url:"https://bearblend.com/shop"})); }
 /* ---- Bear Blend mobile: guided step-through -----------------------------
  * Bear Blend CANNOT be auto-filled from a phone, and no amount of work here
@@ -523,15 +586,19 @@ function bbViewCart(){ var u=withAffiliate({vendor:"Bear Blend",url:"https://bea
 
 function bearBlendCheckout(){ var items=cartItemsForVendor("Bear Blend");
   if(!items.length){ hlmToast("No Bear Blend items in your cart."); return; }
-  copyCode(); trackVendorCheckout("Bear Blend");
+  trackVendorCheckout("Bear Blend");
   /* Mobile walks product PAGES, so it needs no Bear Blend product id. Only the
    * desktop bookmarklet needs bbIdFor(), which is why the pairs check moved
    * below the mobile branch -- an item missing from BB_IDS used to block the
    * phone flow entirely for no reason. */
   if(isMobileDevice()){ copyText(bearBlendMobileText());
     bearBlendRenderList(); var sa=document.getElementById("bbSelAll"); if(sa) sa.checked=true; bbPhase("bbPick");
-    var mov=document.getElementById("bbMobOverlay"), mmd=document.getElementById("bbMobModal"); if(mov)mov.classList.add("open"); if(mmd)mmd.classList.add("open"); hlmToast("Your list + code "+HOUSE_CODE+" are copied."); return; }
+    var mov=document.getElementById("bbMobOverlay"), mmd=document.getElementById("bbMobModal"); if(mov)mov.classList.add("open"); if(mmd)mmd.classList.add("open"); hlmToast("Your cart list is copied."); return; }
   var info=bearBlendCartPairs(); if(!info.pairs.length){ hlmToast("No Bear Blend items ready to send."); return; }
+  /* The modal's fine print promises the cart list is on the clipboard; keep
+   * that true (it used to copy the coupon code instead, which no longer
+   * exists for Bear Blend). */
+  copyText(bearBlendMobileText());
   var bm=buildBearBlendBookmarklet(info.pairs); var link=document.getElementById("bbCoBookmarklet"); if(link) link.setAttribute("href", bm);
   var miss=document.getElementById("bbCoMissing"); if(miss){ miss.style.display=info.missing?"block":"none"; if(info.missing) miss.textContent=info.missing+" Bear Blend item(s) need a manual add."; }
   var ov=document.getElementById("bbCoOverlay"), md=document.getElementById("bbCoModal"); if(ov)ov.classList.add("open"); if(md)md.classList.add("open"); }
@@ -599,10 +666,16 @@ function renderCart(){ var body=document.getElementById("cartBody"); if(!body)re
   var groups={}; ids.forEach(function(k){ var p=productById(k); if(!p)return; (groups[p.vendor]=groups[p.vendor]||[]).push({p:p,qty:CART[k],key:k}); });
   var gO=0,gF=0,gShip=0,html="";
   Object.keys(groups).sort().forEach(function(vendor){ var coupon=getCoupon(vendor), vO=0, isShop=SHOPIFY_VENDORS.indexOf(vendor)!==-1;
-    var rows=groups[vendor].map(function(it){ var p=it.p,qty=it.qty,key=it.key,li=lineInfo(key),line=li.price*qty; vO+=line;
+    var rows=groups[vendor].map(function(it){ var p=it.p,qty=it.qty,key=it.key,li=lineInfo(key),line=li.price*qty;
+      /* A line the maker cannot sell (went out of stock after it was added)
+       * stays visible so the shopper knows, but is excluded from the totals
+       * and from the checkout handoff — counting it would estimate a price
+       * the checkout cannot reach. */
+      var dead=(li.avail===false); if(!dead) vO+=line;
       var img=p.image?'<img src="'+hlmImg(p.image)+'" alt="'+p.name+'" onerror="this.parentNode.innerHTML=\'<div class=cart-noimg></div>\'">':'<div class="cart-noimg"></div>';
       var sizeLbl=li.sizeTxt?(' <span>&middot; '+li.sizeTxt+'</span>'):""; var kEsc=key.replace(/'/g,"\\'");
-      return '<div class="cart-item"><div class="cart-thumb">'+img+'</div><div class="cart-item-info"><div class="cart-item-name">'+p.name+'</div><div class="cart-item-price">$'+li.price.toFixed(2)+sizeLbl+'</div><div class="cart-qty"><button onclick="bumpQty(\''+kEsc+'\',-1)">-</button><input type="text" value="'+qty+'" onchange="setQty(\''+kEsc+'\',this.value)" /><button onclick="bumpQty(\''+kEsc+'\',1)">+</button><button class="cart-remove" onclick="removeItem(\''+kEsc+'\')">remove</button></div></div><div class="cart-line-total">$'+line.toFixed(2)+'</div></div>'; }).join("");
+      var soldNote=dead?'<div class="cart-item-price" style="color:var(--red,#b3403f);font-weight:600;">Sold out at the maker &middot; won\'t be sent at checkout</div>':"";
+      return '<div class="cart-item"'+(dead?' style="opacity:.65;"':"")+'><div class="cart-thumb">'+img+'</div><div class="cart-item-info"><div class="cart-item-name">'+p.name+'</div><div class="cart-item-price">$'+li.price.toFixed(2)+sizeLbl+'</div>'+soldNote+'<div class="cart-qty"><button onclick="bumpQty(\''+kEsc+'\',-1)">-</button><input type="text" value="'+qty+'" onchange="setQty(\''+kEsc+'\',this.value)" /><button onclick="bumpQty(\''+kEsc+'\',1)">+</button><button class="cart-remove" onclick="removeItem(\''+kEsc+'\')">remove</button></div></div><div class="cart-line-total">'+(dead?'':('$'+line.toFixed(2)))+'</div></div>'; }).join("");
     var vF=coupon?vO*(1-coupon.percent/100):vO; gO+=vO; gF+=vF; var ship=shipInfo(vendor,vF); gShip+=ship.cost; var otd=vF+ship.cost;
     var bd='<div class="cart-bd"><div class="cart-bd-row"><span>Subtotal</span><span>$'+vO.toFixed(2)+'</span></div>';
     if(coupon) bd+='<div class="cart-bd-row save"><span>Code '+coupon.code+' ('+coupon.percent+'% off)</span><span>-$'+(vO-vF).toFixed(2)+'</span></div>';
@@ -762,7 +835,10 @@ function render(){
     else { priceHtml='<span class="price" id="price-'+p.id+'">'+fromTxt+'$'+orig.toFixed(2)+'</span>'; }
     var unitTxt=(p.unit&&p.unit!=="from")?p.unit:""; var ph='<div class="thumb-ph"><svg class="ph-lily"><use href="#lilyIcon"/></svg><span>'+p.name+'</span></div>';
     var imgHtml=p.image?'<img src="'+hlmImg(p.image)+'" alt="'+p.name+'" width="600" height="600" loading="lazy" decoding="async" onerror="this.parentNode.classList.add(\'noimg\'); this.remove();" />'+ph:'<div class="noimg-wrap">'+ph+'</div>';
-    var sizeHtml=""; if(p.variants&&p.variants.length>1){ var sel=SELV[p.id]||0; sizeHtml='<select class="size-sel" onchange="selVariant(\''+p.id+'\',this.value)" aria-label="Choose size">'+p.variants.map(function(v,i){var lbl=(v.title||("Option "+(i+1)))+" - $"+(Number(v.price)||0).toFixed(2)+(v.available===false?" (sold out)":"");return '<option value="'+i+'"'+(i===sel?" selected":"")+(v.available===false?" disabled":"")+'>'+lbl+'</option>';}).join("")+'</select>'; }
+    /* Default the drop-down to a size the maker can actually sell: a <select>
+     * renders a disabled option as the selection if told to, which is how
+     * sold-out sizes were reaching carts. availableIdx skips them. */
+    var sizeHtml=""; if(p.variants&&p.variants.length>1){ var sel=availableIdx(p,SELV[p.id]||0); if(sel<0)sel=SELV[p.id]||0; sizeHtml='<select class="size-sel" onchange="selVariant(\''+p.id+'\',this.value)" aria-label="Choose size">'+p.variants.map(function(v,i){var lbl=(v.title||("Option "+(i+1)))+" - $"+(Number(v.price)||0).toFixed(2)+(v.available===false?" (sold out)":"");return '<option value="'+i+'"'+(i===sel?" selected":"")+(v.available===false?" disabled":"")+'>'+lbl+'</option>';}).join("")+'</select>'; }
     var wcls=isWished(p.id)?" on":""; var wbtn='<button class="wish-btn'+wcls+'" data-id="'+p.id+'" aria-pressed="'+isWished(p.id)+'" aria-label="Save to My Garden" onclick="event.stopPropagation();toggleWish(\''+p.id+'\')"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 21s-7.5-4.6-10-9.2C.5 8.3 2.2 5 5.5 5c2 0 3.3 1.2 4 2.2C10.2 6.2 11.5 5 13.5 5 16.8 5 18.5 8.3 17 11.8 14.5 16.4 12 21 12 21z"/></svg></button>';
     var canna=cannaChip(p);
     /* Per-strain lab report, attached server-side ONLY where the maker's own

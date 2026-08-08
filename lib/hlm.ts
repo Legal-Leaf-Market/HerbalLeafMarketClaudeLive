@@ -76,11 +76,17 @@ const HLM_DEFAULT_RULES = {
   showEvidenceBadges: true,
   crossSellCBD: true,
   goalsEnabled: { calm: true, sleep: true, focus: true, ritual: true },
+  /* Mirrors BRAND_AFFILIATES in public/app.js — keep the two in step.
+   * Verified at each maker's own checkout 2026-08-08: JACOBKENNEDY is a live
+   * coupon ONLY at Natural Smoke Shop. Bear Blend, Puff Herbals, Secret
+   * Nature and Soul CBD all reject it, so advertising a percentage for them
+   * would promise a discount the checkout refuses. Zero until a maker issues
+   * a code that has been re-tested at the till. */
   coupons: {
-    "Bear Blend": 10,
-    "Puff Herbals": 15,
-    "Secret Nature": 15,
-    "Soul CBD": 20,
+    "Bear Blend": 0,
+    "Puff Herbals": 0,
+    "Secret Nature": 0,
+    "Soul CBD": 0,
     "Natural Smoke Shop": 10,
     "Charlotte's Web": 0,
     "Rishi Tea": 0,
