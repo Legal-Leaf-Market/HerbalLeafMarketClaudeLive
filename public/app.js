@@ -394,7 +394,21 @@ function signOut(){ try{localStorage.removeItem("hlm_user");}catch(e){} updateAc
 function isLoggedIn(){ var u=getUser(); return !!(u&&u.email); }
 function updateAccountUI(){ var el=document.getElementById("acctLabel"); if(!el)return; var u=getUser(); el.textContent=(u&&u.name)?("Hi, "+u.name.split(" ")[0]):(u&&u.email?u.email:"Sign in"); }
 let PENDING=null;
-function requireLoginThen(fn){ if(isLoggedIn()){fn();return;} PENDING=fn; openAuth("You're one step from the garden gate"); }
+/* Checkout is an affiliate handoff, not an order we take, so an account can be
+ * an invitation but never a toll booth: a shopper who declines still earns the
+ * commission and gets the coupon; one who bounces off a forced form earns
+ * nothing for anyone. The skip is sessionStorage (its first use here, on
+ * purpose): "not this visit" should not become "never ask again", the way a
+ * localStorage flag would. Only checkout routes through requireLoginThen;
+ * Garden saves were never gated. */
+function gateSkipped(){ try{ return sessionStorage.getItem("hlm_gate_skip")==="1"; }catch(e){ return false; } }
+function requireLoginThen(fn){ if(isLoggedIn()||gateSkipped()){fn();return;} PENDING=fn; openAuth("You're one step from the garden gate"); }
+function skipAuthGate(){ try{ sessionStorage.setItem("hlm_gate_skip","1"); }catch(e){}
+  var fn=PENDING; PENDING=null;
+  var o=document.getElementById("authOverlay"),m=document.getElementById("authModal"); if(o)o.classList.remove("open"); if(m)m.classList.remove("open");
+  /* Synchronously, inside the click gesture: doCheckout ends in window.open,
+   * and a popup opened outside a user gesture gets blocked. */
+  if(typeof fn==="function")fn(); }
 function openAuth(sub){ var o=document.getElementById("authOverlay"),m=document.getElementById("authModal"),s=document.getElementById("authSub"); if(s&&sub)s.textContent=sub; if(o)o.classList.add("open"); if(m)m.classList.add("open"); }
 function closeAuth(){ var o=document.getElementById("authOverlay"),m=document.getElementById("authModal"); if(o)o.classList.remove("open"); if(m)m.classList.remove("open"); PENDING=null; }
 let AUTH_MODE="signup";
@@ -408,7 +422,10 @@ function submitAuth(){ var email=(document.getElementById("authEmail").value||""
   gardenFlushWatches();
   hlmToast("Welcome, "+(name?name.split(" ")[0]:"friend")+"!");
   var o=document.getElementById("authOverlay"),m=document.getElementById("authModal"); if(o)o.classList.remove("open"); if(m)m.classList.remove("open");
-  var fn=PENDING; PENDING=null; if(typeof fn==="function")setTimeout(fn,150); }
+  /* Fire PENDING synchronously: the old setTimeout(fn,150) broke the user
+   * gesture, so the checkout's window.open was popup-blockable even after a
+   * successful sign-up. The toast renders fine either way. */
+  var fn=PENDING; PENDING=null; if(typeof fn==="function")fn(); }
 
 var SHOPIFY_VENDORS=["Puff Herbals","Secret Nature","Soul CBD","Charlotte's Web"];
 var HOUSE_CODE="JACOBKENNEDY";
@@ -585,7 +602,7 @@ function renderCart(){ var body=document.getElementById("cartBody"); if(!body)re
     bd+='<div class="cart-bd-row otd"><span>Est. out-the-door</span><span>$'+otd.toFixed(2)+'</span></div></div>';
     var note=isShop?'<div class="cart-checkout-note">Cart auto-fills at '+vendor+(vendorCode(vendor)?(' with code '+vendorCode(vendor)+' applied'):'')+'.</div>':'<div class="cart-checkout-note">Opens '+vendor+(vendorCode(vendor)?(' with code '+vendorCode(vendor)+' copied'):'')+'.</div>';
     html+='<div class="cart-group"><div class="cart-group-head"><span class="cart-vendor">'+vendor+'</span></div>'+rows+bd+'<button class="cart-checkout" onclick="checkoutVendor(\''+vendor.replace(/'/g,"\\'")+'\')">Checkout at '+vendor+' &rarr;</button>'+note+'</div>'; });
-  var acct=isLoggedIn()?"":'<p class="cart-login-note">A quick (free) Herbal Leaf Market sign-in is required at checkout - it keeps your cart together as you hand off to each maker.</p>';
+  var acct=isLoggedIn()?"":'<p class="cart-login-note">Checkout hands you to each maker\'s own site. A free sign-in keeps your cart and discount together, or you can continue without one.</p>';
   var gOTD=gF+gShip; var grand='<div class="cart-grand"><div class="cart-grand-row sm"><span>Items subtotal</span><span>$'+gO.toFixed(2)+'</span></div>';
   if(gF<gO) grand+='<div class="cart-grand-row sm save"><span>Coupon savings</span><span>-$'+(gO-gF).toFixed(2)+'</span></div>';
   grand+='<div class="cart-grand-row sm"><span>Est. shipping</span><span>'+(gShip>0?('$'+gShip.toFixed(2)):'FREE')+'</span></div>';
