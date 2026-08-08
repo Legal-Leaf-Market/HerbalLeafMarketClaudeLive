@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex,nofollow" />
+<title>Admin - Herbal Leaf Market</title>
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#f1ead9;--ink:#22271e;--muted:#6d6a58;--line:#d6c9ac;--card:#fdfbf3;--terracotta:#c85a34;--terracotta-dk:#9c3d1a;--sage:#3a7b50;--sage-dk:#265a39;--gold:#c9962f;--gold-dk:#9c6f1c;--forest:#2f5d3a;--display:"Fraunces",Georgia,serif;--sans:"Jost",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+  *{box-sizing:border-box} body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--bg);line-height:1.55}
+  .wrap{max-width:820px;margin:0 auto;padding:0 20px}
+  header.top{background:linear-gradient(160deg,#1d2a1e,#26331f);color:#f3ece0;padding:16px 0;border-bottom:2px solid var(--gold)}
+  header.top .wrap{display:flex;align-items:center;gap:12px}
+  header.top .brand{font-family:var(--display);font-weight:900;font-size:1.2rem;color:#f5efdd}
+  header.top .brand small{display:block;font-style:italic;font-weight:400;font-size:.66rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-top:-3px}
+  header.top a{margin-left:auto;color:#e7dbc2;text-decoration:none;font-size:.86rem;font-weight:600}
+  .gate{max-width:400px;margin:80px auto;background:var(--card);border:1px solid var(--gold);border-radius:18px;padding:34px 30px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+  .gate h2{font-family:var(--display);color:var(--forest);margin:0 0 6px}
+  .gate p{color:var(--muted);font-size:.9rem;margin:0 0 18px}
+  input,select{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:11px 13px;font-family:var(--sans);font-size:.95rem;background:#fff;color:var(--ink)}
+  .btn{cursor:pointer;background:linear-gradient(135deg,var(--sage),var(--sage-dk));color:#fff;border:0;border-radius:10px;padding:12px 20px;font-family:var(--sans);font-weight:700;font-size:.95rem;transition:.2s}
+  .btn:hover{filter:brightness(1.08)} .btn.wide{width:100%;margin-top:14px}
+  .err{color:var(--terracotta-dk);font-size:.85rem;margin-top:10px;min-height:1em}
+  main{padding:26px 0 60px;display:none}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:14px 0 26px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center}
+  .stat b{display:block;font-family:var(--display);font-size:1.9rem;color:var(--sage-dk)} .stat span{font-size:.8rem;color:var(--muted)}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin:16px 0;box-shadow:0 6px 20px rgba(40,55,30,.06)}
+  .panel h3{font-family:var(--display);color:var(--forest);margin:0 0 4px;font-size:1.2rem}
+  .panel .hint{font-size:.82rem;color:var(--muted);margin:0 0 14px}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #efe7d4}
+  .row:last-child{border-bottom:0} .row label{font-weight:600;font-size:.92rem} .row .sub{font-size:.76rem;color:var(--muted);font-weight:400}
+  .row .ctl{flex:none;min-width:120px} .row .ctl.narrow{min-width:80px}
+  .toggle{position:relative;width:48px;height:26px;flex:none} .toggle input{display:none}
+  .toggle span{position:absolute;inset:0;background:#cfc7ae;border-radius:999px;transition:.2s;cursor:pointer}
+  .toggle span::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+  .toggle input:checked + span{background:var(--sage)} .toggle input:checked + span::after{transform:translateX(22px)}
+  .coupon-grid{display:grid;grid-template-columns:1fr 90px;gap:8px 12px;align-items:center}
+  .coupon-grid label{font-size:.9rem;font-weight:600}
+  .save-bar{position:sticky;bottom:0;background:linear-gradient(0deg,var(--bg),rgba(241,234,217,.6));padding:14px 0;margin-top:8px}
+  .saved{color:var(--sage-dk);font-weight:700;font-size:.9rem;margin-left:12px}
+  .clickrows{font-size:.9rem} .clickrows .cr{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #efe7d4} .cr b{color:var(--sage-dk)}
+  .note{font-size:.78rem;color:var(--muted);margin-top:6px;line-height:1.5}
+</style>
+  <script src="/hlm-api.js"></script>
+</head>
+<body>
+<header class="top"><div class="wrap"><div class="brand">Herbal Leaf Market<small>Admin Portal</small></div><a href="/" target="_top">&larr; Back to shop</a></div></header>
+
+<div class="wrap">
+  <div class="gate" id="gate">
+    <h2>&#128274; Admin</h2>
+    <p>Enter your admin password to manage top-level rules.</p>
+    <input id="pw" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')adminLogin()" />
+    <button class="btn wide" onclick="adminLogin()">Unlock</button>
+    <div class="err" id="gateErr"></div>
+    <p class="note" style="margin-top:16px">First time? In the Apps Script editor run <code>hlmSetAdminPassword("yourpassword")</code> once.</p>
+  </div>
+
+  <main id="main">
+    <div class="stats">
+      <div class="stat"><b id="stMembers">&mdash;</b><span>Garden members</span></div>
+      <div class="stat"><b id="stClicks">&mdash;</b><span>Clicks (7d)</span></div>
+      <div class="stat"><b id="stUnsub">&mdash;</b><span>Unsubscribed</span></div>
+    </div>
+
+    <div class="panel">
+      <h3>Recommendation rules</h3>
+      <p class="hint">Controls how "Build Your Ritual" makes picks from the Botanical Knowledge Matrix.</p>
+      <div class="row"><div><label>Evidence floor</label><div class="sub">Minimum proof strength allowed in recommendations</div></div>
+        <div class="ctl"><select id="rEvidence"><option value="strong">Strong only</option><option value="moderate">Moderate+</option><option value="preliminary">Preliminary+</option><option value="mixed">Mixed+</option><option value="traditional">Include traditional</option></select></div></div>
+      <div class="row"><div><label>Items per ritual</label><div class="sub">How many products a bundle suggests</div></div>
+        <div class="ctl narrow"><select id="rItems"><option>2</option><option>3</option><option>4</option></select></div></div>
+      <div class="row"><div><label>Prefer in-stock</label><div class="sub">Skip out-of-stock items when picking</div></div>
+        <label class="toggle"><input type="checkbox" id="rStock"><span></span></label></div>
+      <div class="row"><div><label>Show evidence badges</label><div class="sub">Display "moderate / preliminary" tags on picks</div></div>
+        <label class="toggle"><input type="checkbox" id="rBadges"><span></span></label></div>
+      <div class="row"><div><label>CBD cross-sell to Legal Leaf</label><div class="sub">Show sister-shop link on CBD picks</div></div>
+        <label class="toggle"><input type="checkbox" id="rCross"><span></span></label></div>
+    </div>
+
+    <div class="panel">
+      <h3>Goals enabled</h3>
+      <p class="hint">Turn ritual goals on/off across the site.</p>
+      <div class="row"><label>&#127807; Calm &amp; Ease</label><label class="toggle"><input type="checkbox" id="gCalm"><span></span></label></div>
+      <div class="row"><label>&#127769; Deep Sleep</label><label class="toggle"><input type="checkbox" id="gSleep"><span></span></label></div>
+      <div class="row"><label>&#9728;&#65039; Focus &amp; Energy</label><label class="toggle"><input type="checkbox" id="gFocus"><span></span></label></div>
+      <div class="row"><label>&#10024; Earthy Ritual</label><label class="toggle"><input type="checkbox" id="gRitual"><span></span></label></div>
+    </div>
+
+    <div class="panel">
+      <h3>Botanical library</h3>
+      <p class="hint">Toggle any botanical on/off and edit its on-site structure-function claim (compliant phrasing only). Grounded by the Knowledge Matrix.</p>
+      <div id="botanicals"><div class="cr"><span>Loading&hellip;</span></div></div>
+    </div>
+
+    <div class="panel">
+      <h3>Coupon percentages</h3>
+      <p class="hint">Drives the slashed pricing &amp; "out-the-door" savings. Set each store's real discount.</p>
+      <div class="coupon-grid" id="coupons"></div>
+    </div>
+
+    <div class="panel">
+      <h3>This week's clicks by store</h3>
+      <p class="hint">Your partner-negotiation receipts.</p>
+      <div class="clickrows" id="clickRows"><div class="cr"><span>Loading&hellip;</span></div></div>
+    </div>
+
+    <div class="save-bar"><button class="btn" onclick="adminSave()">Save rules</button><span class="saved" id="savedMsg"></span></div>
+    <p class="note">Rules persist server-side (Script Properties). "Build Your Ritual" reads them live once wired to consume the knowledge matrix.</p>
+  </main>
+</div>
+
+<script>
+  var PW="", RULES=null, OV={};
+  function gErr(m){ var e=document.getElementById("gateErr"); if(e)e.textContent=m||""; }
+  function adminLogin(){ PW=document.getElementById("pw").value||""; gErr("");
+    if(typeof google==="undefined"||!google.script||!google.script.run){ gErr("Run inside the deployed web app."); return; }
+    google.script.run.withSuccessHandler(function(res){
+      if(!res||!res.ok){ gErr("Wrong password (or none set yet)."); return; }
+      RULES=res.rules||{}; OV=res.overrides||{}; renderAdmin(res); renderBotanicals();
+      document.getElementById("gate").style.display="none"; document.getElementById("main").style.display="block";
+    }).withFailureHandler(function(){ gErr("Error contacting server."); }).hlmAdminData(PW);
+  }
+  function setTog(id,v){ var el=document.getElementById(id); if(el)el.checked=!!v; }
+  function getTog(id){ var el=document.getElementById(id); return el?!!el.checked:false; }
+  function renderAdmin(res){
+    document.getElementById("stMembers").textContent=res.members!=null?res.members:"0";
+    document.getElementById("stUnsub").textContent=res.unsub!=null?res.unsub:"0";
+    document.getElementById("stClicks").textContent=(res.clicks&&res.clicks.total!=null)?res.clicks.total:"0";
+    var r=RULES;
+    document.getElementById("rEvidence").value=r.evidenceFloor||"traditional";
+    document.getElementById("rItems").value=String(r.itemsPerRitual||3);
+    setTog("rStock",r.preferInStock!==false); setTog("rBadges",r.showEvidenceBadges!==false); setTog("rCross",r.crossSellCBD!==false);
+    var ge=r.goalsEnabled||{}; setTog("gCalm",ge.calm!==false); setTog("gSleep",ge.sleep!==false); setTog("gFocus",ge.focus!==false); setTog("gRitual",ge.ritual!==false);
+    var cp=r.coupons||{}; var box=document.getElementById("coupons"); box.innerHTML="";
+    Object.keys(cp).forEach(function(store){ var lab=document.createElement("label"); lab.textContent=store;
+      var inp=document.createElement("input"); inp.type="number"; inp.min="0"; inp.max="90"; inp.value=cp[store]; inp.setAttribute("data-store",store);
+      box.appendChild(lab); box.appendChild(inp); });
+    if(res.clicks&&res.clicks.byVendor){ var cr=document.getElementById("clickRows"); var v=res.clicks.byVendor;
+      var keys=Object.keys(v).sort(function(a,b){return v[b]-v[a];});
+      cr.innerHTML=keys.length?keys.map(function(k){return '<div class="cr"><span>'+k+'</span><b>'+v[k]+'</b></div>';}).join(""):'<div class="cr"><span>No clicks logged yet.</span></div>';
+    }
+  }
+  function renderBotanicals(){
+    var box=document.getElementById("botanicals"); if(!box) return;
+    if(typeof HLM_KNOWLEDGE==="undefined"){ box.innerHTML='<div class="cr"><span>Knowledge Matrix not loaded (add the <b>knowledge</b> include).</span></div>'; return; }
+    var ovc=(OV&&OV.compounds)||{}; var ids=Object.keys(HLM_KNOWLEDGE.compounds);
+    box.innerHTML=ids.map(function(id){ var c=HLM_KNOWLEDGE.compounds[id]; var o=ovc[id]||{};
+      var on=(o.enabled!==undefined)?o.enabled:(c.enabled!==false);
+      var claim=(o.structureFn||c.structureFn||"").replace(/"/g,"&quot;");
+      var goals=Object.keys(c.goals||{}).join(", ");
+      return '<div style="padding:12px 0;border-bottom:1px solid #efe7d4">'+
+        '<div style="display:flex;align-items:center;gap:10px">'+
+          '<label class="toggle"><input type="checkbox" class="bot-on" data-id="'+id+'" '+(on?"checked":"")+'><span></span></label>'+
+          '<div style="flex:1"><b>'+c.label+'</b> <span class="sub" style="color:var(--muted)">&middot; '+(c.tierLabel||"")+'</span><div class="sub" style="color:var(--muted)">goals: '+goals+' &middot; '+ (c.cite||"") +'</div></div>'+
+        '</div>'+
+        '<input class="bot-claim" data-id="'+id+'" value="'+claim+'" style="margin-top:8px;font-size:.86rem" />'+
+      '</div>';
+    }).join("");
+  }
+  function collectOverrides(){
+    var ov={ compounds:{}, goals:{} };
+    [].forEach.call(document.querySelectorAll('.bot-on'),function(t){ var id=t.getAttribute("data-id"); ov.compounds[id]=ov.compounds[id]||{}; ov.compounds[id].enabled=!!t.checked; });
+    [].forEach.call(document.querySelectorAll('.bot-claim'),function(i){ var id=i.getAttribute("data-id"); var v=(i.value||"").trim(); if(v){ ov.compounds[id]=ov.compounds[id]||{}; ov.compounds[id].structureFn=v; } });
+    ov.goals={ calm:{enabled:getTog("gCalm")}, sleep:{enabled:getTog("gSleep")}, focus:{enabled:getTog("gFocus")}, ritual:{enabled:getTog("gRitual")} };
+    return ov;
+  }
+  function adminSave(){
+    var cp={}; [].forEach.call(document.querySelectorAll('#coupons input'),function(i){ cp[i.getAttribute("data-store")]=Number(i.value)||0; });
+    var rules={ evidenceFloor:document.getElementById("rEvidence").value, itemsPerRitual:Number(document.getElementById("rItems").value)||3,
+      preferInStock:getTog("rStock"), showEvidenceBadges:getTog("rBadges"), crossSellCBD:getTog("rCross"),
+      goalsEnabled:{ calm:getTog("gCalm"), sleep:getTog("gSleep"), focus:getTog("gFocus"), ritual:getTog("gRitual") }, coupons:cp };
+    var msg=document.getElementById("savedMsg"); msg.textContent="Saving\u2026";
+    var ov=collectOverrides();
+    google.script.run.withSuccessHandler(function(res){
+      if(!res||!res.ok){ msg.textContent="Save failed"; return; }
+      google.script.run.withSuccessHandler(function(r2){ msg.textContent=(r2&&r2.ok)?"\u2713 Saved":"Rules saved; matrix failed"; setTimeout(function(){msg.textContent="";},2600); })
+        .withFailureHandler(function(){ msg.textContent="Rules saved; matrix failed"; }).hlmSaveMatrixOverrides(PW, ov);
+    }).withFailureHandler(function(){ msg.textContent="Save failed"; }).hlmSaveRules(PW, rules);
+  }
+</script>
+<script src="/knowledge.js"></script>
+</body>
+</html>

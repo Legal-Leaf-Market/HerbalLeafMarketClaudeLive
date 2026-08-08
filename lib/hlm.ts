@@ -1,0 +1,731 @@
+import { db } from "./db"
+import { members, clicks } from "./db/schema"
+import { and, eq, gte, sql } from "drizzle-orm"
+import { kvGet, kvPut, kvDel } from "./kv"
+
+/* =========================================================================
+ * Herbal Leaf Market — server logic.
+ * Faithful port of the original Cloudflare Worker (src/index.js) onto Vercel
+ * + Neon Postgres. Cloudflare KV -> kv table, D1 -> members/clicks tables,
+ * scheduled() -> Vercel Cron routes. Email still goes through Resend.
+ * ========================================================================= */
+
+export const SITE_NAME = "Herbal Leaf Market"
+export const SITE_FROM = "Herbal Leaf Market"
+export const CONTACT_EMAIL = "hello@herballeafmarket.com"
+export const SITE_URL = "https://herballeafmarket.com"
+
+const SHOPIFY_STORES = [
+  { vendor: "Puff Herbals", domain: "https://puffherbals.com", prefix: "puff" },
+  { vendor: "Secret Nature", domain: "https://secretnature.com", prefix: "sn" },
+  { vendor: "Soul CBD", domain: "https://mysoulcbd.com", prefix: "soul" },
+  { vendor: "Charlotte's Web", domain: "https://www.charlottesweb.com", prefix: "cw" },
+]
+const NSS_ORIGIN = "https://www.smokingblends.com"
+const NSS_CACHE_KEY = "nss_ids_v1"
+
+const HLM_DEFAULT_RULES = {
+  evidenceFloor: "traditional",
+  itemsPerRitual: 3,
+  preferInStock: true,
+  showEvidenceBadges: true,
+  crossSellCBD: true,
+  goalsEnabled: { calm: true, sleep: true, focus: true, ritual: true },
+  coupons: {
+    "Bear Blend": 10,
+    "Puff Herbals": 15,
+    "Secret Nature": 15,
+    "Soul CBD": 20,
+    "Natural Smoke Shop": 10,
+    "Charlotte's Web": 0,
+  },
+}
+
+/* ---------- env helpers ---------- */
+const env = {
+  get ADMIN_PW() { return process.env.ADMIN_PW || "" },
+  get RESEND_API_KEY() { return process.env.RESEND_API_KEY || "" },
+  get REPORT_EMAIL() { return process.env.REPORT_EMAIL || "" },
+  get SITE_FROM_EMAIL() { return process.env.SITE_FROM_EMAIL || "" },
+  get PUBLIC_URL() { return process.env.PUBLIC_URL || "" },
+}
+
+/* =========================================================================
+ * Inventory (Shopify products.json scrape, cached 6h)
+ * ========================================================================= */
+export async function getInventory(): Promise<any[]> {
+  const cached = await kvGet("hlm_live_v3")
+  if (cached) {
+    try { return JSON.parse(cached) } catch {}
+  }
+  let out: any[] = []
+  try {
+    const resps = await Promise.all(
+      SHOPIFY_STORES.map((s) =>
+        fetch(s.domain + "/products.json?limit=250", {
+          headers: { Accept: "application/json", "User-Agent": "Mozilla/5.0" },
+        }).catch(() => null),
+      ),
+    )
+    for (let i = 0; i < resps.length; i++) {
+      const r = resps[i]
+      if (!r || r.status !== 200) continue
+      try {
+        const data: any = await r.json()
+        out = out.concat(mapShopify(SHOPIFY_STORES[i], (data && data.products) || []))
+      } catch {}
+    }
+  } catch {}
+  if (out.length) {
+    await kvPut("hlm_live_v3", JSON.stringify(out), 21600)
+  }
+  return out
+}
+
+export async function refreshInventory(): Promise<string> {
+  await kvDel("hlm_live_v3")
+  const n = (await getInventory()).length
+  return n + " products cached."
+}
+
+function mapShopify(store: (typeof SHOPIFY_STORES)[number], products: any[]): any[] {
+  const out: any[] = []
+  ;(products || []).forEach((p) => {
+    if (!p || !p.handle) return
+    const img = p.images && p.images[0] && p.images[0].src ? p.images[0].src : ""
+    const vars = (p.variants || []).map((v: any) => ({
+      id: String(v.id),
+      title: v.title && v.title !== "Default Title" ? v.title : "",
+      price: Number(v.price) || 0,
+      available: v.available !== false,
+    }))
+    const prices = vars.map((v: any) => v.price).filter((n: number) => n > 0)
+    const minP = prices.length ? Math.min.apply(null, prices) : 0
+    const anyAvail = vars.some((v: any) => v.available)
+    let blurb = String(p.body_html || "")
+      .replace(/<[^>]*>/g, " ")
+      .replace(/&[a-z#0-9]+;/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+    if (blurb.length > 160) blurb = blurb.slice(0, 157) + "..."
+    out.push({
+      id: store.prefix + "-" + p.handle,
+      vendor: store.vendor,
+      name: p.title || "",
+      category: p.product_type || "",
+      image: img,
+      price: minP,
+      unit: vars.length > 1 ? "from" : "",
+      blurb,
+      url: store.domain + "/products/" + p.handle,
+      badge: "",
+      inStock: anyAvail,
+      variants: vars,
+    })
+  })
+  return out
+}
+
+/* =========================================================================
+ * Natural Smoke Shop (WooCommerce) variation-id scrape, cached 6h
+ * ========================================================================= */
+export async function getSmokingBlendsIds(slugs?: string[] | null): Promise<Record<string, any[]>> {
+  const cached = await kvGet(NSS_CACHE_KEY)
+  if (cached) {
+    try { return JSON.parse(cached) } catch {}
+  }
+  if (!slugs || !slugs.length) {
+    slugs = await nssCrawlSlugs()
+  }
+  const map: Record<string, any[]> = {}
+  try {
+    const resps = await Promise.all(
+      slugs.map((s) =>
+        fetch(NSS_ORIGIN + "/product/" + s + "/", {
+          headers: { "User-Agent": "Mozilla/5.0", Accept: "text/html" },
+        }).catch(() => null),
+      ),
+    )
+    for (let i = 0; i < resps.length; i++) {
+      const r = resps[i]
+      if (!r || r.status !== 200) continue
+      try {
+        const list = parseVariationsFromHtml(await r.text())
+        if (list && list.length) map[slugs[i]] = list
+      } catch {}
+    }
+  } catch {}
+  if (Object.keys(map).length) {
+    await kvPut(NSS_CACHE_KEY, JSON.stringify(map), 21600)
+  }
+  return map
+}
+
+export async function refreshSmokingBlendsIds(): Promise<string> {
+  await kvDel(NSS_CACHE_KEY)
+  const m = await getSmokingBlendsIds(null)
+  return Object.keys(m).length + " NSS products mapped."
+}
+
+function parseVariationsFromHtml(html: string): any[] {
+  const out: any[] = []
+  if (!html) return out
+  const m = html.match(/data-product_variations\s*=\s*(['"])(.*?)\1/is)
+  if (!m || !m[2] || m[2] === "false") return out
+  const jsonStr = m[2]
+    .replace(/&quot;/g, '"')
+    .replace(/&#0*39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, "&")
+  let arr: any
+  try { arr = JSON.parse(jsonStr) } catch { return out }
+  ;(arr || []).forEach((v: any) => {
+    const vid = v.variation_id || v.id
+    if (!vid) return
+    let size = ""
+    if (v.attributes) {
+      for (const k in v.attributes) {
+        if (v.attributes[k]) { size = String(v.attributes[k]); break }
+      }
+    }
+    const price = Number(v.display_price != null ? v.display_price : v.display_regular_price) || 0
+    out.push({ id: vid, price, size })
+  })
+  return out
+}
+
+async function nssCrawlSlugs(): Promise<string[]> {
+  const slugs: string[] = []
+  try {
+    for (let page = 1; page <= 4; page++) {
+      const r = await fetch(NSS_ORIGIN + "/wp-json/wc/store/v1/products?per_page=100&page=" + page, {
+        headers: { Accept: "application/json" },
+      })
+      if (r.status !== 200) break
+      const arr: any = await r.json()
+      if (!arr || !arr.length) break
+      arr.forEach((p: any) => {
+        if (p && p.slug && p.type === "variable") slugs.push(p.slug)
+      })
+      if (arr.length < 100) break
+    }
+  } catch {}
+  return slugs
+}
+
+/* =========================================================================
+ * Admin rules / botanical matrix overrides (persistent kv, no TTL)
+ * ========================================================================= */
+function checkAdmin(pw: any): boolean {
+  const real = env.ADMIN_PW
+  return real !== "" && String(pw) === real
+}
+
+export async function getRules(): Promise<any> {
+  try {
+    const s = await kvGet("HLM_RULES")
+    if (s) {
+      const r = JSON.parse(s)
+      for (const k in HLM_DEFAULT_RULES) {
+        if ((r as any)[k] === undefined) (r as any)[k] = (HLM_DEFAULT_RULES as any)[k]
+      }
+      return r
+    }
+  } catch {}
+  return HLM_DEFAULT_RULES
+}
+
+export async function saveRules(pw: any, rules: any): Promise<any> {
+  if (!checkAdmin(pw)) return { ok: false, error: "unauthorized" }
+  try {
+    await kvPut("HLM_RULES", JSON.stringify(rules || {}))
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: String(e) }
+  }
+}
+
+export async function getMatrixOverrides(): Promise<any> {
+  try {
+    const s = await kvGet("HLM_MATRIX_OV")
+    return s ? JSON.parse(s) : {}
+  } catch {
+    return {}
+  }
+}
+
+export async function saveMatrixOverrides(pw: any, ov: any): Promise<any> {
+  if (!checkAdmin(pw)) return { ok: false, error: "unauthorized" }
+  try {
+    await kvPut("HLM_MATRIX_OV", JSON.stringify(ov || {}))
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: String(e) }
+  }
+}
+
+export async function getMatrix(): Promise<any> {
+  return { overrides: await getMatrixOverrides(), rules: await getRules() }
+}
+
+/* =========================================================================
+ * Members + clicks
+ * ========================================================================= */
+async function getMember(email: string): Promise<any | undefined> {
+  const rows = await db.select().from(members).where(eq(members.email, email)).limit(1)
+  return rows[0]
+}
+
+function validEmail(e: any): boolean {
+  return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(e || ""))
+}
+
+export async function adminData(pw: any): Promise<any> {
+  if (!checkAdmin(pw)) return { ok: false, error: "unauthorized" }
+  let membersCount = 0
+  let unsub = 0
+  try {
+    const rows = await db
+      .select({
+        n: sql<number>`count(*)`,
+        u: sql<number>`sum(case when ${members.unsubscribed} = 'unsub' then 1 else 0 end)`,
+      })
+      .from(members)
+    membersCount = Number(rows[0]?.n || 0)
+    unsub = Number(rows[0]?.u || 0)
+  } catch {}
+  let clicksStats: any = null
+  try {
+    clicksStats = await clickStats(7)
+  } catch {}
+  return {
+    ok: true,
+    rules: await getRules(),
+    overrides: await getMatrixOverrides(),
+    members: membersCount,
+    unsub,
+    clicks: clicksStats,
+  }
+}
+
+export async function logClick(payload: any): Promise<any> {
+  payload = payload || {}
+  try {
+    await db.insert(clicks).values({
+      ts: Date.now(),
+      type: String(payload.type || "outbound").slice(0, 40),
+      vendor: String(payload.vendor || "").slice(0, 80),
+      product: String(payload.product || "").slice(0, 140),
+      price: Number(payload.price) || 0,
+      category: String(payload.category || "").slice(0, 60),
+      page: String(payload.page || "").slice(0, 60),
+      device: String(payload.device || "").slice(0, 20),
+      email: String(payload.email || "").slice(0, 120),
+      ref: String(payload.ref || "").slice(0, 120),
+    })
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: String(e) }
+  }
+}
+
+async function clickStats(days: number): Promise<any> {
+  days = days || 7
+  const since = Date.now() - days * 864e5
+  const rows = await db
+    .select({ type: clicks.type, vendor: clicks.vendor, product: clicks.product })
+    .from(clicks)
+    .where(gte(clicks.ts, since))
+  let total = 0
+  const byVendor: Record<string, number> = {}
+  const byType: Record<string, number> = {}
+  const prod: Record<string, number> = {}
+  rows.forEach((row) => {
+    total++
+    const v = row.vendor || "(none)"
+    byVendor[v] = (byVendor[v] || 0) + 1
+    const t = row.type || "outbound"
+    byType[t] = (byType[t] || 0) + 1
+    if (row.product) {
+      const key = (row.vendor || "") + " \u2014 " + (row.product || "")
+      prod[key] = (prod[key] || 0) + 1
+    }
+  })
+  const top = Object.keys(prod)
+    .map((k) => ({ name: k, n: prod[k] }))
+    .sort((a, b) => b.n - a.n)
+    .slice(0, 10)
+  return { total, byVendor, byType, top, days }
+}
+
+export async function getClickStats(days: number): Promise<any> {
+  return await clickStats(days || 7)
+}
+
+export async function sendWeeklyClickReport(): Promise<string> {
+  const s = await clickStats(7)
+  const vend = Object.keys(s.byVendor)
+    .map((k) => ({ k, n: s.byVendor[k] }))
+    .sort((a, b) => b.n - a.n)
+  const vrows =
+    vend
+      .map(
+        (r) =>
+          '<tr><td style="padding:6px 10px;border-bottom:1px solid #eee">' +
+          esc(r.k) +
+          '</td><td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:right;font-weight:700">' +
+          r.n +
+          "</td></tr>",
+      )
+      .join("") || '<tr><td style="padding:10px;color:#6d6a58">No clicks yet.</td></tr>'
+  const prows = s.top
+    .map(
+      (r: any) =>
+        '<tr><td style="padding:6px 10px;border-bottom:1px solid #eee">' +
+        esc(r.name) +
+        '</td><td style="padding:6px 10px;border-bottom:1px solid #eee;text-align:right;font-weight:700">' +
+        r.n +
+        "</td></tr>",
+    )
+    .join("")
+  const html =
+    '<!DOCTYPE html><html><body style="margin:0;background:#f1ead9;padding:24px 0"><table role="presentation" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#fdfbf3;border:1px solid #d6c9ac;border-radius:18px;overflow:hidden"><tr><td style="background:linear-gradient(135deg,#3a7b50,#265a39);padding:20px 26px;color:#f5efdd;font:900 20px Georgia,serif">Herbal Leaf Market &mdash; Weekly Click Report</td></tr><tr><td style="padding:22px 26px"><div style="font:800 34px Georgia,serif;color:#2f5d3a">' +
+    s.total +
+    '</div><div style="font:400 14px sans-serif;color:#6d6a58;margin-bottom:14px">outbound clicks in the last 7 days</div><div style="font:700 13px sans-serif;color:#265a39;text-transform:uppercase;letter-spacing:.5px;margin:8px 0 4px">By store (partner leverage)</div><table style="width:100%;border-collapse:collapse;font:14px sans-serif">' +
+    vrows +
+    "</table>" +
+    (prows
+      ? '<div style="font:700 13px sans-serif;color:#265a39;text-transform:uppercase;letter-spacing:.5px;margin:16px 0 4px">Top products clicked</div><table style="width:100%;border-collapse:collapse;font:14px sans-serif">' +
+        prows +
+        "</table>"
+      : "") +
+    "</td></tr></table></body></html>"
+  const to = env.REPORT_EMAIL || CONTACT_EMAIL
+  await send(to, "\u{1F4C8} HLM weekly click report \u2014 " + s.total + " clicks", html)
+  return s.total + " clicks reported."
+}
+
+export async function createAccount(payload: any): Promise<any> {
+  payload = payload || {}
+  try {
+    const email = String(payload.email || "").trim().toLowerCase()
+    if (!validEmail(email)) return { ok: false, error: "invalid email" }
+    const name = String(payload.name || "").trim()
+    const items = Array.isArray(payload.items) ? payload.items : []
+    const consent = payload.consent ? "yes" : "no"
+    const now = Date.now()
+    let member = await getMember(email)
+    let notified: Record<string, any> = {}
+    if (member) {
+      let cur: Record<string, any> = {}
+      try { cur = JSON.parse(member.garden || "{}") } catch {}
+      try { notified = JSON.parse(member.notified || "{}") } catch {}
+      items.forEach((it: any) => { if (it && it.id) cur[it.id] = it })
+      const newName = name || member.name || ""
+      const newConsent = consent === "yes" ? "yes" : member.consent || "no"
+      await db
+        .update(members)
+        .set({ name: newName, garden: JSON.stringify(cur), consent: newConsent, unsubscribed: "" })
+        .where(eq(members.email, email))
+      member = await getMember(email)
+    } else {
+      const g: Record<string, any> = {}
+      items.forEach((it: any) => { if (it && it.id) g[it.id] = it })
+      await db.insert(members).values({
+        email,
+        name,
+        joined: now,
+        garden: JSON.stringify(g),
+        notified: "{}",
+        consent,
+        unsubscribed: "",
+        lastEmail: 0,
+      })
+      member = await getMember(email)
+    }
+    if (String(member.unsubscribed || "") !== "unsub") {
+      await sendWelcome(email, name, items, notified)
+    }
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: String(e) }
+  }
+}
+
+export async function watchItem(payload: any): Promise<any> {
+  payload = payload || {}
+  try {
+    const email = String(payload.email || "").trim().toLowerCase()
+    const it = payload.item || {}
+    if (!validEmail(email) || !it || !it.id) return { ok: false }
+    let member = await getMember(email)
+    if (!member) {
+      return await createAccount({ email, name: payload.name || "", items: [it], consent: true })
+    }
+    if (String(member.unsubscribed || "") === "unsub") return { ok: false, error: "unsubscribed" }
+    let garden: Record<string, any> = {}
+    let notified: Record<string, any> = {}
+    try { garden = JSON.parse(member.garden || "{}") } catch {}
+    try { notified = JSON.parse(member.notified || "{}") } catch {}
+    garden[it.id] = it
+    const sent = await send(
+      email,
+      "\u{1F33F} You're tracking " + (it.name || "an item") + " on " + SITE_NAME,
+      emailShell(
+        "You're tracking a new find \u{1F33F}",
+        "We'll keep this in your Garden. Here's what you saved:",
+        itemCardHtml(it),
+        email,
+      ),
+    )
+    notified[it.id] = (notified[it.id] || 0) + 1
+    await db
+      .update(members)
+      .set({ garden: JSON.stringify(garden), notified: JSON.stringify(notified), lastEmail: Date.now() })
+      .where(eq(members.email, email))
+    return { ok: true, emailed: sent }
+  } catch (e) {
+    return { ok: false, error: String(e) }
+  }
+}
+
+async function sendWelcome(email: string, name: string, items: any[], notified: Record<string, any>): Promise<void> {
+  const hi = name ? "Welcome, " + name.split(" ")[0] + "!" : "Welcome to your Garden!"
+  const cards =
+    items && items.length
+      ? items.map((it) => itemCardHtml(it)).join("")
+      : '<tr><td style="padding:14px;color:#6d6a58;font:15px sans-serif">Your Garden is ready \u2014 tap the \u2764 on any product to grow it.</td></tr>'
+  await send(
+    email,
+    "\u{1F33F} Your Herbal Leaf Market Garden",
+    emailShell(hi, "Your saved botanicals are below. We'll email you when you track new finds.", cards, email),
+  )
+  try {
+    const n = notified || {}
+    ;(items || []).forEach((it) => { if (it && it.id) n[it.id] = 1 })
+    await db.update(members).set({ notified: JSON.stringify(n), lastEmail: Date.now() }).where(eq(members.email, email))
+  } catch {}
+}
+
+export async function unsubscribe(email: string): Promise<string> {
+  email = String(email || "").trim().toLowerCase()
+  try {
+    const m = await getMember(email)
+    if (m) await db.update(members).set({ unsubscribed: "unsub" }).where(eq(members.email, email))
+  } catch {}
+  return (
+    '<div style="font:16px sans-serif;max-width:520px;margin:60px auto;text-align:center;color:#22271e"><h2 style="font-family:Georgia,serif;color:#2f5d3a">You\'re unsubscribed \u{1F33F}</h2><p>' +
+    esc(email) +
+    " will no longer receive Garden emails.</p></div>"
+  )
+}
+
+export async function sendWeeklyDigest(): Promise<string> {
+  const rows = await db.select().from(members)
+  let sent = 0
+  for (const m of rows) {
+    const email = String(m.email).toLowerCase()
+    if (!validEmail(email)) continue
+    if (String(m.consent || "") !== "yes" || String(m.unsubscribed || "") === "unsub") continue
+    let garden: Record<string, any> = {}
+    try { garden = JSON.parse(m.garden || "{}") } catch {}
+    const items = Object.keys(garden).map((k) => garden[k])
+    if (!items.length) continue
+    const name = String(m.name || "")
+    const cards = items.slice(0, 12).map((it) => itemCardHtml(it)).join("")
+    const hi = name ? "Your Garden this week, " + name.split(" ")[0] : "Your Garden this week"
+    const ok = await send(
+      email,
+      "\u{1F33F} Your Herbal Leaf Market Garden \u2014 weekly recap",
+      emailShell(hi, "Here are the botanicals you're growing. Ready to bring any home?", cards, email),
+    )
+    if (ok) {
+      sent++
+      try {
+        await db.update(members).set({ lastEmail: Date.now() }).where(eq(members.email, email))
+      } catch {}
+    }
+  }
+  return sent + " digest email(s) sent."
+}
+
+export async function gardenSelfTest(): Promise<any> {
+  const me = env.REPORT_EMAIL || CONTACT_EMAIL
+  return await createAccount({
+    email: me,
+    name: "Test Gardener",
+    consent: true,
+    items: [
+      {
+        id: "demo1",
+        name: "Calm CBD Gummies",
+        vendor: "Charlotte's Web",
+        price: 49.99,
+        image: "https://herballeafmarket.com/icon-192.png",
+        url: "https://www.charlottesweb.com/",
+        blurb: "Full-spectrum CBD gummies with lemon balm.",
+      },
+    ],
+  })
+}
+
+/* =========================================================================
+ * Email builders (verbatim from the Worker) + Resend transport
+ * ========================================================================= */
+function cardHref(it: any): string {
+  const id = String((it && it.id) || "").trim()
+  if (!id) return SITE_URL + "/"
+  return SITE_URL + "/?focus=" + encodeURIComponent(id)
+}
+
+function cartAddHref(it: any): string {
+  const id = String((it && it.id) || "").trim()
+  if (!id) return SITE_URL + "/"
+  const vid = String((it && it.variantId) || "").trim()
+  const key = vid ? id + "::" + vid : id
+  return SITE_URL + "/?add=" + encodeURIComponent(key)
+}
+
+function itemCardHtml(it: any): string {
+  it = it || {}
+  const url = esc(cardHref(it))
+  const name = esc(it.name || "")
+  const vendor = esc(it.vendor || "")
+  const blurb = it.blurb ? esc(String(it.blurb).slice(0, 150)) : ""
+  const variant = esc(it.variant || it.variantTitle || "")
+  const price = (Number(it.price) || 0) > 0 ? "$" + Number(it.price).toFixed(2) + (it.unit === "from" ? " +" : "") : ""
+  const imgInner = it.image
+    ? '<img src="' +
+      esc(it.image) +
+      '" width="120" height="120" alt="' +
+      name +
+      '" style="display:block;width:120px;height:120px;object-fit:cover;border-radius:12px;border:1px solid #e0d3bd" />'
+    : '<div style="width:120px;height:120px;border-radius:12px;background:#eef0e2"></div>'
+  const imgCell =
+    '<a href="' + url + '" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">' + imgInner + "</a>"
+  const nameHtml =
+    '<a href="' + url + '" target="_blank" rel="noopener" style="color:#22271e;text-decoration:none">' + name + "</a>"
+  const variantHtml = variant
+    ? '<div style="display:inline-block;font:700 12px sans-serif;color:#265a39;background:#eaf1e6;border:1px solid #cddcc8;border-radius:999px;padding:3px 10px;margin:3px 0">Size: ' +
+      variant +
+      "</div>"
+    : ""
+  const priceHtml = price
+    ? '<div style="font:800 16px Georgia,serif;color:#1f6b52;margin:2px 0">' + price + "</div>"
+    : ""
+  const blurbHtml = blurb
+    ? '<div style="font:400 13px sans-serif;color:#6d6a58;line-height:1.5;margin-top:4px">' + blurb + "</div>"
+    : ""
+  const addUrl = esc(cartAddHref(it))
+  const cta =
+    '<div style="margin-top:10px"><a href="' +
+    addUrl +
+    '" target="_blank" rel="noopener" style="display:inline-block;background:#c85a34;color:#ffffff;text-decoration:none;font:700 13px sans-serif;padding:10px 18px;border-radius:999px">&#128722; Add to Herbal Leaf Cart</a></div>'
+  return (
+    '<tr><td style="padding:14px 0;border-bottom:1px solid #eee"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%"><tr><td valign="top" width="132" style="width:132px">' +
+    imgCell +
+    '</td><td valign="top" style="padding-left:14px"><div style="font:700 11px sans-serif;letter-spacing:.6px;text-transform:uppercase;color:#265a39">' +
+    vendor +
+    '</div><div style="font:700 17px Georgia,serif;color:#22271e;margin:2px 0 4px">' +
+    nameHtml +
+    "</div>" +
+    variantHtml +
+    priceHtml +
+    blurbHtml +
+    cta +
+    "</td></tr></table></td></tr>"
+  )
+}
+
+function emailShell(heading: string, intro: string, cardsHtml: string, email: string): string {
+  let unsub = ""
+  try {
+    unsub = (env.PUBLIC_URL || SITE_URL) + "/?unsub=" + encodeURIComponent(email)
+  } catch {
+    unsub = "mailto:" + CONTACT_EMAIL + "?subject=unsubscribe"
+  }
+  const unsubE = esc(unsub)
+  return (
+    '<!DOCTYPE html><html><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /></head><body style="margin:0;background:#f1ead9;padding:24px 0"><table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" width="560" style="max-width:560px;margin:0 auto;background:#fdfbf3;border:1px solid #d6c9ac;border-radius:18px;overflow:hidden"><tr><td style="background:linear-gradient(135deg,#3a7b50,#265a39);padding:22px 26px"><div style="font:900 20px Georgia,serif;color:#f5efdd">Herbal Leaf Market</div><div style="font:italic 400 12px Georgia,serif;color:#c9962f;letter-spacing:2px;text-transform:uppercase">botanical apothecary</div></td></tr><tr><td style="padding:24px 26px 6px"><div style="font:900 22px Georgia,serif;color:#2f5d3a">' +
+    esc(heading) +
+    '</div><div style="font:400 15px sans-serif;color:#6d6a58;margin:6px 0 8px;line-height:1.5">' +
+    esc(intro) +
+    '</div></td></tr><tr><td style="padding:0 26px 18px"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%">' +
+    cardsHtml +
+    '</table></td></tr><tr><td style="padding:16px 26px;background:#f6f1e4;border-top:1px solid #e6dcc4"><div style="font:400 11px sans-serif;color:#9c9a84;line-height:1.6">You are receiving this because you created or updated a Garden at Herbal Leaf Market. We link you to independent makers; you complete purchases on their sites. Statements have not been evaluated by the FDA and are not intended to diagnose, treat, cure, or prevent any disease. 21+.<br /><a href="' +
+    unsubE +
+    '" style="color:#9c3d1a;text-decoration:underline">Unsubscribe</a> at any time.</div></td></tr></table></body></html>'
+  )
+}
+
+function esc(s: any): string {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+}
+
+async function send(to: string, subject: string, html: string): Promise<boolean> {
+  try {
+    if (!env.RESEND_API_KEY) {
+      console.error("[hlm:send] RESEND_API_KEY missing; skipping send to " + to)
+      return false
+    }
+    // SITE_FROM_EMAIL may be just a domain (e.g. "send.herballeafmarket.com") or a
+    // full address. Normalise it to "Name <email@domain>" that Resend requires.
+    let raw = env.SITE_FROM_EMAIL || ""
+    let from: string
+    if (!raw) {
+      from = SITE_FROM + " <" + CONTACT_EMAIL + ">"
+    } else if (raw.includes("@")) {
+      // Already looks like an email address — wrap if not already wrapped
+      from = raw.includes("<") ? raw : SITE_FROM + " <" + raw + ">"
+    } else {
+      // It's just a domain — prefix with "noreply@"
+      from = SITE_FROM + " <noreply@" + raw.replace(/^https?:\/\//, "") + ">"
+    }
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: "Bearer " + env.RESEND_API_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ from, to, subject, html }),
+    })
+    if (r.status >= 200 && r.status < 300) return true
+    console.error("[hlm:send] FAILED status=" + r.status + " body=" + (await r.text()))
+    return false
+  } catch (e) {
+    console.error("[hlm:send] EXCEPTION: " + e)
+    return false
+  }
+}
+
+/* =========================================================================
+ * RPC dispatch (mirrors the Worker's RPC map)
+ * ========================================================================= */
+type Handler = (args: any[]) => Promise<any>
+
+const RPC: Record<string, Handler> = {
+  hlmWatchItem: (a) => watchItem(a[0] || {}),
+  hlmCreateAccount: (a) => createAccount(a[0] || {}),
+  hlmLogClick: (a) => logClick(a[0] || {}),
+  hlmGetRules: () => getRules(),
+  hlmGetMatrix: () => getMatrix(),
+  getInventory: () => getInventory(),
+  refreshInventory: () => refreshInventory(),
+  getSmokingBlendsIds: (a) => getSmokingBlendsIds(a && a[0]),
+  refreshSmokingBlendsIds: () => refreshSmokingBlendsIds(),
+  hlmGetClickStats: (a) => getClickStats((a && a[0]) || 7),
+  hlmAdminData: (a) => adminData(a[0]),
+  hlmSaveRules: (a) => saveRules(a[0], a[1]),
+  hlmSaveMatrixOverrides: (a) => saveMatrixOverrides(a[0], a[1]),
+  hlmGetMatrixOverrides: () => getMatrixOverrides(),
+  hlmSendWeeklyDigest: () => sendWeeklyDigest(),
+  hlmSendWeeklyClickReport: () => sendWeeklyClickReport(),
+  hlmGardenSelfTest: () => gardenSelfTest(),
+}
+
+export async function dispatchRpc(fn: string, args: any[]): Promise<any> {
+  const handler = RPC[fn]
+  if (!handler) return { ok: false, error: "unknown function: " + fn }
+  return await handler(Array.isArray(args) ? args : [])
+}

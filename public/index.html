@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Herbal Leaf Market - Certified-Organic CBD, CBG & Botanical Blends</title>
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+<meta name="description" content="A neo-hippy boutique of certified-organic CBD, CBG, herbal blends, ceremonial elixirs, hand-rolled smokes, and single herbs. Live inventory from vetted makers. Tobacco-free, nicotine-free." />
+<link rel="canonical" href="https://herballeafmarket.com/" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Herbal Leaf Market" />
+<meta property="og:title" content="Herbal Leaf Market - Certified-Organic CBD, CBG & Botanicals" />
+<meta property="og:description" content="Certified-organic CBD, CBG, herbal blends and botanicals - gathered live from vetted makers. Tobacco-free, nicotine-free." />
+<meta property="og:url" content="https://herballeafmarket.com/" />
+<meta property="og:image" content="https://herballeafmarket.com/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:locale" content="en_US" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="@herballeafmarket" />
+<meta name="twitter:title" content="Herbal Leaf Market - Certified-Organic CBD, CBG & Botanicals" />
+<meta name="twitter:description" content="Certified-organic CBD, CBG, herbal blends & botanicals, gathered live from vetted makers." />
+<meta name="twitter:image" content="https://herballeafmarket.com/og-image.png" />
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Organization","name":"Herbal Leaf Market","description":"A boutique aggregator of certified-organic, non-intoxicating CBD, CBG and botanical products from vetted makers, with education and advocacy on legal cannabinoid access.","url":"https://herballeafmarket.com","logo":"https://herballeafmarket.com/icon-512.png","sameAs":["https://legal-leafmarket.com"]}
+</script>
+<script id="hlmProductLd" type="application/ld+json"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Cormorant+Garamond:ital,wght@1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#0b120d" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Herbal Leaf" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+<script>
+  if("serviceWorker" in navigator){ window.addEventListener("load", function(){ navigator.serviceWorker.register("/sw.js").catch(function(){}); }); }
+  function hlmIsBot(){ return /bot|crawl|spider|slurp|bingpreview|facebookexternalhit|embedly|quora|pinterest|slackbot|whatsapp|telegrambot|discordbot|linkedinbot|google-inspection/i.test(navigator.userAgent||""); }
+  function passGate(){ try{ localStorage.setItem("hlm_age_ok","1"); }catch(e){} var g=document.getElementById("ageGate"); if(g){ g.classList.add("hidden"); g.style.display="none"; } return false; }
+  function hlmCheckGate(){ var ok=false; try{ ok=(localStorage.getItem("hlm_age_ok")==="1"); }catch(e){} if(hlmIsBot())ok=true; var g=document.getElementById("ageGate"); if(g&&ok){ g.classList.add("hidden"); g.style.display="none"; } }
+  document.addEventListener("DOMContentLoaded", hlmCheckGate);
+  function hlmPlaceSearch(){ var sb=document.querySelector("header .searchbox"), hostHeader=document.querySelector("header .nav .spacer"), mount=document.getElementById("mSearchMount");
+    if(!sb||!mount) return; var mobile=window.matchMedia("(max-width:760px)").matches;
+    if(mobile){ if(sb.parentNode!==mount){ mount.appendChild(sb); mount.style.display="block"; } }
+    else { mount.style.display="none"; if(hostHeader && sb.previousElementSibling!==hostHeader){ hostHeader.parentNode.insertBefore(sb, hostHeader.nextSibling); } } }
+  window.addEventListener("DOMContentLoaded", hlmPlaceSearch); window.addEventListener("resize", hlmPlaceSearch);
+</script>
+<style>
+  :root{--bg:#0b120d;--bg2:#0f1a10;--ink:#eaf3ec;--muted:#9fb6a6;--line:#1e3024;--card:rgba(15,24,17,.85);--card-solid:#0f1811;--terracotta:#e06b42;--terracotta-dk:#c8512a;--sage:#4ade80;--sage-dk:#22c55e;--gold:#f0b93c;--gold-dk:#c8922a;--rose:#f09070;--teal:#22c55e;--teal-dk:#16a34a;--forest:#1a271f;--chip:#162212;--radius:10px;--radius-sm:7px;--shadow:0 4px 20px rgba(0,0,0,.55);--display:"Fraunces",Georgia,serif;--script:"Cormorant Garamond",Georgia,serif;--sans:"Jost",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+  *{box-sizing:border-box} html{scroll-behavior:smooth}
+  body{margin:0;font-family:var(--sans);color:var(--ink);line-height:1.6;letter-spacing:.2px;background:radial-gradient(circle at 12% 6%,rgba(74,222,128,.07),transparent 42%),radial-gradient(circle at 88% 14%,rgba(34,197,94,.06),transparent 44%),radial-gradient(circle at 50% 110%,rgba(240,185,60,.05),transparent 55%),var(--bg);}
+  h1,h2,h3,.brand{font-family:var(--display);font-weight:900} a{color:inherit}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+  #hlmLoader{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;background:#0b120d;transition:opacity .55s ease}
+  #hlmLoader.hide{opacity:0;pointer-events:none}
+  #hlmLoader .lily{width:66px;height:76px;animation:loaderPulse 1.6s ease-in-out infinite}
+  #hlmLoader .load-word{font-family:var(--display);color:#eaf3ec;font-size:1.55rem;font-weight:900}
+  #hlmLoader .load-sub{font-family:var(--script);font-style:italic;color:#4ade80;font-size:1.05rem;margin-top:-12px}
+  #hlmLoader .load-bar{width:180px;height:4px;border-radius:999px;background:rgba(74,222,128,.15);overflow:hidden}
+  #hlmLoader .load-bar i{display:block;height:100%;width:40%;border-radius:999px;background:linear-gradient(90deg,var(--gold),#4ade80);animation:loaderBar 1.2s ease-in-out infinite}
+  @keyframes loaderPulse{0%,100%{opacity:.5;transform:scale(.94)}50%{opacity:1;transform:scale(1.05)}}
+  @keyframes loaderBar{0%{transform:translateX(-120%)}100%{transform:translateX(360%)}}
+  header{position:sticky;top:0;z-index:40;background:linear-gradient(180deg,rgba(8,14,10,.98),rgba(8,14,10,.94));backdrop-filter:blur(16px) saturate(1.5);border-bottom:2px solid var(--terracotta);box-shadow:0 2px 24px rgba(224,107,66,.18)}
+  header .brand{color:#eaf3ec} header .brand small{color:var(--sage)}
+  header .acct-btn{color:#9fb6a6;border-color:rgba(224,107,66,.35)} header .acct-btn:hover{color:var(--terracotta);border-color:var(--terracotta)}
+  header .searchbox{background:rgba(12,20,14,.9);border-color:rgba(74,222,128,.25)}
+  .nav{display:flex;align-items:center;gap:16px;padding:14px 0}
+  .brand{font-size:1.65rem;font-weight:900;letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;gap:12px;color:var(--ink)}
+  .brand .lily{width:38px;height:44px;flex:none}
+  .brand small{display:block;font-family:var(--script);font-style:italic;font-weight:400;font-size:.72rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--sage);margin-top:-4px}
+  .nav .spacer{flex:1}
+  .nav-adv{display:flex;gap:14px;align-items:center}
+  .nav-adv a{font-family:var(--sans);font-size:.85rem;font-weight:600;color:#9fb6a6;text-decoration:none;transition:.2s}
+  .nav-adv a:hover{color:var(--sage)}
+  .hamburger{display:none;background:none;border:0;cursor:pointer;padding:6px;color:#e7dbc2}
+  .hamburger svg{width:26px;height:26px}
+  .live-pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-size:.7rem;letter-spacing:.6px;text-transform:uppercase;color:#4ade80;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);border-radius:999px;padding:5px 11px;font-weight:600}
+  .live-pill .dot{width:7px;height:7px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80;animation:livePulse 2s infinite}
+  @keyframes livePulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .searchbox{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:9px 16px;min-width:220px}
+  .searchbox input{border:0;outline:0;background:transparent;font-family:var(--sans);font-size:.95rem;width:100%;color:var(--ink);caret-color:var(--sage)}
+  .searchbox input::placeholder{color:var(--muted)}
+  #mSearchMount{display:none}
+  .acct-btn{display:flex;align-items:center;gap:7px;background:none;border:1px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer;font-family:var(--sans);font-size:.85rem;color:var(--ink);transition:.2s}
+  .acct-btn:hover{border-color:var(--sage);color:var(--sage)}
+  .controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:26px 0 4px}
+  .controls .grow{flex:1}
+  .ctl{display:flex;align-items:center;gap:7px;font-family:var(--sans);font-size:.85rem;color:var(--muted)}
+  .ctl select{font-family:var(--sans);font-size:.88rem;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 14px;cursor:pointer}
+  .prod-counts{font-family:var(--sans);font-size:.82rem;letter-spacing:.4px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 16px}
+  .prod-counts strong{font-family:var(--display);font-weight:700;color:var(--sage-dk);font-size:.95rem}
+  .filters{display:flex;gap:11px;flex-wrap:wrap;margin:18px 0 2px}
+  .chip{cursor:pointer;font-family:var(--sans);font-size:.88rem;font-weight:600;letter-spacing:.5px;padding:8px 18px;border-radius:6px;border:1.5px solid rgba(74,222,128,.2);background:rgba(15,24,17,.9);color:var(--muted);transition:all .18s}
+  .chip:hover{border-color:var(--sage);color:var(--sage)}
+  .chip.active{background:var(--sage);color:#0b120d;border-color:var(--sage);font-weight:700;box-shadow:0 4px 14px rgba(74,222,128,.3)}
+  .chip.wish{border-color:rgba(224,107,66,.3);color:var(--terracotta)}
+  .chip.wish.active{background:var(--terracotta);color:#fff;border-color:var(--terracotta-dk);box-shadow:0 4px 14px rgba(224,107,66,.35)}
+  .mobile-cat{display:none;margin:14px 0 2px}
+  .mobile-cat select{width:100%;font-family:var(--sans);font-size:1rem;color:var(--ink);background:var(--card);border:1.5px solid var(--gold);border-radius:14px;padding:14px 16px;font-weight:600;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%233a7b50' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center}
+  h2.cat-header{grid-column:1/-1;display:flex;align-items:center;gap:16px;margin:38px 0 8px;font-family:var(--display);font-size:2rem;font-weight:900;color:var(--ink);letter-spacing:-.5px}
+  h2.cat-header span{white-space:nowrap}
+  h2.cat-header::before{content:"";width:8px;height:32px;border-radius:3px;background:linear-gradient(var(--terracotta),var(--gold))}
+  h2.cat-header::after{content:"";flex:1;height:2px;background:linear-gradient(90deg,rgba(224,107,66,.5),transparent)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:28px;padding:14px 0 10px}
+  .xsell{grid-column:1/-1;display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,rgba(224,107,66,.08),rgba(240,185,60,.1));border:1.5px solid rgba(224,107,66,.3);border-radius:var(--radius);padding:16px 22px;text-decoration:none;color:var(--ink);transition:transform .2s,box-shadow .2s,border-color .2s;margin:2px 0 6px}
+  .xsell:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(224,107,66,.15);border-color:var(--terracotta)}
+  .xsell-emoji{font-size:1.9rem;flex:none}
+  .xsell-txt{flex:1;font-size:.96rem;line-height:1.45} .xsell-txt b{color:var(--sage-dk)} .xsell-txt u{color:var(--terracotta-dk);text-decoration-thickness:2px;text-underline-offset:2px}
+  .xsell-go{flex:none;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--sage),var(--sage-dk));padding:11px 20px;border-radius:999px;font-size:.88rem;white-space:nowrap}
+  .cbd-xtag{display:block;text-align:center;margin-top:9px;font-size:.76rem;font-weight:600;color:var(--sage-dk);text-decoration:none;border:1px dashed rgba(58,123,80,.4);border-radius:9px;padding:7px 8px;transition:.15s}
+  .cbd-xtag:hover{background:rgba(58,123,80,.1);border-style:solid;color:var(--terracotta-dk)}
+  .canna-wrap{margin:-2px 0 2px}
+  .canna-chip{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-weight:600;color:var(--sage-dk);background:rgba(58,123,80,.1);border:1px solid rgba(58,123,80,.3);border-radius:999px;padding:3px 10px;text-decoration:none;transition:.15s}
+  .canna-chip:hover{background:rgba(58,123,80,.18)} .canna-chip .ci{font-size:.9rem;line-height:1} .canna-chip .cl{color:var(--gold-dk);text-decoration:underline;text-underline-offset:2px}
+  @media(max-width:760px){.xsell{flex-direction:column;text-align:center;gap:10px} .xsell-go{width:100%}}
+  .card{background:#f8faf7;border:1px solid rgba(30,48,36,.12);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 2px 12px rgba(0,0,0,.5);transition:transform .2s,box-shadow .2s;position:relative;scroll-margin-top:90px}
+  .card:hover{transform:translateY(-5px);box-shadow:0 14px 36px rgba(0,0,0,.6)}
+  .card .card-body{color:#111;}
+  /* ===== Email deep-link "zoom to card" (matches index.js hlmCardHref_ + focus.js) ===== */
+  .card.hlm-focus{border-top-color:var(--gold);box-shadow:0 0 0 3px var(--gold),0 26px 60px rgba(201,150,47,.5);z-index:6;animation:hlmZoom 2.6s cubic-bezier(.34,1.56,.64,1)}
+  @keyframes hlmZoom{0%{transform:scale(1)}14%{transform:scale(1.06);box-shadow:0 0 0 4px var(--gold),0 34px 70px rgba(201,150,47,.6)}45%{transform:scale(1.02)}70%{transform:scale(1.03)}100%{transform:scale(1);box-shadow:0 0 0 3px var(--gold),0 26px 60px rgba(201,150,47,.45)}}
+  .thumb{height:230px;background:radial-gradient(circle at 50% 40%,#f0ead9,#e7dcc4);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+  .thumb img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+  .card:hover .thumb img{transform:scale(1.07)}
+  .thumb.noimg .thumb-ph,.noimg-wrap .thumb-ph{display:flex}
+  .noimg-wrap{width:100%;height:100%}
+  .thumb-ph{display:none;width:100%;height:100%;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:22px;text-align:center;background:radial-gradient(circle at 50% 32%,rgba(58,123,80,.16),transparent 60%),linear-gradient(155deg,#eef0e2,#e2e0c9)}
+  .thumb-ph .ph-lily{width:46px;height:54px;opacity:.75}
+  .thumb-ph span{font-family:var(--script);font-style:italic;font-size:1.02rem;color:var(--sage-dk);line-height:1.3;max-width:200px}
+  .wish-btn{position:absolute;top:12px;right:12px;z-index:3;width:38px;height:38px;border-radius:50%;border:0;cursor:pointer;background:rgba(253,251,243,.92);box-shadow:0 3px 10px rgba(30,45,25,.2);display:flex;align-items:center;justify-content:center;transition:transform .15s,background .15s}
+  .wish-btn svg{fill:none;stroke:var(--terracotta-dk);stroke-width:2;transition:.15s}
+  .wish-btn:hover{transform:scale(1.12)} .wish-btn.on{background:var(--terracotta)} .wish-btn.on svg{fill:#fff;stroke:#fff}
+  @keyframes wishPop{0%{transform:scale(1)}45%{transform:scale(1.35)}100%{transform:scale(1)}} .wish-btn.on svg{animation:wishPop .3s ease}
+  .badge{position:absolute;top:12px;left:12px;background:var(--terracotta);color:#fff;font-family:var(--sans);font-size:.68rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:4px 10px;border-radius:4px;z-index:2;box-shadow:0 2px 8px rgba(200,80,40,.4)}
+  .card-body{padding:16px 18px 20px;display:flex;flex-direction:column;gap:8px;flex:1}
+  .vendor{font-family:var(--sans);font-size:.68rem;letter-spacing:1.6px;text-transform:uppercase;color:var(--sage-dk);font-weight:700;background:rgba(34,197,94,.08);display:inline-block;padding:2px 8px;border-radius:4px;border:1px solid rgba(34,197,94,.2)}
+  .card h3{margin:0;font-size:1.12rem;line-height:1.25;font-weight:700;color:#111}
+  .card .blurb{color:#555;font-size:.88rem;font-weight:400;flex:1;line-height:1.5}
+  .card .meta{display:flex;align-items:baseline;justify-content:space-between;margin-top:6px}
+  .price{font-size:1.45rem;font-weight:900;font-family:var(--display);color:#0a7c3e}
+  .unit{color:#888;font-size:.8rem;font-family:var(--script);font-style:italic}
+  .coupon-pill{font-size:.74rem;color:var(--sage-dk);background:rgba(34,197,94,.08);border:1px dashed rgba(34,197,94,.4);border-radius:6px;padding:5px 8px;margin-top:8px;text-align:center}
+  .size-sel{width:100%;margin-top:10px;font-family:var(--sans);font-size:.86rem;color:#222;background:#fff;border:1.5px solid #dde8dc;border-radius:7px;padding:10px 34px 10px 12px;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2322c55e' stroke-width='2.4'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;transition:border-color .2s}
+  .size-sel:hover,.size-sel:focus{border-color:var(--sage);outline:0}
+  .add-cart{display:block;width:100%;text-align:center;margin-top:12px;cursor:pointer;background:var(--sage);color:#0b120d;border:0;text-decoration:none;padding:13px 16px;border-radius:7px;font-family:var(--sans);font-weight:700;letter-spacing:.3px;font-size:.92rem;transition:all .18s;box-shadow:0 4px 14px rgba(34,197,94,.25)}
+  .add-cart:hover{background:var(--sage-dk);box-shadow:0 6px 20px rgba(34,197,94,.4);transform:translateY(-1px)}
+  .empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:60px;font-family:var(--script);font-style:italic;font-size:1.3rem}
+  .values{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:26px;margin:60px 0;padding:44px;background:linear-gradient(135deg,rgba(47,93,58,.07),rgba(58,123,80,.06));border:1px solid var(--line);border-radius:var(--radius)}
+  .values div h4{margin:0 0 8px;font-family:var(--display);font-size:1.2rem;color:var(--ink)}
+  .values div p{margin:0;color:var(--muted);font-size:.92rem;font-weight:300}
+  footer{background:linear-gradient(160deg,#1d2a1e,#26331f);color:#e8ded0;margin-top:70px;padding:56px 0 34px;font-size:.88rem;font-weight:300}
+  footer .cols{display:grid;grid-template-columns:1.5fr 1fr;gap:40px}
+  footer a{color:var(--rose);text-decoration:none;transition:color .2s} footer a:hover{color:#f0d4c4}
+  footer .brand{color:#f3ece0} footer .brand small{color:var(--rose)}
+  .legal{border-top:1px solid #3c4634;margin-top:32px;padding-top:24px;color:#9c9a84;font-size:.76rem;line-height:1.6}
+  .legal strong{color:#c6c3ab}
+  .aff-note{font-size:.78rem;color:#9c9a84;margin-top:12px}
+  .gate{position:fixed;inset:0;z-index:100;background:radial-gradient(circle at 50% 40%,rgba(34,42,28,.9),rgba(16,22,14,.97));backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:22px}
+  .gate-card{background:var(--card);border-radius:var(--radius);max-width:460px;width:100%;padding:44px 38px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.5);border:1px solid var(--gold)}
+  .gate-card .lily{width:56px;height:64px;margin-bottom:8px}
+  .gate-card h2{margin:6px 0 10px;font-size:1.9rem}
+  .gate-card p{color:var(--muted);font-size:.95rem;font-weight:300;margin:0 0 24px}
+  .gate-btns{display:flex;gap:14px;justify-content:center}
+  .gate-btns button{cursor:pointer;font-family:var(--sans);font-size:.95rem;font-weight:500;letter-spacing:.5px;padding:13px 26px;border-radius:12px;border:0;transition:all .2s}
+  .yes{background:linear-gradient(135deg,var(--sage),var(--sage-dk));color:#fff} .yes:hover{filter:brightness(1.08)}
+  .no{background:#e5e0cf;color:#8a866f}
+  .hidden{display:none !important}
+  .cart-btn{position:fixed;bottom:26px;right:26px;z-index:60;cursor:pointer;width:66px;height:66px;border-radius:50%;border:2px solid var(--gold);background:linear-gradient(135deg,var(--sage),var(--sage-dk));color:#fff;box-shadow:0 14px 34px rgba(38,90,57,.55);display:flex;align-items:center;justify-content:center;transition:transform .2s}
+  .cart-btn:hover{transform:scale(1.08) translateY(-2px)} .cart-btn svg{width:28px;height:28px}
+  #cartCount{position:absolute;top:-4px;right:-4px;min-width:24px;height:24px;padding:0 6px;background:var(--terracotta);color:#fff;border-radius:999px;font-family:var(--sans);font-size:.78rem;font-weight:600;display:none;align-items:center;justify-content:center;border:2px solid var(--bg)}
+  .cart-overlay{position:fixed;inset:0;z-index:70;background:rgba(24,30,18,.5);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .3s}
+  .cart-overlay.open{opacity:1;pointer-events:auto}
+  .cart-drawer{position:fixed;top:0;right:0;z-index:80;height:100%;width:min(440px,92vw);background:var(--bg2);box-shadow:-16px 0 50px rgba(30,45,25,.3);transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;border-left:1px solid var(--gold)}
+  .cart-drawer.open{transform:translateX(0)}
+  .cart-head{display:flex;align-items:center;justify-content:space-between;padding:22px 24px;border-bottom:1px solid var(--line);background:var(--card)}
+  .cart-head h3{margin:0;font-size:1.5rem;display:flex;align-items:center;gap:10px} .cart-head .lily{width:26px;height:30px}
+  .cart-close{background:none;border:0;cursor:pointer;font-size:1.7rem;color:var(--muted);line-height:1} .cart-close:hover{color:var(--terracotta)}
+  .cart-sub{font-family:var(--script);font-style:italic;color:var(--sage);font-size:.9rem;padding:0 24px;margin:10px 0 0}
+  #cartBody{flex:1;overflow-y:auto;padding:12px 20px 20px}
+  .cart-empty{text-align:center;color:var(--muted);padding:60px 20px} .cart-empty p{font-family:var(--display);font-size:1.25rem;margin:6px 0} .cart-empty span{font-size:.9rem;font-weight:300}
+  .cart-group{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px;margin:14px 0;box-shadow:0 4px 16px rgba(40,55,30,.06)}
+  .cart-group-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;padding-bottom:10px;border-bottom:1px dashed var(--line)}
+  .cart-vendor{font-family:var(--display);font-weight:600;font-size:1.05rem;color:var(--forest)}
+  .cart-item{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #efe7d4}
+  .cart-thumb{width:52px;height:52px;flex:none;border-radius:10px;overflow:hidden;background:#e7dcc4}
+  .cart-thumb img{width:100%;height:100%;object-fit:cover} .cart-noimg{width:100%;height:100%;background:radial-gradient(circle at 50% 40%,#f0ead9,#e0d3bd)}
+  .cart-item-info{flex:1;min-width:0} .cart-item-name{font-size:.88rem;font-weight:500;line-height:1.3}
+  .cart-item-price{font-size:.78rem;color:var(--muted);margin:2px 0 6px} .cart-item-price span{font-family:var(--script);font-style:italic}
+  .cart-qty{display:flex;align-items:center;gap:6px}
+  .cart-qty button{width:24px;height:24px;border-radius:6px;border:1px solid var(--line);background:var(--bg);cursor:pointer;font-size:.9rem;color:var(--ink);line-height:1;transition:.15s}
+  .cart-qty button:hover{border-color:var(--sage);color:var(--sage)}
+  .cart-qty input{width:34px;text-align:center;border:1px solid var(--line);border-radius:6px;padding:3px 0;font-family:var(--sans);font-size:.85rem;background:var(--bg)}
+  .cart-qty .cart-remove{width:auto;padding:0 8px;font-family:var(--script);font-style:italic;font-size:.78rem;color:var(--muted);margin-left:4px}
+  .cart-qty .cart-remove:hover{color:var(--terracotta);border-color:var(--terracotta)}
+  .cart-line-total{font-weight:600;font-size:.9rem;color:var(--ink);flex:none}
+  .cart-bd{margin:10px 0 0;padding:10px 12px;background:rgba(58,123,80,.06);border-radius:10px;font-size:.82rem}
+  .cart-bd-row{display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;color:var(--muted)}
+  .cart-bd-row.save{color:var(--sage-dk)} .cart-bd-row.save span:last-child{font-weight:700}
+  .cart-bd-row .ship-free{color:var(--sage-dk);font-weight:700}
+  .cart-bd-hint{font-size:.72rem;color:var(--gold-dk);font-style:italic}
+  .cart-bd-row.otd{margin-top:5px;padding-top:7px;border-top:1px dashed var(--line);font-family:var(--display);font-weight:700;color:var(--ink);font-size:.98rem}
+  .cart-checkout{display:block;width:100%;text-align:center;margin-top:12px;background:linear-gradient(135deg,var(--sage),var(--sage-dk));color:#fff;border:0;cursor:pointer;text-decoration:none;padding:12px;border-radius:10px;font-family:var(--sans);font-weight:500;letter-spacing:.5px;font-size:.9rem;transition:all .2s}
+  .cart-checkout:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 8px 20px rgba(47,107,79,.4)}
+  .cart-checkout-note{font-size:.72rem;color:var(--muted);margin:8px 0 0;text-align:center;line-height:1.4}
+  .cart-grand{background:var(--card);border:1px solid var(--gold);border-radius:var(--radius-sm);padding:18px;margin:16px 0 8px}
+  .cart-grand-row{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--display);font-size:1.25rem;font-weight:600;color:var(--ink)}
+  .cart-grand-row.sm{font-family:var(--sans);font-size:.84rem;font-weight:400;color:var(--muted);margin-bottom:3px} .cart-grand-row.sm.save{color:var(--sage-dk)}
+  .cart-login-note,.cart-note{font-size:.76rem;font-weight:300;color:var(--muted);margin:12px 0 14px;line-height:1.5}
+  .cart-clear{width:100%;background:none;border:1px solid var(--line);color:var(--muted);padding:10px;border-radius:10px;cursor:pointer;font-family:var(--script);font-style:italic;font-size:.95rem;transition:all .2s}
+  .cart-clear:hover{border-color:var(--terracotta);color:var(--terracotta)}
+  .auth-overlay{position:fixed;inset:0;z-index:90;background:rgba(24,30,18,.55);backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .3s}
+  .auth-overlay.open{opacity:1;pointer-events:auto}
+  .auth-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-46%) scale(.97);z-index:95;width:min(400px,92vw);background:var(--card);border:1px solid var(--gold);border-radius:var(--radius);padding:36px 32px;box-shadow:0 30px 80px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;text-align:center}
+  .auth-modal.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+  .auth-modal .lily{width:44px;height:52px;margin-bottom:6px}
+  .auth-modal h3{margin:0 0 4px;font-size:1.6rem} .auth-sub{font-family:var(--script);font-style:italic;color:var(--sage);font-size:1rem;margin:0 0 20px}
+  .auth-close{position:absolute;top:14px;right:16px;background:none;border:0;font-size:1.6rem;color:var(--muted);cursor:pointer;line-height:1}
+  .auth-field{text-align:left;margin-bottom:14px} .auth-field label{display:block;font-family:var(--sans);font-size:.78rem;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+  .auth-field input{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-family:var(--sans);font-size:.95rem;background:var(--bg);color:var(--ink)}
+  .auth-field input:focus{outline:0;border-color:var(--sage)}
+  .auth-err{color:var(--terracotta-dk);font-size:.82rem;margin-bottom:10px;display:none}
+  .auth-submit{width:100%;background:linear-gradient(135deg,var(--sage),var(--sage-dk));color:#fff;border:0;cursor:pointer;padding:13px;border-radius:12px;font-family:var(--sans);font-weight:500;letter-spacing:.5px;font-size:.95rem;transition:.2s}
+  .auth-submit:hover{filter:brightness(1.08)}
+  .auth-toggle{font-size:.85rem;color:var(--muted);margin:14px 0 0} .auth-toggle a{color:var(--sage);font-weight:500}
+  .auth-fine{font-size:.72rem;color:var(--muted);margin:14px 0 0;line-height:1.5}
+  #hlmToast{position:fixed;bottom:104px;right:26px;z-index:90;background:linear-gradient(135deg,var(--forest),#1d3a24);color:#f3f6ea;font-family:var(--sans);font-size:.86rem;padding:12px 20px;border-radius:12px;box-shadow:0 10px 30px rgba(30,45,25,.35);opacity:0;transform:translateY(12px) scale(.96);pointer-events:none;transition:opacity .3s,transform .3s;display:flex;align-items:center;gap:9px;max-width:320px}
+  #hlmToast.show{opacity:1;transform:translateY(0) scale(1)} #hlmToast .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);flex:none}
+  @keyframes cartPulse{0%{transform:scale(1)}35%{transform:scale(1.22) rotate(-6deg)}70%{transform:scale(.94)}100%{transform:scale(1)}}
+  .cart-btn.pulse{animation:cartPulse .5s ease}
+  .mnav-overlay{position:fixed;inset:0;z-index:88;background:rgba(20,32,22,.5);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .3s}
+  .mnav-overlay.open{opacity:1;pointer-events:auto}
+  .mnav{position:fixed;top:0;left:0;z-index:89;height:100%;width:min(300px,84vw);background:var(--bg2);transform:translateX(-100%);transition:transform .32s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:16px 0 50px rgba(30,45,25,.3);border-right:1px solid var(--gold)}
+  .mnav.open{transform:translateX(0)}
+  .mnav-head{background:linear-gradient(135deg,var(--sage),var(--sage-dk));color:#fff;padding:22px 20px;display:flex;align-items:center;gap:12px}
+  .mnav-head .lily{width:34px;height:40px}
+  .mnav-head b{font-family:var(--display);font-size:1.2rem}
+  .mnav-head small{display:block;font-family:var(--script);font-style:italic;font-size:.7rem;letter-spacing:2px;text-transform:uppercase;color:#c9ecd1}
+  .mnav-close{margin-left:auto;background:rgba(255,255,255,.15);border:0;color:#fff;width:34px;height:34px;border-radius:50%;font-size:1.3rem;cursor:pointer}
+  .mnav-body{flex:1;overflow-y:auto;padding:14px}
+  .mnav-sec{font-family:var(--sans);font-size:.7rem;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);margin:16px 8px 8px;font-weight:700}
+  .mnav-link{display:block;padding:12px 14px;border-radius:12px;font-weight:600;color:var(--ink);text-decoration:none;transition:.15s;cursor:pointer}
+  .mnav-link:hover,.mnav-link.active{background:var(--card);color:var(--sage)}
+  .bbco-overlay,.bbmob-overlay{position:fixed;inset:0;z-index:90;background:rgba(24,30,18,.55);backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .3s}
+  .bbco-overlay.open,.bbmob-overlay.open{opacity:1;pointer-events:auto}
+  .bbco-modal,.bbmob-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-46%) scale(.97);z-index:95;width:min(460px,92vw);background:var(--card);border:1px solid var(--gold);border-radius:20px;padding:30px 28px;box-shadow:0 30px 80px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;max-height:88vh;overflow-y:auto}
+  .bbco-modal.open,.bbmob-modal.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+  .bbco-close{position:absolute;top:12px;right:16px;background:none;border:0;font-size:1.6rem;color:#6b5f4d;cursor:pointer;line-height:1}
+  .bbco-badge{display:inline-block;background:linear-gradient(135deg,var(--sage),var(--sage-dk));color:#fff;font-size:.7rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:5px 12px;border-radius:999px;margin-bottom:12px}
+  .bbco-modal h3,.bbmob-modal h3{font-family:var(--display);font-size:1.5rem;margin:0 0 4px;color:#1c1712}
+  .bbco-sub{color:#6b5f4d;font-size:.9rem;margin:0 0 16px}
+  .bbco-steps{margin:0;padding-left:20px} .bbco-steps li{margin:12px 0;font-size:.92rem}
+  .bbco-drag{margin:8px 0}
+  .bbco-bm{display:inline-block;background:var(--terracotta);color:#fff;padding:11px 20px;border-radius:10px;font-weight:700;text-decoration:none;cursor:grab}
+  .bbco-hint{display:block;font-size:.75rem;color:#9c8f7c;margin-top:4px}
+  .bbco-go{background:var(--sage);color:#fff;border:0;border-radius:10px;padding:10px 18px;font-weight:700;cursor:pointer;margin-top:6px;text-decoration:none;display:inline-block;text-align:center}
+  .bbco-missing{background:#fff4d6;border:1px solid #e0c56a;border-radius:8px;padding:8px 12px;font-size:.82rem;margin:12px 0 0}
+  .bbco-fine{font-size:.75rem;color:#9c8f7c;margin:14px 0 0;line-height:1.5}
+  #pwaInstall{display:none;position:fixed;bottom:26px;left:26px;z-index:60;background:linear-gradient(135deg,var(--sage),var(--sage-dk));color:#fff;border:2px solid #c9962f;border-radius:999px;padding:12px 18px;font-family:var(--sans);font-weight:700;font-size:.85rem;cursor:pointer;box-shadow:0 10px 26px rgba(47,107,79,.5);align-items:center;gap:8px}
+  #gardenNudge{display:none;position:fixed;bottom:26px;left:26px;z-index:59;align-items:center;gap:8px;background:linear-gradient(135deg,var(--terracotta),var(--terracotta-dk));color:#fff;border:2px solid var(--gold);border-radius:999px;padding:11px 18px;font-family:var(--sans);font-weight:700;font-size:.85rem;cursor:pointer;box-shadow:0 10px 26px rgba(200,90,52,.45)}
+  #gardenNudge svg{fill:#fff}
+  /* ===== Build Your Ritual modal (wide, side-by-side) ===== */
+  .ritual-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-46%) scale(.97);z-index:95;width:min(1080px,96vw);max-height:92vh;overflow-y:auto;background:var(--card);border:1px solid var(--gold);border-radius:22px;padding:26px 30px 32px;box-shadow:0 30px 80px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .3s,transform .3s}
+  .ritual-modal.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+  .ritual-title{display:flex;align-items:center;gap:12px;margin-bottom:4px} .ritual-title h3{margin:0;font-size:1.8rem;color:var(--forest)}
+  .ritual-lead{color:var(--muted);font-size:1rem;margin:4px 0 18px} .ritual-lead a{color:var(--sage-dk)}
+  .ritual-goals{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .ritual-goal{cursor:pointer;text-align:left;background:var(--bg);border:1.5px solid var(--line);border-radius:16px;padding:20px;transition:.18s;display:flex;flex-direction:column;gap:4px}
+  .ritual-goal:hover{border-color:var(--sage);transform:translateY(-3px);box-shadow:0 10px 24px rgba(47,107,79,.18);background:#fff}
+  .rg-emoji{font-size:2rem} .rg-t{font-family:var(--display);font-weight:700;font-size:1.15rem;color:var(--ink)} .rg-s{font-size:.85rem;color:var(--muted)}
+  .ritual-head2{display:flex;align-items:center;gap:12px;margin:2px 0 6px} .ritual-head2 h4{margin:0;font-family:var(--display);font-size:1.5rem;color:var(--forest)}
+  .ritual-back{cursor:pointer;background:none;border:1.5px solid var(--line);border-radius:999px;width:38px;height:38px;font-size:1.2rem;color:var(--sage-dk)}
+  .ritual-bundles{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;align-items:stretch}
+  .ritual-bundle{background:var(--bg);border:1.5px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;transition:.18s}
+  .ritual-bundle:hover{border-color:var(--sage);box-shadow:0 12px 30px rgba(47,107,79,.14)}
+  .rb-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .rb-num{font-family:var(--sans);font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--gold-dk)}
+  .rb-vote{display:flex;gap:8px} .vote{cursor:pointer;background:#fff;border:1.5px solid var(--line);border-radius:999px;width:38px;height:38px;font-size:1.1rem;transition:.15s} .vote:hover{transform:scale(1.14)} .vote.up:hover{border-color:var(--sage)} .vote.down:hover{border-color:var(--terracotta)}
+  .ritual-item{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid #efe7d4;position:relative}
+  .ritual-x{position:absolute;top:8px;right:0;width:24px;height:24px;padding:0;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:var(--muted);font-size:1rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+  .ritual-x:hover{border-color:var(--terracotta);color:var(--terracotta);transform:scale(1.12)}
+  .ritual-info{flex:1;min-width:0;padding-right:26px}
+  .ritual-name{font-weight:700;font-size:.98rem;line-height:1.3;color:var(--ink)}
+  .ritual-vendor{font-size:.76rem;color:var(--sage-dk);display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px}
+  .ev-badge{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.3px;padding:2px 7px;border-radius:999px;white-space:nowrap}
+  .ev-badge.tier-strong{background:rgba(58,123,80,.2);color:var(--sage-dk)} .ev-badge.tier-moderate{background:rgba(31,107,82,.16);color:var(--teal-dk)}
+  .ev-badge.tier-preliminary{background:rgba(201,150,47,.2);color:var(--gold-dk)} .ev-badge.tier-mixed{background:rgba(200,90,52,.16);color:var(--terracotta-dk)} .ev-badge.tier-traditional{background:rgba(109,106,88,.16);color:var(--muted)}
+  .ritual-claim{font-size:.82rem;color:var(--ink);line-height:1.45;margin-top:4px}
+  .ritual-cite{font-size:.7rem;color:var(--muted);line-height:1.4;margin-top:3px}
+  .ritual-xs{display:inline-block;margin-top:4px;font-size:.72rem;color:var(--terracotta-dk);text-decoration:underline}
+  .ritual-total{display:flex;justify-content:space-between;align-items:baseline;margin:12px 0 4px;font-family:var(--display);font-weight:700;font-size:1.15rem;color:var(--ink)}
+  .ritual-save{font-family:var(--sans);font-size:.74rem;font-weight:600;color:var(--sage-dk)}
+  .ritual-add{width:100%;margin-top:auto;cursor:pointer;background:linear-gradient(135deg,var(--terracotta),var(--terracotta-dk));color:#fff;border:0;padding:13px;border-radius:11px;font-family:var(--sans);font-weight:700;font-size:.9rem;box-shadow:0 5px 14px rgba(200,90,52,.28);transition:.2s}
+  .ritual-add:hover{filter:brightness(1.08);transform:translateY(-2px)}
+  .ritual-shuffle{display:block;margin:18px auto 0;cursor:pointer;background:none;border:1.5px solid var(--line);color:var(--muted);padding:12px 28px;border-radius:999px;font-family:var(--script);font-style:italic;font-size:1.05rem}
+  .ritual-shuffle:hover{border-color:var(--sage);color:var(--sage)}
+  .ritual-fine{font-size:.74rem;color:var(--muted);margin:14px 0 0;text-align:center;line-height:1.5}
+  @media(max-width:920px){ .ritual-goals{grid-template-columns:1fr 1fr} .ritual-bundles{grid-template-columns:1fr} }
+  .hero{position:relative;overflow:hidden;padding:80px 0 60px;text-align:center}
+  .hero-inner{position:relative;z-index:2}
+  .hero-glow{position:absolute;z-index:0;top:0;left:50%;transform:translateX(-50%);width:620px;height:560px;max-width:94vw;background:radial-gradient(circle,rgba(58,123,80,.28),rgba(201,150,47,.12) 46%,transparent 70%);filter:blur(8px);pointer-events:none}
+  .hero-sprig{position:absolute;z-index:1;top:-6px;width:160px;height:auto;pointer-events:none;opacity:.92;filter:drop-shadow(0 8px 24px rgba(0,0,0,.35))}
+  .hero-sprig.left{left:2%;transform-origin:top center;animation:swayL 8s ease-in-out infinite}
+  .hero-sprig.right{right:2%;transform-origin:top center;animation:swayR 9.5s ease-in-out infinite}
+  @keyframes swayL{0%{transform:rotate(-3deg) translateX(0)}30%{transform:rotate(1.5deg) translateX(3px)}60%{transform:rotate(-1deg) translateX(-2px)}100%{transform:rotate(-3deg) translateX(0)}}
+  @keyframes swayR{0%{transform:rotate(3deg) translateX(0)}35%{transform:rotate(-1.5deg) translateX(-3px)}65%{transform:rotate(1deg) translateX(2px)}100%{transform:rotate(3deg) translateX(0)}}
+  .hero .eyebrow{display:inline-block;font-family:var(--sans);font-weight:500;text-transform:uppercase;font-size:.72rem;letter-spacing:6px;color:var(--sage-dk);margin-bottom:14px;opacity:.85}
+  .hero-title{display:block;margin:0;line-height:1}
+  .hero-title .t-lead{display:block;font-family:var(--script);font-style:italic;font-weight:600;font-size:clamp(2rem,5vw,3.2rem);color:var(--terracotta);line-height:.8;margin-bottom:-.06em;margin-left:0}
+  .hero-title .t-script{display:block;font-family:var(--display);font-weight:900;font-size:clamp(5rem,16vw,11rem);line-height:.84;letter-spacing:-3px;background:linear-gradient(96deg,var(--forest) 0%,var(--sage) 42%,var(--gold-dk) 78%,var(--terracotta) 102%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:var(--sage)}
+  .hero-title .t-serif{display:block;font-family:var(--script);font-style:italic;font-weight:600;font-size:clamp(1.8rem,5vw,3.2rem);letter-spacing:.3px;color:var(--ink);margin-top:.06em}
+  .hero-orn{display:flex;align-items:center;justify-content:center;gap:16px;margin:22px 0 8px;color:var(--gold)}
+  .hero-orn::before,.hero-orn::after{content:"";height:1.5px;width:clamp(60px,18vw,120px);background:linear-gradient(90deg,transparent,var(--gold))}
+  .hero-orn::after{background:linear-gradient(90deg,var(--gold),transparent)}
+  .hero-sub{color:var(--muted);max-width:560px;margin:0 auto;font-size:1.08rem;font-weight:400;line-height:1.6}
+  .hero-ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+  .hero-cta2{cursor:pointer;font-family:var(--sans);font-weight:700;letter-spacing:.4px;font-size:1.02rem;color:#fff;background:linear-gradient(135deg,var(--sage),var(--sage-dk));padding:16px 40px;border-radius:999px;border:2px solid var(--gold);transition:transform .2s,box-shadow .2s,filter .2s;box-shadow:0 12px 30px rgba(47,107,79,.34)}
+  .hero-cta2:hover{transform:translateY(-3px);filter:brightness(1.07);box-shadow:0 18px 40px rgba(38,90,57,.42)}
+  @media(prefers-reduced-motion:reduce){.hero-sprig{animation:none !important} .cart-btn.pulse{animation:none !important} .wish-btn.on svg{animation:none !important} .card.hlm-focus{animation:none !important;transform:none !important}}
+  @media(max-width:760px){
+    .wrap{padding:0 16px}
+    .hero{padding:40px 0 30px} .hero-sprig{width:62px;opacity:.4;top:0}
+    .hero-title .t-script{font-size:clamp(3.4rem,22vw,5rem)} .hero-title .t-lead{margin-left:0} .hero-sub{font-size:.96rem}
+    .hamburger{display:inline-flex} .nav .live-pill{display:none} .nav-adv{display:none}
+    .brand small{display:none} .brand{font-size:1.15rem}
+    #mSearchMount{margin:12px 0 2px}
+    #mSearchMount .searchbox{min-width:0;width:100%;border:1.5px solid var(--gold);background:var(--card);padding:12px 16px}
+    .controls{gap:10px;margin:18px 0 2px;justify-content:center;text-align:center} .controls .grow{display:none} .ctl{font-size:.8rem} .prod-counts{font-size:.76rem;padding:7px 12px;flex-basis:100%;text-align:center}
+    .mobile-cat{display:none}
+    .filters{display:flex;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;gap:9px;margin:16px -16px 4px;padding:2px 16px 12px;scrollbar-width:none}
+    .filters::-webkit-scrollbar{display:none}
+    .chip{scroll-snap-align:start;flex:0 0 auto;color:#fff;border:0;font-weight:700;letter-spacing:.3px;padding:10px 18px;box-shadow:0 5px 14px rgba(30,45,25,.18);transform:none;transition:transform .15s,box-shadow .15s,filter .15s}
+    .chip:hover{transform:none;color:#fff}
+    .chip:nth-child(8n+1){background:linear-gradient(135deg,#ff7a3d,#e0451c)}
+    .chip:nth-child(8n+2){background:linear-gradient(135deg,#2fb673,#12805a)}
+    .chip:nth-child(8n+3){background:linear-gradient(135deg,#f2b134,#d98613)}
+    .chip:nth-child(8n+4){background:linear-gradient(135deg,#ff6f91,#d64578)}
+    .chip:nth-child(8n+5){background:linear-gradient(135deg,#39b7c9,#1785a3)}
+    .chip:nth-child(8n+6){background:linear-gradient(135deg,#9b6cff,#6b3fd6)}
+    .chip:nth-child(8n+7){background:linear-gradient(135deg,#5bbf4a,#2f8a2f)}
+    .chip:nth-child(8n+8){background:linear-gradient(135deg,#ffb03d,#e07b1c)}
+    .chip.active{color:#1c1712;background:#fdfbf3;border:2px solid var(--gold);box-shadow:0 6px 18px rgba(201,150,47,.55);transform:translateY(-1px) scale(1.04);filter:none}
+    .chip.wish{color:#fff;background:linear-gradient(135deg,#e0451c,#9c3d1a)}
+    .chip.wish.active{color:#1c1712;background:#fdfbf3;border:2px solid var(--terracotta)}
+    .chip.active::before{content:"\2713  ";font-weight:900;color:var(--sage-dk)}
+    .chip.wish.active::before{color:var(--terracotta-dk)}
+    .grid{grid-template-columns:1fr;gap:20px;padding:10px 0 6px}
+    .card{flex-direction:column;align-items:stretch}
+    .card .thumb{height:auto;width:100%;aspect-ratio:1/1;background:#fdfbf3}
+    .card .thumb img{object-fit:contain;padding:10px}
+    .card-body{padding:18px 18px 20px}
+    .card h3{font-size:1.2rem}
+    .price{font-size:1.4rem}
+    h2.cat-header{font-size:1.6rem;margin:26px 0 6px}
+    .values{padding:28px 20px;margin:40px 0;gap:18px}
+    footer .cols{grid-template-columns:1fr} #hlmToast{bottom:88px;right:14px}
+    #gardenNudge{bottom:20px;left:14px}
+  }
+</style>
+</head>
+<body>
+<h1 class="sr-only">Herbal Leaf Market &mdash; Certified-Organic CBD, CBG &amp; Botanical Blends</h1>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="lilyIcon" viewBox="0 0 60 72">
+    <!-- Two broad strap leaves rising from base -->
+    <path d="M28 70 C20 58 12 44 16 28 C18 38 22 52 28 64 Z" fill="#22c55e" opacity="0.75"/>
+    <path d="M32 70 C40 58 48 44 44 28 C42 38 38 52 32 64 Z" fill="#16a34a" opacity="0.65"/>
+    <!-- Arching rachis: rises from base, arches right, tip points upper-right -->
+    <path d="M30 68 C29 54 30 42 34 28 C37 18 42 11 46 6" fill="none" stroke="#4ade80" stroke-width="1.8" stroke-linecap="round"/>
+    <!-- Bell 1 – topmost, smallest. Pedicel hangs left from tip -->
+    <line x1="46" y1="6" x2="44" y2="12" stroke="#4ade80" stroke-width="1.2" stroke-linecap="round"/>
+    <!-- Bell cup: M left-rim, arc down to right-rim, then straight up closing top -->
+    <path d="M40 12 L40 12 C40 12 42 19 44 19 C46 19 48 12 48 12 Z" fill="#f0f9f0" stroke="#4ade80" stroke-width="0.7"/>
+    <!-- Bell 2 -->
+    <line x1="44" y1="16" x2="41" y2="22" stroke="#4ade80" stroke-width="1.2" stroke-linecap="round"/>
+    <path d="M37 22 C37 22 39 30 41 30 C43 30 45 22 45 22 Z" fill="#f0f9f0" stroke="#4ade80" stroke-width="0.7"/>
+    <!-- Bell 3 -->
+    <line x1="41" y1="26" x2="38" y2="32" stroke="#4ade80" stroke-width="1.2" stroke-linecap="round"/>
+    <path d="M34 32 C34 32 36 40 38 40 C40 40 42 32 42 32 Z" fill="#f0f9f0" stroke="#4ade80" stroke-width="0.7"/>
+    <!-- Bell 4 -->
+    <line x1="38" y1="36" x2="35" y2="42" stroke="#4ade80" stroke-width="1.2" stroke-linecap="round"/>
+    <path d="M31 42 C31 42 33 51 35.5 51 C38 51 40 42 40 42 Z" fill="#f0f9f0" stroke="#4ade80" stroke-width="0.7"/>
+    <!-- Bell 5 – lowest, largest -->
+    <line x1="35" y1="46" x2="32" y2="53" stroke="#4ade80" stroke-width="1.2" stroke-linecap="round"/>
+    <path d="M27.5 53 C27.5 53 30 63 32.5 63 C35 63 37.5 53 37.5 53 Z" fill="#f0f9f0" stroke="#4ade80" stroke-width="0.7"/>
+  </symbol>
+  <symbol id="sprigIcon" viewBox="0 0 120 500">
+
+    <!-- ═══ LILY OF THE VALLEY CROWN ═══
+         Each bell uses a <g transform="translate(cx, pedicel-tip)"> so geometry
+         is authored in local coords (0,0 = where pedicel meets bell top).
+         Bell shape in local coords:
+           - Narrow neck at top: ±nw px
+           - Walls bow out via cubic bezier to ±bw at mid-height
+           - Bottom closes round: the wall path ends at the inner lip
+           - A separate open stroke curves outward past the wall, then back in
+             at each side, creating the classic flared skirt opening
+         Rachis goes upper-right; bells hang left and right alternately.
+    -->
+    <!-- ═══ HANGING VINES — rendered first so crown paints on top ═══ -->
+
+    <!-- Main vine stem -->
+    <path d="M60 58 C57 80 63 100 58 125 C53 150 64 170 59 198 C54 226 66 248 60 275 C54 302 63 328 58 358 C53 388 62 420 58 460 C56 478 58 495 60 500"
+          fill="none" stroke="#3d6b30" stroke-width="2.6" stroke-linecap="round"/>
+
+    <!-- Secondary trailing vine -->
+    <path d="M60 90 C52 112 58 138 50 162 C44 182 52 206 46 232 C40 258 50 278 44 308 C38 338 48 360 42 392 C38 412 44 440 40 468"
+          fill="none" stroke="#2d5525" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/>
+
+    <!-- Tendril curl 1 – right -->
+    <path d="M58 130 C72 126 80 118 76 108 C72 100 62 104 63 112 C64 118 70 118 72 114"
+          fill="none" stroke="#4a7a38" stroke-width="1" stroke-linecap="round" opacity="0.8"/>
+
+    <!-- Tendril curl 2 – left -->
+    <path d="M59 200 C45 196 36 186 40 176 C44 168 54 172 53 180 C52 186 46 186 44 182"
+          fill="none" stroke="#3d6b30" stroke-width="1" stroke-linecap="round" opacity="0.75"/>
+
+    <!-- Tendril curl 3 – right lower -->
+    <path d="M59 300 C74 296 82 284 78 274 C74 264 64 268 65 277 C66 283 72 282 73 278"
+          fill="none" stroke="#4a7a38" stroke-width="1" stroke-linecap="round" opacity="0.7"/>
+
+    <!-- Leaf 1 – left, upper -->
+    <path d="M59 100 C44 94 32 80 34 66 C42 72 52 86 59 98 Z" fill="#4a7a38" opacity="0.7"/>
+    <path d="M59 100 C46 88 37 74 34 66" fill="none" stroke="#3a6030" stroke-width="0.7" stroke-linecap="round" opacity="0.6"/>
+
+    <!-- Leaf 2 – right -->
+    <path d="M59 138 C76 132 88 116 86 100 C76 108 65 122 59 136 Z" fill="#3d6b30" opacity="0.65"/>
+    <path d="M59 138 C73 124 83 110 86 100" fill="none" stroke="#2d5525" stroke-width="0.7" stroke-linecap="round" opacity="0.55"/>
+
+    <!-- Leaf 3 – left, mid -->
+    <path d="M58 174 C40 168 26 148 28 130 C38 140 50 158 58 172 Z" fill="#56803e" opacity="0.65"/>
+    <path d="M58 174 C42 158 32 142 28 130" fill="none" stroke="#3d6b30" stroke-width="0.7" stroke-linecap="round" opacity="0.55"/>
+
+    <!-- Leaf 4 – right, past mid -->
+    <path d="M59 218 C78 210 92 192 90 174 C78 184 65 200 59 216 Z" fill="#3d6b30" opacity="0.6"/>
+    <path d="M59 218 C75 200 87 184 90 174" fill="none" stroke="#2d5525" stroke-width="0.7" stroke-linecap="round" opacity="0.5"/>
+
+    <!-- Leaf 5 – left, lower -->
+    <path d="M59 258 C44 252 34 238 36 224 C44 232 53 246 59 256 Z" fill="#4a7a38" opacity="0.6"/>
+
+    <!-- Leaf 6 – right, lower third -->
+    <path d="M59 304 C76 296 88 278 86 262 C75 272 63 288 59 302 Z" fill="#3d6b30" opacity="0.55"/>
+    <path d="M59 304 C73 284 83 268 86 262" fill="none" stroke="#2d5525" stroke-width="0.6" stroke-linecap="round" opacity="0.45"/>
+
+    <!-- Leaf 7 – left, lower -->
+    <path d="M58 348 C40 340 28 320 30 304 C40 314 50 332 58 346 Z" fill="#56803e" opacity="0.5"/>
+
+    <!-- Leaf 8 – right, near bottom -->
+    <path d="M59 390 C72 384 80 370 78 358 C70 366 62 378 59 388 Z" fill="#3d6b30" opacity="0.45"/>
+
+    <!-- Trailing wisps, very bottom -->
+    <path d="M58 440 C46 434 38 420 40 408 C46 416 53 428 58 438 Z" fill="#2d5525" opacity="0.4"/>
+    <path d="M59 460 C68 454 74 442 72 432 C66 440 61 452 59 458 Z" fill="#3d6b30" opacity="0.35"/>
+
+    <!-- ═══ LILY OF THE VALLEY CROWN — rendered last, always on top ═══ -->
+
+    <!-- Rachis -->
+    <path d="M58 68 C61 55 65 42 68 28 C71 16 70 7 69 2"
+          fill="none" stroke="#3d7a32" stroke-width="1.8" stroke-linecap="round"/>
+    <!-- Strap leaves at rachis base -->
+    <path d="M58 68 C44 62 36 46 40 30 C45 40 52 55 58 66 Z"
+          fill="#1a5018" opacity="0.8"/>
+    <path d="M59 65 C73 59 81 43 77 27 C72 37 65 52 59 63 Z"
+          fill="#163d14" opacity="0.7"/>
+
+    <!-- Bell 1 — xs -->
+    <line x1="69" y1="3" x2="68" y2="8" stroke="#3d7a32" stroke-width="1.1" stroke-linecap="round"/>
+    <g transform="translate(68,8)">
+      <path d="M-2,0 A2,1.5 0 0,1 2,0 C5,1 6,4 6,8 C4,9.5 2,10 0,10 C-2,10 -4,9.5 -6,8 C-6,4 -5,1 -2,0 Z"
+            fill="#f2fbf2" stroke="#267020" stroke-width="0.9"/>
+      <path d="M-6,8 C-7.5,9 -9.5,10.5 -9,12 C-7.5,13 -4,13.5 0,13.5 C4,13.5 7.5,13 9,12 C9.5,10.5 7.5,9 6,8"
+            fill="none" stroke="#267020" stroke-width="0.9" stroke-linecap="round"/>
+      <path d="M-3.5,9 C-1,11.5 1,11.5 3.5,9" fill="none" stroke="#1a5018" stroke-width="0.55" opacity="0.4" stroke-linecap="round"/>
+    </g>
+
+    <!-- Bell 2 — sm -->
+    <line x1="69" y1="11" x2="66" y2="17" stroke="#3d7a32" stroke-width="1.1" stroke-linecap="round"/>
+    <g transform="translate(66,17)">
+      <path d="M-2.5,0 A2.5,1.8 0 0,1 2.5,0 C6.5,1.5 8,5 8,10 C5.5,12 3,12.5 0,12.5 C-3,12.5 -5.5,12 -8,10 C-8,5 -6.5,1.5 -2.5,0 Z"
+            fill="#f2fbf2" stroke="#267020" stroke-width="0.9"/>
+      <path d="M-8,10 C-10,11.5 -12,13.5 -11.5,15.5 C-9.5,17 -5.5,17.8 0,17.8 C5.5,17.8 9.5,17 11.5,15.5 C12,13.5 10,11.5 8,10"
+            fill="none" stroke="#267020" stroke-width="0.95" stroke-linecap="round"/>
+      <path d="M-4.5,11 C-1,14 1,14 4.5,11" fill="none" stroke="#1a5018" stroke-width="0.55" opacity="0.4" stroke-linecap="round"/>
+    </g>
+
+    <!-- Bell 3 — md -->
+    <line x1="68" y1="21" x2="64" y2="28" stroke="#3d7a32" stroke-width="1.2" stroke-linecap="round"/>
+    <g transform="translate(64,28)">
+      <path d="M-3,0 A3,2 0 0,1 3,0 C8,2 9.5,6 9.5,12.5 C6.5,15 3.5,15.5 0,15.5 C-3.5,15.5 -6.5,15 -9.5,12.5 C-9.5,6 -8,2 -3,0 Z"
+            fill="#edf9eb" stroke="#267020" stroke-width="1"/>
+      <path d="M-9.5,12.5 C-12.5,14.5 -15,17 -14.5,19.5 C-12,21.5 -7,22.5 0,22.5 C7,22.5 12,21.5 14.5,19.5 C15,17 12.5,14.5 9.5,12.5"
+            fill="none" stroke="#267020" stroke-width="1" stroke-linecap="round"/>
+      <path d="M-5.5,14 C-1,18 1,18 5.5,14" fill="none" stroke="#1a5018" stroke-width="0.6" opacity="0.4" stroke-linecap="round"/>
+    </g>
+
+    <!-- Bell 4 — lg -->
+    <line x1="66" y1="33" x2="61" y2="41" stroke="#3d7a32" stroke-width="1.3" stroke-linecap="round"/>
+    <g transform="translate(61,41)">
+      <path d="M-3.5,0 A3.5,2.5 0 0,1 3.5,0 C9.5,2.5 12,7.5 12,16 C8,19 4.5,19.5 0,19.5 C-4.5,19.5 -8,19 -12,16 C-12,7.5 -9.5,2.5 -3.5,0 Z"
+            fill="#e8f7e6" stroke="#267020" stroke-width="1.1"/>
+      <path d="M-12,16 C-16,19 -19,22.5 -18,25.5 C-15,28 -8.5,29 0,29 C8.5,29 15,28 18,25.5 C19,22.5 16,19 12,16"
+            fill="none" stroke="#267020" stroke-width="1.1" stroke-linecap="round"/>
+      <path d="M-7,18 C-1.5,23.5 1.5,23.5 7,18" fill="none" stroke="#1a5018" stroke-width="0.7" opacity="0.4" stroke-linecap="round"/>
+    </g>
+
+    <!-- Bell 5 — xl, lowest -->
+    <line x1="63" y1="45" x2="58" y2="55" stroke="#3d7a32" stroke-width="1.4" stroke-linecap="round"/>
+    <g transform="translate(58,55)">
+      <path d="M-4,0 A4,3 0 0,1 4,0 C11,3 14,9.5 14,20 C9.5,24 5.5,24.5 0,24.5 C-5.5,24.5 -9.5,24 -14,20 C-14,9.5 -11,3 -4,0 Z"
+            fill="#e3f7e0" stroke="#1f5c18" stroke-width="1.2"/>
+      <path d="M-14,20 C-18.5,24 -22,28 -21,31.5 C-17.5,34.5 -10,36 0,36 C10,36 17.5,34.5 21,31.5 C22,28 18.5,24 14,20"
+            fill="none" stroke="#1f5c18" stroke-width="1.2" stroke-linecap="round"/>
+      <path d="M-8.5,23 C-2,30 2,30 8.5,23" fill="none" stroke="#1a5018" stroke-width="0.75" opacity="0.45" stroke-linecap="round"/>
+    </g>
+  </symbol>
+</svg>
+<div id="hlmLoader"><svg class="lily"><use href="#lilyIcon"/></svg><div class="load-word">Gathering the garden...</div><div class="load-sub">~ loading fresh inventory ~</div><div class="load-bar"><i></i></div></div>
+<div class="gate" id="ageGate"><div class="gate-card"><svg class="lily"><use href="#lilyIcon"/></svg><h2>Are you 21 or wiser?</h2><p>Herbal Leaf Market offers botanical goods intended for adults 21 and over.</p><div class="gate-btns"><button class="yes" type="button" onclick="passGate()">Yes, I am 21+</button><button class="no" type="button" onclick="location.href='https://www.google.com'">Not yet</button></div></div></div>
+<header><div class="wrap nav">
+  <button class="hamburger" onclick="openMnav()" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  <div class="brand"><svg class="lily"><use href="#lilyIcon"/></svg><span>Herbal Leaf Market<small>botanical apothecary</small></span></div>
+  <span class="live-pill"><span class="dot"></span>Live inventory</span>
+  <div class="spacer"></div>
+  <nav class="nav-adv"><a href="/know-the-facts.html?v=2" target="_top">Know the Facts</a><a href="/anecdote-library.html?v=2" target="_top">Our Stories</a></nav>
+  <div class="searchbox"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3a7b50" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input id="search" type="text" placeholder="Search botanicals..." oninput="render()" aria-label="Search products" /></div>
+  <button class="acct-btn" onclick="(function(){ if(isLoggedIn()){ if(confirm('Sign out of Herbal Leaf Market?')) signOut(); } else { setAuthMode('login'); openAuth('Welcome back to the garden'); } })()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span id="acctLabel">Sign in</span></button>
+</div></header>
+<section class="hero">
+  <div class="hero-glow" aria-hidden="true"></div>
+  <svg class="hero-sprig left" viewBox="0 0 120 500" aria-hidden="true"><use href="#sprigIcon"/></svg>
+  <svg class="hero-sprig right" viewBox="0 0 120 500" aria-hidden="true"><use href="#sprigIcon"/></svg>
+  <div class="hero-inner wrap">
+    <span class="eyebrow">gathered  with  intention</span>
+    <div class="hero-title" aria-hidden="true"><span class="t-lead">A</span><span class="t-script">garden</span><span class="t-serif">of rare botanicals</span></div>
+    <div class="hero-orn"><svg width="20" height="24" style="opacity:.85"><use href="#lilyIcon"/></svg></div>
+    <p class="hero-sub">Ceremonial blends, herbal elixirs, hand-rolled smokes &amp; single-note botanicals &mdash; gathered live from vetted makers.</p>
+    <div class="hero-ctas">
+      <button class="hero-cta2" onclick="openRitual()">✨ Build your ritual</button>
+    </div>
+  </div>
+</section>
+<div class="wrap">
+  <div class="controls">
+    <div class="ctl"><label for="storeFilter">Store</label><select id="storeFilter" onchange="setStore(this.value)"><option value="All">All Stores</option></select></div>
+    <div class="ctl"><label for="sortSelect">Sort</label><select id="sortSelect" onchange="setSort(this.value)"><option value="featured">Featured</option><option value="cheapest">Cheapest</option><option value="highest">Highest Price</option><option value="az">A - Z</option></select></div>
+    <div class="grow"></div>
+    <span class="prod-counts" id="prodCounts"></span>
+  </div>
+  <div class="mobile-cat"><select id="mobileCat" onchange="setCategory(this.value)" aria-label="Shop by category"></select></div>
+  <nav class="filters" id="filters" aria-label="Product categories"></nav>
+  <div id="mSearchMount"></div>
+</div>
+<main class="wrap">
+  <div class="grid" id="grid"></div>
+  <div class="values">
+    <div><h4>Live, not stale</h4><p>Prices, stock, and new drops pull straight from each maker in real time.</p></div>
+    <div><h4>Straight to the maker</h4><p>Every product links to the grower's own shop, so you always get authentic, fresh stock.</p></div>
+    <div><h4>Honest, earthy labeling</h4><p>We describe plants the way the makers do - organic herbs, plainly named.</p></div>
+  </div>
+</main>
+<footer><div class="wrap"><div class="cols">
+  <div><div class="brand" style="margin-bottom:12px;display:flex;align-items:center;gap:12px"><svg class="lily" style="width:32px;height:38px"><use href="#lilyIcon"/></svg><span>Herbal Leaf Market<small>botanical apothecary</small></span></div>
+    <p style="max-width:470px;color:#c3bfa6">A bohemian boutique for certified-organic ceremonial blends, herbal elixirs, and hand-rolled smokes, with live inventory from vetted makers.</p>
+    <p style="max-width:470px;color:#c3bfa6;margin-top:10px"> Looking for a wider, more affordable CBD selection? Visit our sister shop <a href="https://legal-leafmarket.com" target="_blank" rel="noopener"><strong>Legal Leaf Market</strong> &nearr;</a></p>
+    <p class="aff-note"><strong>Affiliate disclosure:</strong> Herbal Leaf Market may earn a commission on qualifying purchases made through links on this site, at no extra cost to you.</p></div>
+  <div><h4 style="font-family:var(--display);color:#f3ece0">Wander</h4><p><a href="#grid">Shop all</a><br><a href="/know-the-facts.html?v=2" target="_top">Know the Facts</a><br><a href="/anecdote-library.html?v=2" target="_top">Our Stories</a><br><a href="https://legal-leafmarket.com" target="_blank" rel="noopener">Sister shop: Legal Leaf Market &nearr;</a><br><a href="mailto:hello@herballeafmarket.com">Contact</a></p></div>
+</div>
+<div class="legal">
+  <p><strong>Age requirement:</strong> Products sold via this site are intended for adults 21 years of age or older.</p>
+  <p><strong>FDA disclaimer:</strong> These statements have not been evaluated by the Food and Drug Administration. These products are not intended to diagnose, treat, cure, or prevent any disease.</p>
+  <p><strong>California Proposition 65:</strong> Combustion of plant material produces smoke with chemicals known to the State of California to cause cancer, birth defects, or reproductive harm.</p>
+  <p style="margin-top:16px;color:#8a8770">(c) <span id="year"></span> Herbal Leaf Market. Made with wildflowers &amp; intention.</p>
+</div></div></footer>
+<button class="cart-btn" onclick="openCart()" aria-label="Open cart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 L3 6 v14 a2 2 0 0 0 2 2 h14 a2 2 0 0 0 2 -2 V6 l-3 -4 Z"/><path d="M3 6 h18"/><path d="M16 10 a4 4 0 0 1 -8 0"/></svg><span id="cartCount">0</span></button>
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<aside class="cart-drawer" id="cartDrawer" aria-label="Shopping cart">
+  <div class="cart-head"><h3><svg class="lily"><use href="#lilyIcon"/></svg> Your Cart</h3><button class="cart-close" onclick="closeCart()">&times;</button></div>
+  <p class="cart-sub">~ gathered from many makers ~</p>
+  <div id="cartBody"></div>
+</aside>
+<div class="auth-overlay" id="authOverlay" onclick="closeAuth()"></div>
+<div class="auth-modal" id="authModal" role="dialog" aria-label="Sign in">
+  <button class="auth-close" onclick="closeAuth()">&times;</button>
+  <svg class="lily"><use href="#lilyIcon"/></svg>
+  <h3 id="authTitle">Create your account</h3>
+  <p class="auth-sub" id="authSub">You are one step from the garden gate</p>
+  <div class="auth-field" id="authNameRow"><label for="authName">Name</label><input id="authName" type="text" placeholder="Your name" autocomplete="name" /></div>
+  <div class="auth-field"><label for="authEmail">Email</label><input id="authEmail" type="email" placeholder="you@example.com" autocomplete="email" /></div>
+  <div class="auth-err" id="authErr"></div>
+  <button class="auth-submit" id="authSubmit" onclick="submitAuth()">Create account &amp; continue</button>
+  <p class="auth-toggle" id="authToggle"></p>
+  <p class="auth-fine">Free to join. We use your account to keep your cart and your JACOBKENNEDY discount together as you check out with each maker.</p>
+</div>
+<div class="auth-overlay" id="ritualOverlay" onclick="closeRitual()"></div>
+<div class="ritual-modal" id="ritualModal" role="dialog" aria-label="Build your ritual">
+  <button class="auth-close" onclick="closeRitual()" aria-label="Close">&times;</button>
+  <div class="ritual-title"><svg class="lily" style="width:34px;height:40px"><use href="#lilyIcon"/></svg><h3>Build Your Ritual</h3></div>
+  <div id="ritualBody"></div>
+</div>
+<div class="auth-overlay" id="gardenOverlay" onclick="closeGarden()"></div>
+<div class="auth-modal" id="gardenModal" role="dialog" aria-label="Save your Garden">
+  <button class="auth-close" onclick="closeGarden()">&times;</button>
+  <svg class="lily"><use href="#lilyIcon"/></svg>
+  <h3>Save your Garden </h3>
+  <p class="auth-sub">Keep your <span id="gardenCount">items</span> &mdash; and get a friendly alert whenever you save a new find.</p>
+  <div class="auth-field"><label for="gName">Name (optional)</label><input id="gName" type="text" placeholder="Your name" autocomplete="name" /></div>
+  <div class="auth-field"><label for="gEmail">Email</label><input id="gEmail" type="email" placeholder="you@example.com" autocomplete="email" /></div>
+  <label style="display:flex;gap:9px;align-items:flex-start;text-align:left;font-size:.82rem;color:var(--muted);margin:2px 0 4px;cursor:pointer"><input id="gConsent" type="checkbox" checked style="width:18px;height:18px;flex:none;margin-top:2px;accent-color:#2f6b4f"> <span>Email me my Garden &amp; a note when I track new items. I'm 21+. Unsubscribe anytime.</span></label>
+  <div class="auth-err" id="gErr"></div>
+  <button class="auth-submit" onclick="gardenSignupSubmit()">Save my Garden &amp; email me </button>
+  <p class="auth-fine">Free. We use your email only to save your Garden and send the alerts you asked for &mdash; never sold.</p>
+</div>
+<div class="mnav-overlay" id="mnavOverlay" onclick="closeMnav()"></div>
+<aside class="mnav" id="mnav" aria-label="Menu">
+  <div class="mnav-head"><svg class="lily"><use href="#lilyIcon"/></svg><span><b>Herbal Leaf</b><small>botanical apothecary</small></span><button class="mnav-close" onclick="closeMnav()">&times;</button></div>
+  <div class="mnav-body"><div class="mnav-sec">Learn</div><a class="mnav-link" href="/know-the-facts.html?v=2" target="_top">Know the Facts</a><a class="mnav-link" href="/anecdote-library.html?v=2" target="_top">Our Stories</a><a class="mnav-link" href="https://legal-leafmarket.com" target="_blank" rel="noopener">Sister shop: Legal Leaf Market &nearr;</a><div class="mnav-sec">Shop by category</div><div id="mnavCats"></div><div class="mnav-sec">Stores</div><div id="mnavStores"></div></div>
+</aside>
+<div class="bbco-overlay" id="bbCoOverlay" onclick="closeBearBlendCheckout()"></div>
+<div class="bbco-modal" id="bbCoModal" role="dialog" aria-label="Bear Blend Checkout">
+  <button class="bbco-close" onclick="closeBearBlendCheckout()">&times;</button>
+  <div class="bbco-badge"> Bear Blend &middot; Checkout</div>
+  <h3>One-tap cart, the first time only</h3>
+  <p class="bbco-sub">Bear Blend is a partner store, so we hand your cart off securely. Set this up once and it is instant forever after.</p>
+  <ol class="bbco-steps">
+    <li><b>Drag</b> this to your bookmarks bar:<div class="bbco-drag"><a id="bbCoBookmarklet" class="bbco-bm" href="#"> Fill Bear Blend Cart</a></div><span class="bbco-hint">(one-time - saved for every future order)</span></li>
+    <li><b>Open</b> Bear Blend: <button class="bbco-go" onclick="openBearBlendSite()">Open Bear Blend &nearr;</button></li>
+    <li><b>Click the bookmark</b> on Bear Blend - items load &amp; code <b>JACOBKENNEDY</b> applies.</li>
+  </ol>
+  <p class="bbco-missing" id="bbCoMissing" style="display:none"></p>
+  <p class="bbco-fine">Your cart was also copied to your clipboard as a backup.</p>
+</div>
+<div class="bbmob-overlay" id="bbMobOverlay" onclick="closeBearBlendMobile()"></div>
+<div class="bbmob-modal" id="bbMobModal" role="dialog" aria-label="Bear Blend Mobile Checkout">
+  <button class="bbco-close" onclick="closeBearBlendMobile()">&times;</button>
+  <div class="bbco-badge"> Bear Blend &middot; Mobile</div>
+  <h3>Your cart is copied </h3>
+  <p class="bbco-sub">On phones we hand you off with your list &amp; code ready:</p>
+  <ol class="bbco-steps">
+    <li><b>Tap to open Bear Blend</b> at your first item:<div class="bbco-drag"><a id="bbMobGo" class="bbco-bm" href="#" target="_blank" rel="noopener">Open Bear Blend &nearr;</a></div></li>
+    <li><b>Tap each item</b> to open &amp; add (list is also on your clipboard):<ul id="bbMobileList" style="margin:8px 0 0;padding-left:18px;font-size:.88rem;color:#6b5f4d"></ul></li>
+    <li><b>Paste code</b> <b>JACOBKENNEDY</b> at their cart.</li>
+  </ol>
+  <button class="bbco-go" style="width:100%;margin-top:4px" onclick="shareBearBlend()"> Share my cart list</button>
+  <p class="bbco-fine">Prefer one-tap auto-cart? Open on desktop for the bookmarklet.</p>
+</div>
+<div class="bbco-overlay" id="nssCoOverlay" onclick="closeNaturalSmokeCheckout()"></div>
+<div class="bbco-modal" id="nssCoModal" role="dialog" aria-label="Natural Smoke Shop Checkout">
+  <button class="bbco-close" onclick="closeNaturalSmokeCheckout()">&times;</button>
+  <div class="bbco-badge"> Natural Smoke Shop &middot; Checkout</div>
+  <h3>⚡ Fill your cart in one click</h3>
+  <p class="bbco-sub">Pick your items &mdash; we'll add them all to Smoking Blends in one go, then drop you on the cart.</p>
+  <label style="display:flex;align-items:center;gap:9px;font-weight:700;font-size:.9rem;margin:2px 0 6px;cursor:pointer"><input type="checkbox" id="nssCoSelAll" checked onchange="nssToggleAll(this.checked,'nssCoList')" style="width:18px;height:18px;accent-color:#2f6b4f"> Select all</label>
+  <ul id="nssCoList" style="margin:6px 0 0;padding-left:0;font-size:.9rem;color:#1c1712"></ul>
+  <button id="nssCoAddAllBtn" class="bbco-go" style="width:100%;margin-top:10px;display:none" onclick="nssAddAllSelected('nssCoList')">⚡ Add selected &amp; go to cart</button>
+  <button id="nssCoViewCart" class="bbco-go" style="width:100%;margin-top:8px;display:none;background:var(--terracotta)" onclick="nssViewCart()">▶ View my filled cart</button>
+  <p class="bbco-missing" id="nssCoMissing" style="display:none"></p>
+  <details style="margin-top:14px"><summary style="cursor:pointer;font-weight:600;color:var(--sage-dk);font-size:.86rem">Prefer the one-time bookmarklet? (advanced)</summary>
+    <ol class="bbco-steps" style="margin-top:10px">
+      <li><b>Drag</b> this to your bookmarks bar:<div class="bbco-drag"><a id="nssCoBookmarklet" class="bbco-bm" href="#"> Fill Natural Smoke Shop Cart</a></div><span class="bbco-hint">(one-time - saved for every future order)</span></li>
+      <li><b>Open</b> Natural Smoke Shop: <button class="bbco-go" onclick="openNaturalSmokeSite()">Open Natural Smoke Shop &nearr;</button></li>
+      <li><b>Click the bookmark</b> on their site - items load &amp; code <b>JACOBKENNEDY</b> applies.</li>
+    </ol>
+  </details>
+  <p class="bbco-fine">Code <b>JACOBKENNEDY</b> is copied to your clipboard &mdash; paste it at their cart.</p>
+</div>
+<div class="bbmob-overlay" id="nssMobOverlay" onclick="closeNaturalSmokeMobile()"></div>
+<div class="bbmob-modal" id="nssMobModal" role="dialog" aria-label="Natural Smoke Shop Mobile Checkout">
+  <button class="bbco-close" onclick="closeNaturalSmokeMobile()">&times;</button>
+  <div class="bbco-badge"> Natural Smoke Shop &middot; Mobile</div>
+  <h3>⚡ Fill your cart</h3>
+  <p class="bbco-sub">Pick your items &mdash; we'll add them all to Smoking Blends, then you tap to view the filled cart.</p>
+  <label style="display:flex;align-items:center;gap:9px;font-weight:700;font-size:.9rem;margin:2px 0 6px;cursor:pointer"><input type="checkbox" id="nssSelAll" checked onchange="nssToggleAll(this.checked)" style="width:18px;height:18px;accent-color:#2f6b4f"> Select all</label>
+  <ul id="nssMobileList" style="margin:6px 0 0;padding-left:0;font-size:.9rem;color:#1c1712"></ul>
+  <button id="nssAddAllBtn" class="bbco-go" style="width:100%;margin-top:10px;display:none" onclick="nssAddAllSelected()">⚡ Add selected &amp; go to cart</button>
+  <button id="nssMobViewCart" class="bbco-go" style="width:100%;margin-top:8px;display:none;background:var(--terracotta)" onclick="nssViewCart()">▶ View my filled cart</button>
+  <p class="bbco-missing" id="nssAddAllHint" style="display:none">Tap an item's <b>(open&nearr;)</b> link to add it on their site, then paste code <b>JACOBKENNEDY</b>.</p>
+  <button class="bbco-go" style="width:100%;margin-top:8px;background:var(--gold-dk)" onclick="shareNaturalSmoke()"> Share my cart list</button>
+  <p class="bbco-fine">Code <b>JACOBKENNEDY</b> is copied &mdash; paste it at their cart.</p>
+</div>
+<button id="gardenNudge" onclick="openGarden()" aria-label="Save your Garden"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 21s-7.5-4.6-10-9.2C.5 8.3 2.2 5 5.5 5c2 0 3.3 1.2 4 2.2C10.2 6.2 11.5 5 13.5 5 16.8 5 18.5 8.3 17 11.8 14.5 16.4 12 21 12 21z"/></svg> Save my Garden</button>
+<button id="pwaInstall" onclick="hlmInstallApp()">⬇️ Install App</button>
+<div id="hlmToast"><span class="dot"></span><span id="hlmToastMsg">Added to cart</span></div>
+
+<!-- Cloudflare: RPC shim first, then GAS-include replacements as real assets -->
+<script src="/hlm-api.js"></script>
+<script src="/products.js"></script>
+<script src="/knowledge.js"></script>
+<script src="/app.js"></script>
+<!-- Email deep-link "zoom to card": reads ?focus=<id> / #<id> from index.js hlmCardHref_ and highlights the matching product card -->
+<script src="/focus.js"></script>
+</body>
+</html>
