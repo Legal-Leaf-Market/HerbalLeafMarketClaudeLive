@@ -251,17 +251,17 @@
   .bbco-overlay.open,.bbmob-overlay.open{opacity:1;pointer-events:auto}
   .bbco-modal,.bbmob-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-46%) scale(.97);z-index:95;width:min(460px,92vw);background:var(--card);border:1px solid var(--gold);border-radius:20px;padding:30px 28px;box-shadow:0 30px 80px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;max-height:88vh;overflow-y:auto}
   .bbco-modal.open,.bbmob-modal.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
-  .bbco-close{position:absolute;top:12px;right:16px;background:none;border:0;font-size:1.6rem;color:#6b5f4d;cursor:pointer;line-height:1}
+  .bbco-close{position:absolute;top:12px;right:16px;background:none;border:0;font-size:1.6rem;color:var(--muted);cursor:pointer;line-height:1}
   .bbco-badge{display:inline-block;background:linear-gradient(135deg,var(--sage),var(--sage-dk));color:#fff;font-size:.7rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:5px 12px;border-radius:999px;margin-bottom:12px}
-  .bbco-modal h3,.bbmob-modal h3{font-family:var(--display);font-size:1.5rem;margin:0 0 4px;color:#1c1712}
-  .bbco-sub{color:#6b5f4d;font-size:.9rem;margin:0 0 16px}
+  .bbco-modal h3,.bbmob-modal h3{font-family:var(--display);font-size:1.5rem;margin:0 0 4px;color:var(--ink)}
+  .bbco-sub{color:var(--muted);font-size:.9rem;margin:0 0 16px}
   .bbco-steps{margin:0;padding-left:20px} .bbco-steps li{margin:12px 0;font-size:.92rem}
   .bbco-drag{margin:8px 0}
   .bbco-bm{display:inline-block;background:var(--terracotta);color:#fff;padding:11px 20px;border-radius:10px;font-weight:700;text-decoration:none;cursor:grab}
-  .bbco-hint{display:block;font-size:.75rem;color:#9c8f7c;margin-top:4px}
+  .bbco-hint{display:block;font-size:.75rem;color:var(--muted);margin-top:4px}
   .bbco-go{background:var(--sage);color:#fff;border:0;border-radius:10px;padding:10px 18px;font-weight:700;cursor:pointer;margin-top:6px;text-decoration:none;display:inline-block;text-align:center}
-  .bbco-missing{background:#fff4d6;border:1px solid #e0c56a;border-radius:8px;padding:8px 12px;font-size:.82rem;margin:12px 0 0}
-  .bbco-fine{font-size:.75rem;color:#9c8f7c;margin:14px 0 0;line-height:1.5}
+  .bbco-missing{background:#fff4d6;color:#3a2f14;border:1px solid #e0c56a;border-radius:8px;padding:8px 12px;font-size:.82rem;margin:12px 0 0}
+  .bbco-fine{font-size:.75rem;color:var(--muted);margin:14px 0 0;line-height:1.5}
   #pwaInstall{display:none;position:fixed;bottom:26px;left:26px;z-index:60;background:linear-gradient(135deg,var(--sage),var(--sage-dk));color:#fff;border:2px solid #c9962f;border-radius:999px;padding:12px 18px;font-family:var(--sans);font-weight:700;font-size:.85rem;cursor:pointer;box-shadow:0 10px 26px rgba(47,107,79,.5);align-items:center;gap:8px}
   #gardenNudge{display:none;position:fixed;bottom:26px;left:26px;z-index:59;align-items:center;gap:8px;background:linear-gradient(135deg,var(--terracotta),var(--terracotta-dk));color:#fff;border:2px solid var(--gold);border-radius:999px;padding:11px 18px;font-family:var(--sans);font-weight:700;font-size:.85rem;cursor:pointer;box-shadow:0 10px 26px rgba(200,90,52,.45)}
   #gardenNudge svg{fill:#fff}
@@ -643,7 +643,7 @@
   <p class="bbco-sub">On phones we hand you off with your list &amp; code ready:</p>
   <ol class="bbco-steps">
     <li><b>Tap to open Bear Blend</b> at your first item:<div class="bbco-drag"><a id="bbMobGo" class="bbco-bm" href="#" target="_blank" rel="noopener">Open Bear Blend &nearr;</a></div></li>
-    <li><b>Tap each item</b> to open &amp; add (list is also on your clipboard):<ul id="bbMobileList" style="margin:8px 0 0;padding-left:18px;font-size:.88rem;color:#6b5f4d"></ul></li>
+    <li><b>Tap each item</b> to open &amp; add (list is also on your clipboard):<ul id="bbMobileList" style="margin:8px 0 0;padding-left:18px;font-size:.88rem;color:var(--muted)"></ul></li>
     <li><b>Paste code</b> <b>JACOBKENNEDY</b> at their cart.</li>
   </ol>
   <button class="bbco-go" style="width:100%;margin-top:4px" onclick="shareBearBlend()"> Share my cart list</button>
@@ -656,7 +656,7 @@
   <h3>⚡ Fill your cart in one click</h3>
   <p class="bbco-sub">Pick your items &mdash; we'll add them all to Smoking Blends in one go, then drop you on the cart.</p>
   <label style="display:flex;align-items:center;gap:9px;font-weight:700;font-size:.9rem;margin:2px 0 6px;cursor:pointer"><input type="checkbox" id="nssCoSelAll" checked onchange="nssToggleAll(this.checked,'nssCoList')" style="width:18px;height:18px;accent-color:#2f6b4f"> Select all</label>
-  <ul id="nssCoList" style="margin:6px 0 0;padding-left:0;font-size:.9rem;color:#1c1712"></ul>
+  <ul id="nssCoList" style="margin:6px 0 0;padding-left:0;font-size:.9rem;color:var(--ink)"></ul>
   <button id="nssCoAddAllBtn" class="bbco-go" style="width:100%;margin-top:10px;display:none" onclick="nssAddAllSelected('nssCoList')">⚡ Add selected &amp; go to cart</button>
   <button id="nssCoViewCart" class="bbco-go" style="width:100%;margin-top:8px;display:none;background:var(--terracotta)" onclick="nssViewCart()">▶ View my filled cart</button>
   <p class="bbco-missing" id="nssCoMissing" style="display:none"></p>
@@ -676,7 +676,7 @@
   <h3>⚡ Fill your cart</h3>
   <p class="bbco-sub">Pick your items &mdash; we'll add them all to Smoking Blends, then you tap to view the filled cart.</p>
   <label style="display:flex;align-items:center;gap:9px;font-weight:700;font-size:.9rem;margin:2px 0 6px;cursor:pointer"><input type="checkbox" id="nssSelAll" checked onchange="nssToggleAll(this.checked)" style="width:18px;height:18px;accent-color:#2f6b4f"> Select all</label>
-  <ul id="nssMobileList" style="margin:6px 0 0;padding-left:0;font-size:.9rem;color:#1c1712"></ul>
+  <ul id="nssMobileList" style="margin:6px 0 0;padding-left:0;font-size:.9rem;color:var(--ink)"></ul>
   <button id="nssAddAllBtn" class="bbco-go" style="width:100%;margin-top:10px;display:none" onclick="nssAddAllSelected()">⚡ Add selected &amp; go to cart</button>
   <button id="nssMobViewCart" class="bbco-go" style="width:100%;margin-top:8px;display:none;background:var(--terracotta)" onclick="nssViewCart()">▶ View my filled cart</button>
   <p class="bbco-missing" id="nssAddAllHint" style="display:none">Tap an item's <b>(open&nearr;)</b> link to add it on their site, then paste code <b>JACOBKENNEDY</b>.</p>
