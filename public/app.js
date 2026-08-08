@@ -12,11 +12,28 @@ const BRAND_AFFILIATES = {
   "Secret Nature":{awinmid:"",couponCode:"JACOBKENNEDY",percent:15},
   "Soul CBD":{awinmid:"",couponCode:"JACOBKENNEDY",percent:20},
   "Natural Smoke Shop":{awinmid:"",trackParam:{key:"tr",val:"138"},couponCode:"JACOBKENNEDY",percent:10},
-  "Charlotte's Web":{awinmid:"",couponCode:"",percent:0}
+  "Charlotte's Web":{awinmid:"",couponCode:"",percent:0},
+  /* Rishi Tea & Botanicals — on Awin, merchant profile 53225. (ShareASale, where
+   * they used to be listed, folded into Awin in Oct 2025.) awinmid stays EMPTY
+   * until the Awin application is approved: withAffiliate() only builds a
+   * cread.php link when both AWIN_PUBLISHER_ID and awinmid are set, so until
+   * then shoppers get a clean direct link that simply earns nothing. Putting an
+   * unapproved mid in here would route real shoppers through a tracking link
+   * that credits no one — worse than no tracking. Flip it to "53225" (verify in
+   * the Awin dashboard first) the day approval lands; no other change needed.
+   * No coupon: we have no negotiated code with Rishi, and percent:0 keeps
+   * getCoupon() from advertising one. */
+  "Rishi Tea":{awinmid:"",couponCode:"",percent:0}
 };
 function getCoupon(vendor){ var c=BRAND_AFFILIATES[vendor]; if(!c||!c.couponCode||!(c.percent>0))return null; return {code:c.couponCode,percent:c.percent}; }
 function vendorCode(vendor){ var c=BRAND_AFFILIATES[vendor]; return (c&&c.couponCode)?c.couponCode:""; }
-var SHIPPING={ "Bear Blend":{flat:6.95,freeOver:75},"Puff Herbals":{flat:5.99,freeOver:50},"Secret Nature":{flat:6.00,freeOver:50},"Soul CBD":{flat:5.95,freeOver:60},"Natural Smoke Shop":{flat:5.95,freeOver:35},"Charlotte's Web":{flat:5.99,freeOver:50} };
+/* A vendor missing from this map is treated as FREE shipping by shipInfo(), so
+ * every new vendor needs an entry or the cart quietly makes a promise the maker
+ * never made. Rishi: $8 flat, free over $60 (their Sparkling Botanicals and
+ * Concentrates ship at $12 instead, which is exactly why those product types
+ * are excluded from the feed in lib/hlm.ts — one flat rate per vendor is all
+ * this map can express). */
+var SHIPPING={ "Bear Blend":{flat:6.95,freeOver:75},"Puff Herbals":{flat:5.99,freeOver:50},"Secret Nature":{flat:6.00,freeOver:50},"Soul CBD":{flat:5.95,freeOver:60},"Natural Smoke Shop":{flat:5.95,freeOver:35},"Charlotte's Web":{flat:5.99,freeOver:50},"Rishi Tea":{flat:8.00,freeOver:60} };
 function shipInfo(vendor,after){ var s=SHIPPING[vendor]; if(!s) return {cost:0,free:true,freeOver:0}; var free=(s.freeOver>0&&after>=s.freeOver)||!(s.flat>0); return {cost:free?0:s.flat,free:free,freeOver:s.freeOver||0}; }
 function appendParam(url,key,val){ if(!url||url==="#"||!/^https?:\/\//i.test(url)) return url; if(new RegExp("[?&]"+key+"=").test(url)) return url; return url+(url.indexOf("?")===-1?"?":"&")+key+"="+encodeURIComponent(val); }
 function withAffiliate(product){ var base=(product&&product.url)?product.url:"#"; var cfg=BRAND_AFFILIATES[product.vendor];

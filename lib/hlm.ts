@@ -15,11 +15,43 @@ export const SITE_FROM = "Herbal Leaf Market"
 export const CONTACT_EMAIL = "hello@herballeafmarket.com"
 export const SITE_URL = "https://herballeafmarket.com"
 
-const SHOPIFY_STORES = [
+type ShopifyStore = {
+  vendor: string
+  domain: string
+  prefix: string
+  /* Optional product_type allow-list. Present = ONLY these types are ingested.
+   * Matched case-insensitively against Shopify's product_type. This exists
+   * because a vendor's whole catalogue is not necessarily a fit: Rishi sells
+   * 289 things, but 46 are teaware, 25 are gift sets and 7 are "FREE GIFT"
+   * placeholders. An allow-list rather than a deny-list on purpose — a new
+   * product_type they invent later stays OUT until we look at it, instead of
+   * silently appearing on the storefront. */
+  include?: string[]
+  /* Optional product_type deny-list, for stores where taking everything-but is
+   * the more natural expression. Applied after `include`. */
+  exclude?: string[]
+}
+
+const SHOPIFY_STORES: ShopifyStore[] = [
   { vendor: "Puff Herbals", domain: "https://puffherbals.com", prefix: "puff" },
   { vendor: "Secret Nature", domain: "https://secretnature.com", prefix: "sn" },
   { vendor: "Soul CBD", domain: "https://mysoulcbd.com", prefix: "soul" },
   { vendor: "Charlotte's Web", domain: "https://www.charlottesweb.com", prefix: "cw" },
+  /* Rishi Tea & Botanicals — added 2026-08-08.
+   * Loose leaf / sachets / powders only: 187 of their 289 products.
+   * Deliberately excluded, and why:
+   *   ACCESSORIES (46), GIFT SETS (25), MERCHANDISE (6), FREE GIFT (7),
+   *     GIFT CARD (1), OTHER (2)  -- teaware and gifting, not botanicals.
+   *   SPARKLING BOTANICALS (5), CONCENTRATES (5), ICED TEA (5) -- these ship at
+   *     a $12 flat rate rather than Rishi's usual $8, and SHIPPING in app.js
+   *     holds ONE flat rate per vendor. Including them would quote the shopper
+   *     the wrong postage. Add them only alongside per-product shipping. */
+  {
+    vendor: "Rishi Tea",
+    domain: "https://www.rishi-tea.com",
+    prefix: "rishi",
+    include: ["LOOSE LEAF", "SACHETS", "POWDERS"],
+  },
 ]
 const NSS_ORIGIN = "https://www.smokingblends.com"
 const NSS_CACHE_KEY = "nss_ids_v1"
@@ -38,6 +70,7 @@ const HLM_DEFAULT_RULES = {
     "Soul CBD": 20,
     "Natural Smoke Shop": 10,
     "Charlotte's Web": 0,
+    "Rishi Tea": 0,
   },
 }
 
@@ -60,20 +93,9 @@ export async function getInventory(): Promise<any[]> {
   }
   let out: any[] = []
   try {
-    const resps = await Promise.all(
-      SHOPIFY_STORES.map((s) =>
-        fetch(s.domain + "/products.json?limit=250", {
-          headers: { Accept: "application/json", "User-Agent": "Mozilla/5.0" },
-        }).catch(() => null),
-      ),
-    )
-    for (let i = 0; i < resps.length; i++) {
-      const r = resps[i]
-      if (!r || r.status !== 200) continue
-      try {
-        const data: any = await r.json()
-        out = out.concat(mapShopify(SHOPIFY_STORES[i], (data && data.products) || []))
-      } catch {}
+    const batches = await Promise.all(SHOPIFY_STORES.map((s) => fetchStoreProducts(s)))
+    for (let i = 0; i < batches.length; i++) {
+      out = out.concat(mapShopify(SHOPIFY_STORES[i], batches[i]))
     }
   } catch {}
   if (out.length) {
@@ -88,10 +110,57 @@ export async function refreshInventory(): Promise<string> {
   return n + " products cached."
 }
 
-function mapShopify(store: (typeof SHOPIFY_STORES)[number], products: any[]): any[] {
+/* Shopify caps products.json at 250 rows per page. A single limit=250 call
+ * therefore TRUNCATES any store with a bigger catalogue, silently — no error,
+ * the feed just comes back smaller than the shop and nothing says so. Rishi has
+ * 289, so they were the first vendor to expose it. Page until a short page
+ * comes back.
+ *
+ * The page cap is a runaway guard, not a product decision. If a store ever hits
+ * it we log, because a silent cap here reads as "that vendor only has 1000
+ * products" and nobody would question it. */
+const SHOPIFY_PAGE_LIMIT = 250
+const SHOPIFY_MAX_PAGES = 4
+
+async function fetchStoreProducts(store: ShopifyStore): Promise<any[]> {
+  const all: any[] = []
+  for (let page = 1; page <= SHOPIFY_MAX_PAGES; page++) {
+    let r: Response | null = null
+    try {
+      r = await fetch(`${store.domain}/products.json?limit=${SHOPIFY_PAGE_LIMIT}&page=${page}`, {
+        headers: { Accept: "application/json", "User-Agent": "Mozilla/5.0" },
+      })
+    } catch {
+      return all
+    }
+    if (!r || r.status !== 200) return all
+    let batch: any[] = []
+    try {
+      const data: any = await r.json()
+      batch = (data && data.products) || []
+    } catch {
+      return all
+    }
+    all.push(...batch)
+    if (batch.length < SHOPIFY_PAGE_LIMIT) return all
+  }
+  console.log(
+    `[inventory] ${store.vendor} still had a full page at the ${SHOPIFY_MAX_PAGES}-page cap; catalogue may be truncated`,
+  )
+  return all
+}
+
+function mapShopify(store: ShopifyStore, products: any[]): any[] {
   const out: any[] = []
+  const inc = store.include?.map((t) => t.trim().toUpperCase())
+  const exc = store.exclude?.map((t) => t.trim().toUpperCase())
   ;(products || []).forEach((p) => {
     if (!p || !p.handle) return
+    if (inc || exc) {
+      const type = String(p.product_type || "").trim().toUpperCase()
+      if (inc && !inc.includes(type)) return
+      if (exc && exc.includes(type)) return
+    }
     const img = p.images && p.images[0] && p.images[0].src ? p.images[0].src : ""
     const vars = (p.variants || []).map((v: any) => ({
       id: String(v.id),
