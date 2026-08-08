@@ -99,17 +99,22 @@ const env = {
 /* =========================================================================
  * Inventory (Shopify products.json scrape, cached 6h)
  * ========================================================================= */
-export async function getInventory(): Promise<any[]> {
-  /* Cache KEY carries a version. Bump it in the same commit as ANY change to
-   * what this payload contains (new vendor, new field like coa), so the
-   * deploy itself forces the next request to cold-scrape. The alternative --
-   * shipping a pipeline change behind a still-warm 6h cache that only the
-   * admin password can bust -- left the Secret Nature COA join invisible on
-   * production for hours while the code sat correct and deployed. */
-  const cached = await kvGet("hlm_live_v4")
-  if (cached) {
-    try { return JSON.parse(cached) } catch {}
-  }
+/* Cache KEY carries a version. Bump it in the same commit as ANY change to
+ * what this payload contains (new vendor, new field like coa), so the
+ * deploy itself forces the next request to cold-scrape. The alternative --
+ * shipping a pipeline change behind a still-warm 6h cache that only the
+ * admin password can bust -- left the Secret Nature COA join invisible on
+ * production for hours while the code sat correct and deployed. */
+const INVENTORY_KEY = "hlm_live_v4"
+/* TTL 6h, but the refresh-inventory cron rebuilds every 4h, so in normal
+ * operation the key NEVER expires and no visitor ever pays for a scrape.
+ * The TTL is the safety net for when the cron is down, not the schedule. */
+const INVENTORY_TTL = 21600
+
+/* The full scrape: five Shopify feeds + the Secret Nature lab page, mapped,
+ * COAs joined, written to KV. This is the expensive path (~10-20s) and it is
+ * meant to run from the CRON, in the background, where nobody is waiting. */
+export async function buildInventory(): Promise<any[]> {
   let out: any[] = []
   try {
     const [batches, snCoas] = await Promise.all([
@@ -122,9 +127,20 @@ export async function getInventory(): Promise<any[]> {
     attachSecretNatureCoas(out, snCoas)
   } catch {}
   if (out.length) {
-    await kvPut("hlm_live_v4", JSON.stringify(out), 21600)
+    await kvPut(INVENTORY_KEY, JSON.stringify(out), INVENTORY_TTL)
   }
   return out
+}
+
+export async function getInventory(): Promise<any[]> {
+  const cached = await kvGet(INVENTORY_KEY)
+  if (cached) {
+    try { return JSON.parse(cached) } catch {}
+  }
+  /* Visitor-facing fallback for the windows the cron cannot cover: right
+   * after a deploy that bumped the key, or when the cron has been failing
+   * long enough for the TTL to lapse. */
+  return buildInventory()
 }
 
 /* =========================================================================
@@ -252,9 +268,13 @@ function attachSecretNatureCoas(products: any[], coas: Map<string, SnDoc[]>): vo
   console.log(`[inventory] Secret Nature COAs: ${coas.size} document keys, ${attached} products linked`)
 }
 
+/* Rebuild-and-overwrite, NOT delete-then-rebuild: kvDel first would leave a
+ * window where a visitor lands on an empty cache and pays for the scrape --
+ * the exact thing this cache exists to prevent. The old copy keeps serving
+ * until the new one atomically replaces it. Used by the admin RPC and the
+ * refresh-inventory cron alike. */
 export async function refreshInventory(): Promise<string> {
-  await kvDel("hlm_live_v4")
-  const n = (await getInventory()).length
+  const n = (await buildInventory()).length
   return n + " products cached."
 }
 
