@@ -30,6 +30,13 @@ type ShopifyStore = {
   /* Optional product_type deny-list, for stores where taking everything-but is
    * the more natural expression. Applied after `include`. */
   exclude?: string[]
+  /* Optional product_type -> site category rename, applied at ingest so the
+   * storefront taxonomy stays consistent. Shopify product_type is whatever the
+   * vendor typed: Rishi's are SHOUTING ("LOOSE LEAF"), which would render as
+   * all-caps chips sitting next to "Herbal Blends" and sort to the bottom,
+   * since catRank() matches CATEGORY_ORDER exactly and "POWDERS" !== "Powders".
+   * Keys are matched trimmed and case-insensitively. */
+  categoryMap?: Record<string, string>
 }
 
 const SHOPIFY_STORES: ShopifyStore[] = [
@@ -51,6 +58,12 @@ const SHOPIFY_STORES: ShopifyStore[] = [
     domain: "https://www.rishi-tea.com",
     prefix: "rishi",
     include: ["LOOSE LEAF", "SACHETS", "POWDERS"],
+    /* Loose leaf and sachets are both simply "Tea" to a shopper — the
+     * distinction is packaging, not product. Powders (matcha and friends) keep
+     * their own existing category so they group with other powders; isTea() in
+     * app.js still counts them under the Tea facet, so they appear in both
+     * places, which is correct: a matcha IS a tea AND is a powder. */
+    categoryMap: { "LOOSE LEAF": "Tea", SACHETS: "Tea", POWDERS: "Powders" },
   },
 ]
 const NSS_ORIGIN = "https://www.smokingblends.com"
@@ -154,13 +167,17 @@ function mapShopify(store: ShopifyStore, products: any[]): any[] {
   const out: any[] = []
   const inc = store.include?.map((t) => t.trim().toUpperCase())
   const exc = store.exclude?.map((t) => t.trim().toUpperCase())
+  const cmap: Record<string, string> = {}
+  if (store.categoryMap) {
+    for (const k of Object.keys(store.categoryMap)) cmap[k.trim().toUpperCase()] = store.categoryMap[k]
+  }
   ;(products || []).forEach((p) => {
     if (!p || !p.handle) return
-    if (inc || exc) {
-      const type = String(p.product_type || "").trim().toUpperCase()
-      if (inc && !inc.includes(type)) return
-      if (exc && exc.includes(type)) return
-    }
+    const rawType = String(p.product_type || "").trim()
+    const typeKey = rawType.toUpperCase()
+    if (inc && !inc.includes(typeKey)) return
+    if (exc && exc.includes(typeKey)) return
+    const category = cmap[typeKey] || rawType
     const img = p.images && p.images[0] && p.images[0].src ? p.images[0].src : ""
     const vars = (p.variants || []).map((v: any) => ({
       id: String(v.id),
@@ -181,7 +198,7 @@ function mapShopify(store: ShopifyStore, products: any[]): any[] {
       id: store.prefix + "-" + p.handle,
       vendor: store.vendor,
       name: p.title || "",
-      category: p.product_type || "",
+      category,
       image: img,
       price: minP,
       unit: vars.length > 1 ? "from" : "",

@@ -100,6 +100,16 @@
   .chip{cursor:pointer;font-family:var(--sans);font-size:.88rem;font-weight:600;letter-spacing:.5px;padding:8px 18px;border-radius:6px;border:1.5px solid rgba(74,222,128,.2);background:rgba(15,24,17,.9);color:var(--muted);transition:all .18s}
   .chip:hover{border-color:var(--sage);color:var(--sage)}
   .chip.active{background:var(--sage);color:#0b120d;border-color:var(--sage);font-weight:700;box-shadow:0 4px 14px rgba(74,222,128,.3)}
+  /* Facet counts. Tabular numerals so the chip row doesn't shimmy as counts
+     change width while you type in the search box. */
+  .chip-n{display:inline-block;margin-left:6px;font-size:.74rem;font-weight:700;font-variant-numeric:tabular-nums;opacity:.65}
+  .chip.active .chip-n{opacity:.85}
+  /* A facet with nothing behind it stays put but reads as a dead end. Kept
+     clickable so a mis-tap is recoverable rather than silently inert. */
+  .chip.empty{opacity:.38}
+  .chip.empty:hover{border-color:rgba(74,222,128,.2);color:#9fb6a6}
+  .mnav-link.empty{opacity:.38}
+  .mnav-link .chip-n{opacity:.6}
   .chip.wish{border-color:rgba(224,107,66,.3);color:var(--terracotta)}
   .chip.wish.active{background:var(--terracotta);color:#fff;border-color:var(--terracotta-dk);box-shadow:0 4px 14px rgba(224,107,66,.35)}
   .mobile-cat{display:none;margin:14px 0 2px}
@@ -528,7 +538,7 @@
   <span class="live-pill"><span class="dot"></span>Live inventory</span>
   <div class="spacer"></div>
   <nav class="nav-adv"><a href="/know-the-facts.html?v=2" target="_top">Know the Facts</a><a href="/anecdote-library.html?v=2" target="_top">Our Stories</a></nav>
-  <div class="searchbox"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3a7b50" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input id="search" type="text" placeholder="Search botanicals..." oninput="render()" aria-label="Search products" /></div>
+  <div class="searchbox"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3a7b50" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input id="search" type="text" placeholder="Search botanicals..." oninput="refilter()" aria-label="Search products" /></div>
   <button class="acct-btn" onclick="(function(){ if(isLoggedIn()){ if(confirm('Sign out of Herbal Leaf Market?')) signOut(); } else { setAuthMode('login'); openAuth('Welcome back to the garden'); } })()"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span id="acctLabel">Sign in</span></button>
 </div></header>
 <section class="hero">
