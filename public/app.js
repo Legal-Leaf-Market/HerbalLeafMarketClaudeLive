@@ -742,14 +742,39 @@ function render(){
     var canna=cannaChip(p);
     /* Per-strain lab report, attached server-side ONLY where the maker's own
      * published COA matched this product's strain+form+cannabinoid (see
-     * lib/hlm.ts). The link goes straight to the maker's PDF on their CDN --
-     * no affiliate wrap, it is a document, not a shop. Gated on p.coa, so a
-     * card without a verified match simply never shows it. */
-    var coaHtml=p.coa?('<a class="coa-link" href="'+String(p.coa).replace(/"/g,"&quot;")+'" target="_blank" rel="noopener" title="The maker\'s certificate of analysis for this strain (opens their PDF)" onclick="event.stopPropagation();hlmTrack(\'coa\',{vendor:'+JSON.stringify(p.vendor).replace(/"/g,"&quot;")+',product:'+JSON.stringify(p.name).replace(/"/g,"&quot;")+',category:'+JSON.stringify(p.category||"").replace(/"/g,"&quot;")+'})">\ud83d\udd2c Lab report (COA)</a>'):"";
+     * lib/hlm.ts). Clicking opens the certificate in OUR viewer modal, on our
+     * page, Legal Leaf-style; the href keeps the raw PDF so middle-click,
+     * long-press and no-JS all still reach the document directly. */
+    var coaHtml=p.coa?('<a class="coa-link" href="'+String(p.coa).replace(/"/g,"&quot;")+'" rel="noopener" title="View the maker\'s certificate of analysis for this strain" onclick="event.stopPropagation();event.preventDefault();openCoaModal(\''+p.id+'\')">\ud83d\udd2c Lab report (COA)</a>'):"";
     var xtag = isCBD(p) ? '<a class="cbd-xtag" href="'+SISTER_URL+'" target="_blank" rel="noopener" title="More CBD options &amp; better prices at Legal Leaf Market" onclick="hlmTrack(\'sister-card\',{vendor:\'Legal Leaf Market\',product:'+JSON.stringify(p.name)+',category:\'CBD\'})">More CBD &amp; better prices at our sister shop \u2197</a>' : "";
     return header+'<article class="card" id="'+p.id+'" data-id="'+p.id+'"><div class="thumb">'+(p.badge?'<span class="badge">'+p.badge+'</span>':"")+wbtn+imgHtml+'</div><div class="card-body"><div class="vendor">'+p.vendor+'</div><h3>'+p.name+'</h3>'+(canna?('<div class="canna-wrap">'+canna+'</div>'):"")+'<p class="blurb">'+p.blurb+'</p><div class="meta">'+priceHtml+'<span class="unit">'+unitTxt+'</span></div>'+couponHtml+coaHtml+sizeHtml+'<button class="add-cart" onclick="addToCart(\''+p.id+'\')">Add to Herbal Leaf Market Cart</button>'+xtag+'</div></article>'; }).join("");
   grid.innerHTML=(showXsell?cbdCrossBanner():"")+body;
   try{ document.dispatchEvent(new CustomEvent("hlm:render",{detail:{count:items.length,inventoryLoaded:!!window.__hlmInvLoaded}})); }catch(e){} }
+
+/* ---- COA viewer modal ----------------------------------------------------
+ * Legal Leaf's pattern: the certificate renders in a modal on OUR page rather
+ * than bouncing the shopper to a new tab. The PDF is shown through Google's
+ * viewer (docs.google.com/viewer?embedded=true), which fetches it server-side
+ * and returns HTML -- chosen over a direct <iframe src=pdf> because iOS Safari
+ * renders framed PDFs as a single non-scrollable page (or nothing), and this
+ * site's traffic is mostly phones. The escape hatch under the frame links the
+ * raw PDF for anyone who wants the native viewer or a download.
+ * The iframe is built on OPEN and torn down on CLOSE, so nothing loads until
+ * asked and a half-loaded viewer never lingers behind the next open. */
+function openCoaModal(id){ var p=productById(id); if(!p||!p.coa) return;
+  hlmTrack("coa",{vendor:p.vendor,product:p.name,category:p.category||""});
+  var t=document.getElementById("coaTitle"); if(t)t.textContent=p.name;
+  var s=document.getElementById("coaSub"); if(s)s.textContent="Certificate of Analysis, published by "+p.vendor;
+  var w=document.getElementById("coaFrameWrap");
+  if(w){ var pdf=String(p.coa);
+    var gv="https://docs.google.com/viewer?embedded=true&url="+encodeURIComponent(pdf);
+    w.innerHTML='<iframe class="coaframe" src="'+gv.replace(/"/g,"&quot;")+'" title="Certificate of Analysis"></iframe>'
+      +'<div class="coahint">Slow to load? <a href="'+pdf.replace(/"/g,"&quot;")+'" target="_blank" rel="noopener">Open the PDF in a new tab &nearr;</a></div>'; }
+  var o=document.getElementById("coaOverlay"),m=document.getElementById("coaModal");
+  if(o)o.classList.add("open"); if(m)m.classList.add("open"); }
+function closeCoaModal(){ var o=document.getElementById("coaOverlay"),m=document.getElementById("coaModal");
+  if(o)o.classList.remove("open"); if(m)m.classList.remove("open");
+  var w=document.getElementById("coaFrameWrap"); if(w)w.innerHTML=""; }
 
 function mergeLive(liveData){ var seed=normalizeCategories(getSeedProducts()); var live=normalizeCategories(liveData.slice());
   var lv={}; live.forEach(function(p){ if(p.vendor) lv[p.vendor]=true; }); return seed.filter(function(p){ return !lv[p.vendor]; }).concat(live); }
