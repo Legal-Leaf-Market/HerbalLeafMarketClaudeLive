@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Product URLs are deliberately absent: every product here belongs to an
+     independent maker and the card links out to their site. An affiliate
+     storefront that publishes /product pages ends up competing with the
+     vendor in search for the vendor's own product, which is bad partnership
+     and worse SEO. The pages below are the ones that are genuinely ours. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://herballeafmarket.com/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://herballeafmarket.com/know-the-facts.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://herballeafmarket.com/anecdote-library.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+</urlset>

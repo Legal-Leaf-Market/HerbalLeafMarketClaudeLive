@@ -1,0 +1,21 @@
+# Herbal Leaf Market — crawl policy
+#
+# /api/ is disallowed because it is not content: /api/inventory is a live
+# aggregation of five vendors' catalogues (cached 6h; an uncached crawl hit
+# costs a real scrape of every maker's Shopify feed), and /api/rpc is the
+# storefront's function endpoint. Nothing there is worth indexing and
+# crawling it spends other people's servers.
+#
+# /admin.html is the owner's console; it already carries noindex, this is
+# the second lock.
+#
+# /facts.html and /stories.html are bare redirect stubs kept so old
+# ?page= links resolve; the real pages are in the sitemap.
+
+User-agent: *
+Disallow: /api/
+Disallow: /admin.html
+Disallow: /facts.html
+Disallow: /stories.html
+
+Sitemap: https://herballeafmarket.com/sitemap.xml
