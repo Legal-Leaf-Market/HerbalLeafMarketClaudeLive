@@ -60,7 +60,7 @@
     <input id="pw" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')adminLogin()" />
     <button class="btn wide" onclick="adminLogin()">Unlock</button>
     <div class="err" id="gateErr"></div>
-    <p class="note" style="margin-top:16px">First time? In the Apps Script editor run <code>hlmSetAdminPassword("yourpassword")</code> once.</p>
+    <p class="note" style="margin-top:16px">First time? Set the <code>ADMIN_PW</code> environment variable on the Vercel project, then sign in with it here.</p>
   </div>
 
   <main id="main">

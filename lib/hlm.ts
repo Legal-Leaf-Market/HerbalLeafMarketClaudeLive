@@ -790,6 +790,13 @@ async function send(to: string, subject: string, html: string): Promise<boolean>
  * ========================================================================= */
 type Handler = (args: any[]) => Promise<any>
 
+/* PUBLIC functions are what the storefront actually calls (app.js via the
+ * hlm-api.js shim). Everything else is owner tooling, and /api/rpc is an
+ * unauthenticated endpoint with Access-Control-Allow-Origin:* -- before this
+ * split, ANY page on the internet could POST {fn:"hlmSendWeeklyDigest"} and
+ * email the entire member list, force a re-scrape of five vendors' feeds, or
+ * read the click analytics. Grepped every page in public/: none of the gated
+ * six had a single caller, so nothing client-side changes. */
 const RPC: Record<string, Handler> = {
   hlmWatchItem: (a) => watchItem(a[0] || {}),
   hlmCreateAccount: (a) => createAccount(a[0] || {}),
@@ -797,21 +804,36 @@ const RPC: Record<string, Handler> = {
   hlmGetRules: () => getRules(),
   hlmGetMatrix: () => getMatrix(),
   getInventory: () => getInventory(),
-  refreshInventory: () => refreshInventory(),
   getSmokingBlendsIds: (a) => getSmokingBlendsIds(a && a[0]),
-  refreshSmokingBlendsIds: () => refreshSmokingBlendsIds(),
-  hlmGetClickStats: (a) => getClickStats((a && a[0]) || 7),
+  hlmGetMatrixOverrides: () => getMatrixOverrides(),
+  /* These three take the admin password as their first argument and verify it
+   * themselves through checkAdmin(), which fails closed when ADMIN_PW is
+   * unset. They stay in the map because admin.html calls them. */
   hlmAdminData: (a) => adminData(a[0]),
   hlmSaveRules: (a) => saveRules(a[0], a[1]),
   hlmSaveMatrixOverrides: (a) => saveMatrixOverrides(a[0], a[1]),
-  hlmGetMatrixOverrides: () => getMatrixOverrides(),
+}
+
+/* Owner-only: first argument MUST be the admin password. The wrapper keeps the
+ * handlers themselves untouched (the cron routes call sendWeeklyDigest and
+ * sendWeeklyClickReport directly, without a password, guarded by CRON_SECRET). */
+const ADMIN_RPC: Record<string, Handler> = {
+  refreshInventory: () => refreshInventory(),
+  refreshSmokingBlendsIds: () => refreshSmokingBlendsIds(),
+  hlmGetClickStats: (a) => getClickStats((a && a[1]) || 7),
   hlmSendWeeklyDigest: () => sendWeeklyDigest(),
   hlmSendWeeklyClickReport: () => sendWeeklyClickReport(),
   hlmGardenSelfTest: () => gardenSelfTest(),
 }
 
 export async function dispatchRpc(fn: string, args: any[]): Promise<any> {
+  const a = Array.isArray(args) ? args : []
+  const admin = ADMIN_RPC[fn]
+  if (admin) {
+    if (!checkAdmin(String(a[0] ?? ""))) return { ok: false, error: "unauthorized" }
+    return await admin(a)
+  }
   const handler = RPC[fn]
   if (!handler) return { ok: false, error: "unknown function: " + fn }
-  return await handler(Array.isArray(args) ? args : [])
+  return await handler(a)
 }
