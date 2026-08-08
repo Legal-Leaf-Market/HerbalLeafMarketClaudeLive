@@ -327,12 +327,64 @@ function buildBearBlendBookmarklet(pairs){ var items=JSON.stringify(pairs);
 function bearBlendCartPairs(){ var pairs=[], missing=0; for(var k in CART){ var p=productById(k); if(!p||p.vendor!=="Bear Blend")continue; var bid=bbIdFor(p); if(bid){pairs.push([bid,CART[k]]);}else{missing++;} } return { pairs:pairs, missing:missing }; }
 function bearBlendMobileText(){ var items=cartItemsForVendor("Bear Blend"); return "Herbal Leaf Market - Bear Blend cart:\n"+items.map(function(x){return "- "+x.qty+"x "+x.p.name;}).join("\n")+"\n\nCoupon: "+HOUSE_CODE; }
 function shareBearBlend(){ hlmShare("Bear Blend cart", bearBlendMobileText(), withAffiliate({vendor:"Bear Blend",url:"https://bearblend.com/shop"})); }
-function bearBlendCheckout(){ var info=bearBlendCartPairs(); if(!info.pairs.length){ hlmToast("No Bear Blend items ready to send."); return; }
+/* ---- Bear Blend mobile: guided step-through -----------------------------
+ * Bear Blend CANNOT be auto-filled from a phone, and no amount of work here
+ * changes that. Their add-to-cart is a JS handler on a <button data-add-to-cart
+ * data-product-id> that POSTs /cart/add with a CSRF token minted on their own
+ * page. The only cart routes they expose are /cart and /cart/contents -- there
+ * is no GET that adds anything. That is the whole reason Natural Smoke Shop
+ * works and this does not: NSS is WooCommerce, where ?add-to-cart=<id> is a
+ * plain URL, so we can drive one hidden tab through a list of them. The desktop
+ * flow here uses a bookmarklet because a bookmarklet executes ON bearblend.com
+ * and therefore has the token; phones can't run bookmarklets.
+ *
+ * So mobile is inherently one tap per item on their site. What we CAN remove is
+ * the shopper having to keep their own place: one reused tab, a running count,
+ * and a finish state that lands them on the cart. Do not "optimise" this into
+ * an auto-add -- it is not a missing feature, it is not possible. */
+var BB_FILL_WIN=null, BB_QUEUE=[], BB_IDX=0;
+
+function bearBlendRenderList(){ var items=cartItemsForVendor("Bear Blend"); var ml=document.getElementById("bbMobileList"); if(!ml) return 0;
+  ml.innerHTML=items.map(function(x,i){ var label=x.qty+'&times; '+x.p.name+(x.sizeTxt?(' &middot; '+x.sizeTxt):'');
+    return '<li style="list-style:none;margin:7px 0"><label style="display:flex;gap:9px;align-items:flex-start;cursor:pointer"><input type="checkbox" class="bb-pick" checked data-i="'+i+'" style="margin-top:3px;width:18px;height:18px;accent-color:#2f6b4f"><span>'+label+'</span></label></li>'; }).join("");
+  return items.length; }
+function bbToggleAll(ck){ [].slice.call(document.querySelectorAll("#bbMobileList .bb-pick")).forEach(function(b){ b.checked=ck; }); }
+function bbPhase(name){ ["bbPick","bbStep","bbDone"].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display=(id===name)?"block":"none"; }); }
+function bbItemUrl(x){ return withAffiliate({vendor:"Bear Blend",url:(x.p.url||"https://bearblend.com/shop")}); }
+function bbStartStepThrough(){ var items=cartItemsForVendor("Bear Blend");
+  var picked=[].slice.call(document.querySelectorAll("#bbMobileList .bb-pick")).filter(function(b){ return b.checked; })
+    .map(function(b){ return items[+b.getAttribute("data-i")]; }).filter(Boolean);
+  if(!picked.length){ hlmToast("Pick at least one item first."); return; }
+  BB_QUEUE=picked; BB_IDX=0; bbPhase("bbStep"); bbStepRender(); bbStepOpenCurrent(); }
+function bbStepRender(){ var x=BB_QUEUE[BB_IDX]; if(!x){ bbStepFinish(); return; }
+  var c=document.getElementById("bbStepCount"); if(c) c.textContent="Item "+(BB_IDX+1)+" of "+BB_QUEUE.length;
+  var n=document.getElementById("bbStepName"); if(n) n.textContent=x.qty+"× "+x.p.name+(x.sizeTxt?(" · "+x.sizeTxt):"");
+  var nx=document.getElementById("bbStepNext"); if(nx) nx.innerHTML=(BB_IDX+1>=BB_QUEUE.length)?"Added it &mdash; finish":"Added it &mdash; next &#9656;"; }
+/* Reuse ONE named tab. Opening a tab per item buries the shopper in tabs and,
+ * on iOS, silently drops every window.open after the first. */
+function bbStepOpenCurrent(){ var x=BB_QUEUE[BB_IDX]; if(!x) return; var u=bbItemUrl(x);
+  try{ if(BB_FILL_WIN && !BB_FILL_WIN.closed){ BB_FILL_WIN.location.href=u; BB_FILL_WIN.focus(); return; } }catch(e){}
+  BB_FILL_WIN=window.open(u,"hlmBBfill");
+  if(!BB_FILL_WIN){ hlmToast("Allow pop-ups for this site, then tap Open this item."); return; }
+  try{ BB_FILL_WIN.focus(); }catch(e){} }
+function bbStepNext(){ BB_IDX++; if(BB_IDX>=BB_QUEUE.length){ bbStepFinish(); return; } bbStepRender(); bbStepOpenCurrent(); }
+function bbStepSkip(){ bbStepNext(); }
+function bbStepFinish(){ bbPhase("bbDone"); }
+function bbViewCart(){ var u=withAffiliate({vendor:"Bear Blend",url:"https://bearblend.com/cart"});
+  try{ if(BB_FILL_WIN && !BB_FILL_WIN.closed){ BB_FILL_WIN.location.href=u; BB_FILL_WIN.focus(); return; } }catch(e){}
+  BB_FILL_WIN=window.open(u,"hlmBBfill"); try{ if(BB_FILL_WIN) BB_FILL_WIN.focus(); }catch(e){} }
+
+function bearBlendCheckout(){ var items=cartItemsForVendor("Bear Blend");
+  if(!items.length){ hlmToast("No Bear Blend items in your cart."); return; }
   copyCode(); trackVendorCheckout("Bear Blend");
-  if(isMobileDevice()){ var items=cartItemsForVendor("Bear Blend"); copyText(bearBlendMobileText());
-    var ml=document.getElementById("bbMobileList"); if(ml) ml.innerHTML=items.map(function(x){ var u=withAffiliate({vendor:"Bear Blend",url:(x.p.url||"https://bearblend.com/shop")}); return '<li><a href="'+u+'" target="_blank" rel="noopener">'+x.qty+'&times; '+x.p.name+' &nearr;</a></li>'; }).join("");
-    var first=(items[0]&&items[0].p.url)?items[0].p.url:"https://bearblend.com/shop"; var go=document.getElementById("bbMobGo"); if(go) go.setAttribute("href", withAffiliate({vendor:"Bear Blend",url:first}));
+  /* Mobile walks product PAGES, so it needs no Bear Blend product id. Only the
+   * desktop bookmarklet needs bbIdFor(), which is why the pairs check moved
+   * below the mobile branch -- an item missing from BB_IDS used to block the
+   * phone flow entirely for no reason. */
+  if(isMobileDevice()){ copyText(bearBlendMobileText());
+    bearBlendRenderList(); var sa=document.getElementById("bbSelAll"); if(sa) sa.checked=true; bbPhase("bbPick");
     var mov=document.getElementById("bbMobOverlay"), mmd=document.getElementById("bbMobModal"); if(mov)mov.classList.add("open"); if(mmd)mmd.classList.add("open"); hlmToast("Your list + code "+HOUSE_CODE+" are copied."); return; }
+  var info=bearBlendCartPairs(); if(!info.pairs.length){ hlmToast("No Bear Blend items ready to send."); return; }
   var bm=buildBearBlendBookmarklet(info.pairs); var link=document.getElementById("bbCoBookmarklet"); if(link) link.setAttribute("href", bm);
   var miss=document.getElementById("bbCoMissing"); if(miss){ miss.style.display=info.missing?"block":"none"; if(info.missing) miss.textContent=info.missing+" Bear Blend item(s) need a manual add."; }
   var ov=document.getElementById("bbCoOverlay"), md=document.getElementById("bbCoModal"); if(ov)ov.classList.add("open"); if(md)md.classList.add("open"); }

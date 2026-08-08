@@ -639,15 +639,31 @@
 <div class="bbmob-modal" id="bbMobModal" role="dialog" aria-label="Bear Blend Mobile Checkout">
   <button class="bbco-close" onclick="closeBearBlendMobile()">&times;</button>
   <div class="bbco-badge"> Bear Blend &middot; Mobile</div>
-  <h3>Your cart is copied </h3>
-  <p class="bbco-sub">On phones we hand you off with your list &amp; code ready:</p>
-  <ol class="bbco-steps">
-    <li><b>Tap to open Bear Blend</b> at your first item:<div class="bbco-drag"><a id="bbMobGo" class="bbco-bm" href="#" target="_blank" rel="noopener">Open Bear Blend &nearr;</a></div></li>
-    <li><b>Tap each item</b> to open &amp; add (list is also on your clipboard):<ul id="bbMobileList" style="margin:8px 0 0;padding-left:18px;font-size:.88rem;color:var(--muted)"></ul></li>
-    <li><b>Paste code</b> <b>JACOBKENNEDY</b> at their cart.</li>
-  </ol>
-  <button class="bbco-go" style="width:100%;margin-top:4px" onclick="shareBearBlend()"> Share my cart list</button>
-  <p class="bbco-fine">Prefer one-tap auto-cart? Open on desktop for the bookmarklet.</p>
+  <h3>⚡ Add your items</h3>
+  <p class="bbco-sub">Bear Blend needs one tap per item on their site. We'll walk you through them in a single tab and keep your place.</p>
+
+  <div id="bbPick">
+    <label style="display:flex;align-items:center;gap:9px;font-weight:700;font-size:.9rem;margin:2px 0 6px;cursor:pointer"><input type="checkbox" id="bbSelAll" checked onchange="bbToggleAll(this.checked)" style="width:18px;height:18px;accent-color:#2f6b4f"> Select all</label>
+    <ul id="bbMobileList" style="margin:6px 0 0;padding-left:0;font-size:.9rem;color:var(--ink)"></ul>
+    <button class="bbco-go" style="width:100%;margin-top:10px" onclick="bbStartStepThrough()">Start adding &#9656;</button>
+  </div>
+
+  <div id="bbStep" style="display:none">
+    <div id="bbStepCount" style="font-size:.75rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--sage)"></div>
+    <div id="bbStepName" style="font-size:1.02rem;font-weight:700;color:var(--ink);margin:4px 0 12px;line-height:1.35"></div>
+    <p class="bbco-sub" style="margin:0 0 12px">Tap <b>Add to Cart</b> on their page, then come back here.</p>
+    <button class="bbco-go" style="width:100%" onclick="bbStepOpenCurrent()">Open this item &nearr;</button>
+    <button id="bbStepNext" class="bbco-go" style="width:100%;margin-top:8px;background:var(--terracotta)" onclick="bbStepNext()">Added it &mdash; next &#9656;</button>
+    <button class="bbco-go" style="width:100%;margin-top:8px;background:transparent;color:var(--muted);border:1px solid var(--line)" onclick="bbStepSkip()">Skip this one</button>
+  </div>
+
+  <div id="bbDone" style="display:none">
+    <p class="bbco-sub" style="margin:0 0 12px">That's everything. Paste code <b>JACOBKENNEDY</b> at their cart &mdash; it's already copied.</p>
+    <button class="bbco-go" style="width:100%;background:var(--terracotta)" onclick="bbViewCart()">&#9654; View my Bear Blend cart</button>
+  </div>
+
+  <button class="bbco-go" style="width:100%;margin-top:8px;background:var(--gold-dk)" onclick="shareBearBlend()"> Share my cart list</button>
+  <p class="bbco-fine">On desktop there's a one-tap bookmarklet that fills the whole cart at once.</p>
 </div>
 <div class="bbco-overlay" id="nssCoOverlay" onclick="closeNaturalSmokeCheckout()"></div>
 <div class="bbco-modal" id="nssCoModal" role="dialog" aria-label="Natural Smoke Shop Checkout">
