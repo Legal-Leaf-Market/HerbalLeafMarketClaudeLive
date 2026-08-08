@@ -273,11 +273,19 @@ function buildFilters(){ var box=document.getElementById("filters"); if(!box)ret
   var cats=orderedCategories(list).filter(function(c){ return catCount(c,list)>0; });
   var wchip=(wn>0)?('<div class="chip wish '+(wishMode?"active":"")+'" onclick="toggleWishMode()" aria-pressed="'+wishMode+'">\u2764 My Garden <span class="chip-n">'+wn+'</span></div>'):"";
   var allChip='<div class="chip '+((!activeCat&&!wishMode)?"active":"")+'" onclick="setCategory(\'All\')">All <span class="chip-n">'+list.length+'</span></div>';
+  /* Reset renders only while a filter is on: an always-there Reset is noise,
+   * a missing one strands the shopper mid-filter. */
+  var rchip=filtersActive()?'<div class="chip reset" onclick="resetFilters()" role="button" aria-label="Reset all filters">&#8634; Reset</div>':"";
   box.innerHTML=wchip+allChip+cats.map(function(c){
     var n=catCount(c,list), sel=catSelected(c);
     return '<div class="chip'+(sel?" active":"")+'" onclick="setCategory(\''+c.replace(/'/g,"\\'")+'\')" aria-pressed="'+sel+'">'+c+' <span class="chip-n">'+n+'</span></div>';
-  }).join(""); syncMobileCat(); }
+  }).join("")+rchip; syncMobileCat(); }
 function toggleWishMode(){ wishMode=!wishMode; if(wishMode) activeCat=""; refilter(); }
+function filtersActive(){ var s=document.getElementById("search"); return !!(activeCat||activeStore!=="All"||wishMode||(s&&s.value.trim())); }
+/* One tap back to the whole shop: state is reset directly and refiltered once,
+ * rather than chaining setCategory/setStore (each of which rebuilds everything). */
+function resetFilters(){ var s=document.getElementById("search"); if(s)s.value="";
+  activeCat=""; activeStore="All"; wishMode=false; refilter(); closeMnav(); }
 /* Single-select: choosing a category REPLACES the current one. Shared by the
  * chips, the mobile drawer and the mobile <select>, so all three stay in step.
  * index.html binds onchange="setCategory(this.value)". */
@@ -294,7 +302,8 @@ function closeMnav(){ var o=document.getElementById("mnavOverlay"),m=document.ge
 function buildMobileNav(){ var catList=pool("cat"), storeList=pool("store");
   var cats=orderedCategories(catList).filter(function(c){ return catCount(c,catList)>0; });
   var cw=document.getElementById("mnavCats");
-  if(cw) cw.innerHTML='<a class="mnav-link '+((!activeCat&&!wishMode)?'active':'')+'" onclick="setCategory(\'All\')">All <span class="chip-n">'+catList.length+'</span></a>'+
+  if(cw) cw.innerHTML=(filtersActive()?'<a class="mnav-link mnav-reset" onclick="resetFilters()">&#8634; Reset all filters</a>':"")+
+    '<a class="mnav-link '+((!activeCat&&!wishMode)?'active':'')+'" onclick="setCategory(\'All\')">All <span class="chip-n">'+catList.length+'</span></a>'+
     cats.map(function(c){
       return '<a class="mnav-link '+(catSelected(c)?'active':'')+'" onclick="setCategory(\''+c.replace(/'/g,"\\'")+'\')">'+c+' <span class="chip-n">'+catCount(c,catList)+'</span></a>'; }).join("");
   var vendors=Array.from(new Set(storeList.map(function(p){return p.vendor;}))).sort();
@@ -738,16 +747,34 @@ function render(){
 
 function mergeLive(liveData){ var seed=normalizeCategories(getSeedProducts()); var live=normalizeCategories(liveData.slice());
   var lv={}; live.forEach(function(p){ if(p.vendor) lv[p.vendor]=true; }); return seed.filter(function(p){ return !lv[p.vendor]; }).concat(live); }
-function loadLiveInventory(){ if(typeof google==="undefined" || !google.script || !google.script.run){ hideLoader(); return; }
-  google.script.run.withSuccessHandler(function(data){ try{ if(Array.isArray(data)&&data.length){ PRODUCTS=mergeLive(data); applyNSSIds(); buildFilters(); buildStoreFilter(); window.__hlmInvLoaded=true; render(); renderCart(); } }catch(e){} try{ window.__hlmInvLoaded=true; document.dispatchEvent(new CustomEvent("hlm:inventory")); }catch(e){} hideLoader(); })
-    .withFailureHandler(function(){ try{ window.__hlmInvLoaded=true; document.dispatchEvent(new CustomEvent("hlm:inventory")); }catch(e){} hideLoader(); }).getInventory(); }
+/* The header pill states are earned, not asserted: it renders "checking" from
+ * the HTML, turns green ONLY inside the branch where live rows actually
+ * merged, and honestly says "Sample prices" when the API fails or returns
+ * nothing. Keyed off the merge branch, NOT __hlmInvLoaded -- that flag flips
+ * true on failure too. Note Bear Blend and NSS rows are seed-served even on a
+ * green pill (no live feed exists for them); the tooltip carries that caveat. */
+function setLivePill(state){ try{ var p=document.getElementById("livePill"),t=document.getElementById("livePillTxt"); if(!p||!t)return;
+  p.classList.remove("checking","sample");
+  if(state==="live"){ t.textContent="Live inventory"; p.title="Prices refreshed from the makers' own catalogues. A few makers update periodically instead."; }
+  else if(state==="sample"){ p.classList.add("sample"); t.textContent="Sample prices"; p.title="We could not reach the live catalogues just now. Prices shown are recent, not live; the maker's checkout price is the real one."; }
+  else { p.classList.add("checking"); t.textContent="Checking…"; p.title="Checking the makers' catalogues"; }
+}catch(e){} }
+function loadLiveInventory(){ if(typeof google==="undefined" || !google.script || !google.script.run){ setLivePill("sample"); hideLoader(); return; }
+  google.script.run.withSuccessHandler(function(data){ var merged=false; try{ if(Array.isArray(data)&&data.length){ PRODUCTS=mergeLive(data); applyNSSIds(); buildFilters(); buildStoreFilter(); window.__hlmInvLoaded=true; render(); renderCart(); merged=true; } }catch(e){} setLivePill(merged?"live":"sample"); try{ window.__hlmInvLoaded=true; document.dispatchEvent(new CustomEvent("hlm:inventory")); }catch(e){} hideLoader(); })
+    .withFailureHandler(function(){ setLivePill("sample"); try{ window.__hlmInvLoaded=true; document.dispatchEvent(new CustomEvent("hlm:inventory")); }catch(e){} hideLoader(); }).getInventory(); }
 function hideLoader(){ var el=document.getElementById("hlmLoader"); if(el){ el.classList.add("hide"); setTimeout(function(){ el.style.display="none"; },600); } }
 
+/* The sticky chip rail needs the real header height for its top offset, and
+ * the header's height varies with viewport (the brand line wraps). A fixed px
+ * would drift; measure it instead, the same way focus.js's headerOffset does. */
+function setHeaderHeightVar(){ try{ var h=document.querySelector("header");
+  if(h) document.documentElement.style.setProperty("--hdr-h", h.getBoundingClientRect().height+"px"); }catch(e){} }
 function hlmInit(){ try{ if(hlmHandleGo()) return; var y=document.getElementById("year"); if(y)y.textContent=new Date().getFullYear();
   loadCart(); loadWish(); loadSelv(); loadRitualFB(); PRODUCTS=normalizeCategories(getSeedProducts());
   var _openCartFromAdd=hlmHandleAdd();
   buildFilters(); buildStoreFilter(); render(); updateCartBadge(); renderCart(); updateAccountUI(); setAuthMode("signup");
   if(_openCartFromAdd) openCart();
+  setHeaderHeightVar(); window.addEventListener("resize", setHeaderHeightVar);
   loadLiveInventory(); loadNSSIds(); loadMatrixRules();
 }catch(e){} setTimeout(hideLoader, 3500); }
 if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded",hlmInit); } else { hlmInit(); }

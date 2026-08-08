@@ -90,6 +90,14 @@
   .hamburger svg{width:26px;height:26px}
   .live-pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-size:.7rem;letter-spacing:.6px;text-transform:uppercase;color:#4ade80;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);border-radius:999px;padding:5px 11px;font-weight:600}
   .live-pill .dot{width:7px;height:7px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80;animation:livePulse 2s infinite}
+  /* The pill only earns green once live data has actually merged. Gold while
+     checking; amber "Sample prices" if the API never answers, dot deliberately
+     NOT pulsing there -- a pulse claims freshness, which is the exact lie the
+     states exist to prevent. */
+  .live-pill.checking{color:var(--gold);background:rgba(240,185,60,.1);border-color:rgba(240,185,60,.35)}
+  .live-pill.checking .dot{background:var(--gold);box-shadow:0 0 8px rgba(240,185,60,.7)}
+  .live-pill.sample{color:#c9b06a;background:rgba(240,185,60,.07);border-color:rgba(201,176,106,.3)}
+  .live-pill.sample .dot{background:#c9b06a;box-shadow:none;animation:none}
   @keyframes livePulse{0%,100%{opacity:1}50%{opacity:.35}}
   .searchbox{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:9px 16px;min-width:220px}
   .searchbox input{border:0;outline:0;background:transparent;font-family:var(--sans);font-size:.95rem;width:100%;color:var(--ink);caret-color:var(--sage)}
@@ -112,6 +120,13 @@
   .chip-n{display:inline-block;margin-left:6px;font-size:.74rem;font-weight:700;font-variant-numeric:tabular-nums;opacity:.65}
   .chip.active .chip-n{opacity:.85}
   .mnav-link .chip-n{opacity:.6}
+  /* Reset is an escape hatch, not a destination: outlined and muted so it can
+     never be mistaken for a category. !important pins it against the mobile
+     rail's nth-child gradient cycle, which would otherwise paint it a random
+     candy colour depending on how many chips precede it. */
+  .chip.reset{background:transparent !important;border:1.5px dashed rgba(224,107,66,.55) !important;color:var(--terracotta) !important;font-weight:600;box-shadow:none !important}
+  .chip.reset:hover{border-color:var(--terracotta) !important;color:var(--terracotta) !important;transform:none}
+  .mnav-reset{color:var(--terracotta) !important;border-bottom:1px dashed rgba(224,107,66,.35);margin-bottom:6px;padding-bottom:10px}
   .chip.wish{border-color:rgba(224,107,66,.3);color:var(--terracotta)}
   .chip.wish.active{background:var(--terracotta);color:#fff;border-color:var(--terracotta-dk);box-shadow:0 4px 14px rgba(224,107,66,.35)}
   .mobile-cat{display:none;margin:14px 0 2px}
@@ -345,7 +360,11 @@
     #mSearchMount .searchbox{min-width:0;width:100%;border:1.5px solid var(--gold);background:var(--card);padding:12px 16px}
     .controls{gap:10px;margin:18px 0 2px;justify-content:center;text-align:center} .controls .grow{display:none} .ctl{font-size:.8rem} .prod-counts{font-size:.76rem;padding:7px 12px;flex-basis:100%;text-align:center}
     .mobile-cat{display:none}
-    .filters{display:flex;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;gap:9px;margin:16px -16px 4px;padding:2px 16px 12px;scrollbar-width:none}
+    /* Sticky under the header so undoing a filter never means scrolling back
+       to the top. --hdr-h is measured by app.js (the header's height varies as
+       the brand line wraps); the fallback only holds until first paint.
+       Opaque background required: cards scroll UNDER the rail. */
+    .filters{display:flex;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;gap:9px;margin:16px -16px 4px;padding:8px 16px 12px;scrollbar-width:none;position:sticky;top:var(--hdr-h,56px);z-index:30;background:var(--bg)}
     .filters::-webkit-scrollbar{display:none}
     .chip{scroll-snap-align:start;flex:0 0 auto;color:#fff;border:0;font-weight:700;letter-spacing:.3px;padding:10px 18px;box-shadow:0 5px 14px rgba(30,45,25,.18);transform:none;transition:transform .15s,box-shadow .15s,filter .15s}
     .chip:hover{transform:none;color:#fff}
@@ -559,7 +578,7 @@
 <header><div class="wrap nav">
   <button class="hamburger" onclick="openMnav()" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
   <div class="brand"><svg class="lily"><use href="#lilyIcon"/></svg><span>Herbal Leaf Market<small>botanical apothecary</small></span></div>
-  <span class="live-pill"><span class="dot"></span>Live inventory</span>
+  <span class="live-pill checking" id="livePill" title="Checking the makers' catalogues"><span class="dot"></span><span id="livePillTxt">Checking&hellip;</span></span>
   <div class="spacer"></div>
   <nav class="nav-adv"><a href="/know-the-facts.html?v=2" target="_top">Know the Facts</a><a href="/anecdote-library.html?v=2" target="_top">Our Stories</a></nav>
   <div class="searchbox"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3a7b50" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input id="search" type="text" placeholder="Search botanicals..." oninput="refilter()" aria-label="Search products" /></div>
@@ -587,10 +606,13 @@
     <span class="prod-counts" id="prodCounts"></span>
   </div>
   <div class="mobile-cat"><select id="mobileCat" onchange="setCategory(this.value)" aria-label="Shop by category"></select></div>
-  <nav class="filters" id="filters" aria-label="Product categories"></nav>
-  <div id="mSearchMount"></div>
 </div>
 <main class="wrap">
+  <!-- The chip rail lives INSIDE main, beside the grid, because its mobile
+       position:sticky can only stick within its parent. In the controls wrap
+       above (285px tall, grid a sibling) it had no room to stick at all. -->
+  <nav class="filters" id="filters" aria-label="Product categories"></nav>
+  <div id="mSearchMount"></div>
   <div class="grid" id="grid"></div>
   <div class="values">
     <div><h4>Live, not stale</h4><p>Prices, stock, and new drops pull straight from each maker in real time.</p></div>
