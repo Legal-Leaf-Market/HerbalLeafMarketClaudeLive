@@ -100,7 +100,13 @@ const env = {
  * Inventory (Shopify products.json scrape, cached 6h)
  * ========================================================================= */
 export async function getInventory(): Promise<any[]> {
-  const cached = await kvGet("hlm_live_v3")
+  /* Cache KEY carries a version. Bump it in the same commit as ANY change to
+   * what this payload contains (new vendor, new field like coa), so the
+   * deploy itself forces the next request to cold-scrape. The alternative --
+   * shipping a pipeline change behind a still-warm 6h cache that only the
+   * admin password can bust -- left the Secret Nature COA join invisible on
+   * production for hours while the code sat correct and deployed. */
+  const cached = await kvGet("hlm_live_v4")
   if (cached) {
     try { return JSON.parse(cached) } catch {}
   }
@@ -116,7 +122,7 @@ export async function getInventory(): Promise<any[]> {
     attachSecretNatureCoas(out, snCoas)
   } catch {}
   if (out.length) {
-    await kvPut("hlm_live_v3", JSON.stringify(out), 21600)
+    await kvPut("hlm_live_v4", JSON.stringify(out), 21600)
   }
   return out
 }
@@ -247,7 +253,7 @@ function attachSecretNatureCoas(products: any[], coas: Map<string, SnDoc[]>): vo
 }
 
 export async function refreshInventory(): Promise<string> {
-  await kvDel("hlm_live_v3")
+  await kvDel("hlm_live_v4")
   const n = (await getInventory()).length
   return n + " products cached."
 }
