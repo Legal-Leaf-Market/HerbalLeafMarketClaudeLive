@@ -212,7 +212,7 @@ async function fetchSecretNatureCoas(): Promise<Map<string, SnDoc[]>> {
     const k = snKey(base)
     if (!k) continue
     const vm = u.match(/[?&]v=(\d+)/)
-    const mk = k + " " + snForm(name)
+    const mk = k + " " + snForm(name)
     const arr = map.get(mk) || []
     arr.push({ cann: snCann(base), ver: vm ? Number(vm[1]) : 0, url: u })
     map.set(mk, arr)
@@ -240,7 +240,7 @@ function attachSecretNatureCoas(products: any[], coas: Map<string, SnDoc[]>): vo
     const k = snKey(p.name || "")
     if (!k) continue
     const f = snForm((p.name || "") + " " + (p.category || ""))
-    const url = snPick(coas.get(k + " " + f), snCann(p.name || ""))
+    const url = snPick(coas.get(k + " " + f), snCann(p.name || ""))
     if (url) { p.coa = url; attached++ }
   }
   console.log(`[inventory] Secret Nature COAs: ${coas.size} document keys, ${attached} products linked`)
