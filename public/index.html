@@ -31,8 +31,15 @@
 <meta name="twitter:image" content="https://herballeafmarket.com/og-image.png" />
 <meta name="twitter:image:alt" content="Herbal Leaf Market, botanical apothecary: the lily-of-the-valley mark beside the wordmark" />
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+<!-- One @graph, Nicotia's shape: WebSite + Organization + CollectionPage with
+     cross-referencing @ids, instead of the old flat Organization block. The
+     per-render product ItemList stays separate in #hlmProductLd below. -->
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Organization","name":"Herbal Leaf Market","slogan":"botanical apothecary","description":"A boutique aggregator of non-intoxicating CBD, CBG and botanical products from vetted makers, with education and advocacy on legal cannabinoid access.","url":"https://herballeafmarket.com","logo":"https://herballeafmarket.com/icon-512.png","sameAs":["https://legal-leafmarket.com","https://nicotiamarket.com"]}
+{"@context":"https://schema.org","@graph":[
+{"@type":"WebSite","@id":"https://herballeafmarket.com/#website","url":"https://herballeafmarket.com/","name":"Herbal Leaf Market","description":"CBD, CBG, herbal blends and botanicals, gathered live from vetted makers.","inLanguage":"en","publisher":{"@id":"https://herballeafmarket.com/#org"}},
+{"@type":"Organization","@id":"https://herballeafmarket.com/#org","name":"Herbal Leaf Market","slogan":"botanical apothecary","description":"A boutique aggregator of non-intoxicating CBD, CBG and botanical products from vetted makers, with education and advocacy on legal cannabinoid access.","url":"https://herballeafmarket.com/","logo":"https://herballeafmarket.com/icon-512.png","image":"https://herballeafmarket.com/og-image.png","sameAs":["https://legal-leafmarket.com","https://nicotiamarket.com"]},
+{"@type":"CollectionPage","@id":"https://herballeafmarket.com/#page","url":"https://herballeafmarket.com/","name":"Herbal Leaf Market - CBD, CBG & Botanical Blends from Independent Makers","isPartOf":{"@id":"https://herballeafmarket.com/#website"},"about":"Live-priced CBD, CBG, herbal smoking blends, teas and botanicals from independent makers, with lab reports where the maker publishes them.","audience":{"@type":"PeopleAudience","suggestedMinAge":21}}
+]}
 </script>
 <script id="hlmProductLd" type="application/ld+json"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -859,5 +866,13 @@
 <script src="/app.js"></script>
 <!-- Email deep-link "zoom to card": reads ?focus=<id> / #<id> from index.js hlmCardHref_ and highlights the matching product card -->
 <script src="/focus.js"></script>
+<!-- Vercel Web Analytics, the script-tag form the sisters use: cookieless
+     page counts, no consent banner, no build step. The stub queues events
+     until the script arrives; if it never does (adblock, local preview),
+     the queue is inert and nothing breaks. -->
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>

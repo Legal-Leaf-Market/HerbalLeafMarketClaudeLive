@@ -8,7 +8,7 @@
 
 /* Bump this on any change to the caching strategy. `activate` deletes every
  * cache whose name isn't CACHE, so a bump is what evicts the old one. */
-const CACHE = "hlm-v3";
+const CACHE = "hlm-v4";
 
 /* Only the API shim is precached. "/" and "/index.html" were in this list and
  * that is what broke: the page HTML got frozen into the cache at install time
@@ -41,7 +41,10 @@ self.addEventListener("fetch", (event) => {
 
   // Never cache the API or cross-origin requests. This site promises live
   // vendor pricing and stock; a cached /api/inventory would make that a lie.
-  if (url.origin !== self.location.origin || url.pathname.startsWith("/api/") || url.searchParams.has("unsub")) {
+  // /_vercel/ is the analytics beacon (see the va snippet in each page's
+  // foot); caching it would count one visit forever, so it passes through
+  // untouched too — the same exclusion both sister sites carry.
+  if (url.origin !== self.location.origin || url.pathname.startsWith("/api/") || url.pathname.startsWith("/_vercel/") || url.searchParams.has("unsub")) {
     return; // let the browser handle it untouched
   }
 
