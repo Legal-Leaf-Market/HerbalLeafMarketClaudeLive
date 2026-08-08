@@ -104,11 +104,6 @@
      change width while you type in the search box. */
   .chip-n{display:inline-block;margin-left:6px;font-size:.74rem;font-weight:700;font-variant-numeric:tabular-nums;opacity:.65}
   .chip.active .chip-n{opacity:.85}
-  /* A facet with nothing behind it stays put but reads as a dead end. Kept
-     clickable so a mis-tap is recoverable rather than silently inert. */
-  .chip.empty{opacity:.38}
-  .chip.empty:hover{border-color:rgba(74,222,128,.2);color:#9fb6a6}
-  .mnav-link.empty{opacity:.38}
   .mnav-link .chip-n{opacity:.6}
   .chip.wish{border-color:rgba(224,107,66,.3);color:var(--terracotta)}
   .chip.wish.active{background:var(--terracotta);color:#fff;border-color:var(--terracotta-dk);box-shadow:0 4px 14px rgba(224,107,66,.35)}
@@ -383,22 +378,44 @@
     <path d="M32 70 C40 58 48 44 44 28 C42 38 38 52 32 64 Z" fill="#16a34a" opacity="0.65"/>
     <!-- Arching rachis: rises from base, arches right, tip points upper-right -->
     <path d="M30 68 C29 54 30 42 34 28 C37 18 42 11 46 6" fill="none" stroke="#4ade80" stroke-width="1.8" stroke-linecap="round"/>
-    <!-- Bell 1 – topmost, smallest. Pedicel hangs left from tip -->
+    <!-- BELLS — same cup + flared skirt as the hero sprig (#sprigIcon).
+         These used to be flat wedges (a curve closed with a straight lid), which
+         read as triangles at any size and looked nothing like the hero. The
+         geometry is now authored ONCE in local coordinates and reused at five
+         scales via translate/scale, so the logo and the hero are literally the
+         same shape.
+         stroke-width on each group is 0.9/scale, so every bell keeps the same
+         apparent outline weight instead of the small ones going hairline.
+         The hero's inner shading arc is deliberately omitted: it falls under a
+         pixel at the 26px header size and only muddies the cup.
+         The skirt carries the cup's fill and stays an OPEN path — SVG closes it
+         implicitly for filling, and adding Z would stroke a line across the
+         bell. Same reasoning as the hero; see the note above #sprigIcon. -->
     <line x1="46" y1="6" x2="44" y2="12" stroke="#4ade80" stroke-width="1.2" stroke-linecap="round"/>
-    <!-- Bell cup: M left-rim, arc down to right-rim, then straight up closing top -->
-    <path d="M40 12 L40 12 C40 12 42 19 44 19 C46 19 48 12 48 12 Z" fill="#f0f9f0" stroke="#4ade80" stroke-width="0.7"/>
-    <!-- Bell 2 -->
-    <line x1="44" y1="16" x2="41" y2="22" stroke="#4ade80" stroke-width="1.2" stroke-linecap="round"/>
-    <path d="M37 22 C37 22 39 30 41 30 C43 30 45 22 45 22 Z" fill="#f0f9f0" stroke="#4ade80" stroke-width="0.7"/>
-    <!-- Bell 3 -->
-    <line x1="41" y1="26" x2="38" y2="32" stroke="#4ade80" stroke-width="1.2" stroke-linecap="round"/>
-    <path d="M34 32 C34 32 36 40 38 40 C40 40 42 32 42 32 Z" fill="#f0f9f0" stroke="#4ade80" stroke-width="0.7"/>
-    <!-- Bell 4 -->
-    <line x1="38" y1="36" x2="35" y2="42" stroke="#4ade80" stroke-width="1.2" stroke-linecap="round"/>
-    <path d="M31 42 C31 42 33 51 35.5 51 C38 51 40 42 40 42 Z" fill="#f0f9f0" stroke="#4ade80" stroke-width="0.7"/>
-    <!-- Bell 5 – lowest, largest -->
-    <line x1="35" y1="46" x2="32" y2="53" stroke="#4ade80" stroke-width="1.2" stroke-linecap="round"/>
-    <path d="M27.5 53 C27.5 53 30 63 32.5 63 C35 63 37.5 53 37.5 53 Z" fill="#f0f9f0" stroke="#4ade80" stroke-width="0.7"/>
+    <g transform="translate(44,12) scale(0.42)" stroke="#267020" stroke-width="2.14" stroke-linecap="round">
+      <path d="M-2,0 A2,1.5 0 0,1 2,0 C5,1 6,4 6,8 C4,9.5 2,10 0,10 C-2,10 -4,9.5 -6,8 C-6,4 -5,1 -2,0 Z" fill="#f2fbf2"/>
+      <path d="M-6,8 C-7.5,9 -9.5,10.5 -9,12 C-7.5,13 -4,13.5 0,13.5 C4,13.5 7.5,13 9,12 C9.5,10.5 7.5,9 6,8" fill="#f2fbf2"/>
+    </g>
+    <line x1="44" y1="15" x2="41" y2="21" stroke="#4ade80" stroke-width="1.2" stroke-linecap="round"/>
+    <g transform="translate(41,21) scale(0.52)" stroke="#267020" stroke-width="1.73" stroke-linecap="round">
+      <path d="M-2,0 A2,1.5 0 0,1 2,0 C5,1 6,4 6,8 C4,9.5 2,10 0,10 C-2,10 -4,9.5 -6,8 C-6,4 -5,1 -2,0 Z" fill="#f2fbf2"/>
+      <path d="M-6,8 C-7.5,9 -9.5,10.5 -9,12 C-7.5,13 -4,13.5 0,13.5 C4,13.5 7.5,13 9,12 C9.5,10.5 7.5,9 6,8" fill="#f2fbf2"/>
+    </g>
+    <line x1="41" y1="25" x2="38" y2="31" stroke="#4ade80" stroke-width="1.2" stroke-linecap="round"/>
+    <g transform="translate(38,31) scale(0.62)" stroke="#267020" stroke-width="1.45" stroke-linecap="round">
+      <path d="M-2,0 A2,1.5 0 0,1 2,0 C5,1 6,4 6,8 C4,9.5 2,10 0,10 C-2,10 -4,9.5 -6,8 C-6,4 -5,1 -2,0 Z" fill="#edf9eb"/>
+      <path d="M-6,8 C-7.5,9 -9.5,10.5 -9,12 C-7.5,13 -4,13.5 0,13.5 C4,13.5 7.5,13 9,12 C9.5,10.5 7.5,9 6,8" fill="#edf9eb"/>
+    </g>
+    <line x1="38" y1="35" x2="35" y2="41" stroke="#4ade80" stroke-width="1.2" stroke-linecap="round"/>
+    <g transform="translate(35,41) scale(0.72)" stroke="#267020" stroke-width="1.25" stroke-linecap="round">
+      <path d="M-2,0 A2,1.5 0 0,1 2,0 C5,1 6,4 6,8 C4,9.5 2,10 0,10 C-2,10 -4,9.5 -6,8 C-6,4 -5,1 -2,0 Z" fill="#e8f7e6"/>
+      <path d="M-6,8 C-7.5,9 -9.5,10.5 -9,12 C-7.5,13 -4,13.5 0,13.5 C4,13.5 7.5,13 9,12 C9.5,10.5 7.5,9 6,8" fill="#e8f7e6"/>
+    </g>
+    <line x1="35" y1="46" x2="31.5" y2="52" stroke="#4ade80" stroke-width="1.2" stroke-linecap="round"/>
+    <g transform="translate(31.5,52) scale(0.85)" stroke="#1f5c18" stroke-width="1.06" stroke-linecap="round">
+      <path d="M-2,0 A2,1.5 0 0,1 2,0 C5,1 6,4 6,8 C4,9.5 2,10 0,10 C-2,10 -4,9.5 -6,8 C-6,4 -5,1 -2,0 Z" fill="#e3f7e0"/>
+      <path d="M-6,8 C-7.5,9 -9.5,10.5 -9,12 C-7.5,13 -4,13.5 0,13.5 C4,13.5 7.5,13 9,12 C9.5,10.5 7.5,9 6,8" fill="#e3f7e0"/>
+    </g>
   </symbol>
   <symbol id="sprigIcon" viewBox="0 0 120 500">
 

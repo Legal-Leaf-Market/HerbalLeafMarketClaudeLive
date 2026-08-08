@@ -187,52 +187,75 @@ function loadMatrixRules(){ if(typeof google==="undefined"||!google.script||!goo
 function rule(k,def){ return (HLM_RULES && HLM_RULES[k]!==undefined)?HLM_RULES[k]:def; }
 
 /* ---- Faceted filtering ---------------------------------------------------
- * activeCats is a LIST, not a single value. Chips toggle; an empty list means
- * "All"; multiple selections OR together within the facet, which is the normal
- * faceted-search contract — picking Tea AND Tinctures widens the result set
- * rather than narrowing it to the empty intersection. Store and search AND
- * against that.
+ * TWO facets — category and store — each SINGLE-select, and each constrains the
+ * other. Choose a category and the store list narrows to the stores that stock
+ * it; choose a store and the category list narrows to what that store carries.
+ * An option that would return nothing is REMOVED, not greyed, so every choice
+ * left on screen is guaranteed to land on products.
  *
- * Chip counts are computed against every other active filter but NOT against
- * the category facet itself. That is the part that makes this faceted rather
- * than merely multi-select: with Tea already on, the Tinctures chip shows how
- * many you would GAIN by adding it, instead of showing 0 because nothing is
- * simultaneously both.
+ * The mechanism is pool(ignore): a facet's own list is counted against a pool
+ * with the OTHER facet applied but not itself. That asymmetry is what makes the
+ * two lists mutually consistent — each is derived from the other's current
+ * selection, so no visible combination can produce an empty grid.
+ *
+ * The one case that still needs handling is the selected store vanishing from
+ * the list when the category changes; buildStoreFilter falls back to All rather
+ * than leaving a phantom selection. The reverse cannot happen, because the
+ * category list is rebuilt from the store's pool before it is ever shown.
  *
  * My Garden is a MODE, not a category — it used to be smuggled in as the magic
- * category "__wish", which stopped working the moment categories became a list. */
-let activeCats=[], activeStore="All", activeSort="featured", wishMode=false;
-function activeCatLabel(){ return wishMode?"__wish":(activeCats.length?activeCats.join("+"):"All"); }
-function catSelected(c){ return activeCats.indexOf(c)!==-1; }
+ * category "__wish", which entangles it with the facet logic. */
+let activeCat="", activeStore="All", activeSort="featured", wishMode=false;
+function activeCatLabel(){ return wishMode?"__wish":(activeCat||"All"); }
+function catSelected(c){ return activeCat===c; }
 /* CBD and Tea are cross-cutting views over the catalogue; everything else is a
- * literal category string set at ingest. */
-function matchesCat(p,c){ if(c==="CBD") return isCBD(p); if(c==="Tea") return isTea(p); return p.category===c; }
+ * literal category string set at ingest. "" means All. */
+function matchesCat(p,c){ if(!c) return true; if(c==="CBD") return isCBD(p); if(c==="Tea") return isTea(p); return p.category===c; }
+function matchesStore(p,v){ return v==="All"||p.vendor===v; }
 function baseVisible(p){ return !isExcluded(p) && (Number(p.price)||0)>0 && p.inStock!==false; }
 function searchQuery(){ var se=document.getElementById("search"); return (se&&se.value?se.value:"").toLowerCase().trim(); }
-/* Everything except the category facet — the denominator for chip counts. */
-function facetPool(){ var q=searchQuery();
+/* A facet's pool is everything EXCEPT that facet's own selection. Pass "cat" to
+ * get the pool the category chips are counted against (store still applied),
+ * "store" for the store list (category still applied). That asymmetry is the
+ * whole mechanism: each list is derived from the other's current selection, so
+ * the two can never disagree and no visible combination can return nothing. */
+function pool(ignore){ var q=searchQuery();
   return PRODUCTS.filter(function(p){
     if(!baseVisible(p)) return false;
     if(wishMode && !isWished(p.id)) return false;
-    if(activeStore!=="All" && p.vendor!==activeStore) return false;
+    if(ignore!=="store" && !matchesStore(p,activeStore)) return false;
+    if(ignore!=="cat" && !matchesCat(p,activeCat)) return false;
     if(q && ((p.name||"")+(p.blurb||"")+(p.vendor||"")+(p.category||"")).toLowerCase().indexOf(q)===-1) return false;
     return true; }); }
-function catCount(c,pool){ var n=0; for(var i=0;i<pool.length;i++){ if(matchesCat(pool[i],c)) n++; } return n; }
+function catCount(c,list){ var n=0; for(var i=0;i<list.length;i++){ if(matchesCat(list[i],c)) n++; } return n; }
+function storeCount(v,list){ var n=0; for(var i=0;i<list.length;i++){ if(matchesStore(list[i],v)) n++; } return n; }
+/* Only the stores that actually stock the selected category. A store that
+ * would return nothing is dropped from the list entirely rather than offered
+ * and then disappointing. */
 function buildStoreFilter(){ var sel=document.getElementById("storeFilter"); if(!sel)return;
-  var vendors=Array.from(new Set(PRODUCTS.filter(function(p){return p.inStock!==false&&!isExcluded(p);}).map(function(p){return p.vendor;}))); vendors.sort(function(a,b){return a.localeCompare(b);});
-  var cur=sel.value||"All"; sel.innerHTML='<option value="All">All Stores</option>'+vendors.map(function(v){return '<option value="'+v+'">'+v+'</option>';}).join(""); sel.value=cur; }
+  var list=pool("store");
+  var vendors=Array.from(new Set(list.map(function(p){return p.vendor;}))).sort(function(a,b){return a.localeCompare(b);});
+  sel.innerHTML='<option value="All">All Stores ('+list.length+')</option>'+
+    vendors.map(function(v){ return '<option value="'+v+'">'+v+' ('+storeCount(v,list)+')</option>'; }).join("");
+  /* If the current store no longer stocks the chosen category it is gone from
+   * the list; fall back to All rather than leaving a phantom selection that
+   * shows an empty grid. */
+  if(activeStore!=="All" && vendors.indexOf(activeStore)===-1) activeStore="All";
+  sel.value=activeStore; }
 /* Search and store are inputs to the facet counts, so both must rebuild the
  * chips, not just the grid. Miss this and the chips keep showing counts from
  * the previous query — worse than no counts, because they look authoritative. */
-function refilter(){ buildFilters(); buildMobileNav(); render(); }
-function setStore(v){ activeStore=v; var sel=document.getElementById("storeFilter"); if(sel)sel.value=v; refilter(); }
+function refilter(){ buildFilters(); buildStoreFilter(); buildMobileNav(); render(); }
+function setStore(v){ activeStore=v; refilter(); }
 function setSort(v){ activeSort=v; render(); }
 const CATEGORY_ORDER=["Herbal Blends","Herbal Smokes","Herbal Diffusers","Herbal Diffusers (Single-Use)","Hemp Flower","Single Herbs","Tinctures","Topicals","Pills","Powders","Gummies","Tea","Beverages","Bundles","Wraps","Pets","Misc"];
 function catRank(c){ if(c==="CBD")return -2; if(c==="Tea")return -1; var i=CATEGORY_ORDER.indexOf(c); return i===-1?500:i; }
 function nssRank(p){ return p.vendor==="Natural Smoke Shop"?0:1; }
 const EXCLUDE_PATTERN=/\b(thca|delta[\s-]?8|delta[\s-]?9|delta[\s-]?10|diet[\s-]?8|\bd8\b|\bd9\b|\bd10\b|\bhhc\b|thcv|thcp|courses?|class(es)?|workshops?|webinars?|masterclass|meditation club|membership|breath ?work|wim hof|consultations?|gift ?cards?|e-?gift|free gift|digital downloads?|videos?|savedby|package protection|sample pack|test [a-z0-9]\b)\b/i;
 function isExcluded(p){ if(/\bwholesale\b/i.test(p.name||"")) return true; if(EXCLUDE_PATTERN.test((p.name||"")+" "+(p.category||""))) return true; if(hasUnnegatedTHC(p)) return true; return false; }
-function orderedCategories(){ var live=PRODUCTS.filter(function(p){return p.inStock!==false&&!isExcluded(p)&&(Number(p.price)||0)>0;});
+/* Takes the pool to derive from, so the category list reflects the store facet
+ * rather than the whole catalogue. */
+function orderedCategories(live){
   var present=Array.from(new Set(live.map(function(p){return p.category;})));
   /* CBD and Tea are synthetic cross-cutting facets, unshifted below. Drop them
    * from the literal-category list first or a vendor whose product category
@@ -244,49 +267,49 @@ function orderedCategories(){ var live=PRODUCTS.filter(function(p){return p.inSt
   if(live.some(function(p){return isTea(p);})) present.unshift("Tea");
   if(live.some(function(p){return isCBD(p);})) present.unshift("CBD"); return present; }
 function buildFilters(){ var box=document.getElementById("filters"); if(!box)return;
-  var cats=orderedCategories(), pool=facetPool(), wn=wishCount();
+  var list=pool("cat"), wn=wishCount();
+  /* Only categories present in the current store's pool. A chip that would
+   * return nothing is removed rather than greyed: with the store facet driving
+   * this list, an empty chip is never a destination anyone wants. */
+  var cats=orderedCategories(list).filter(function(c){ return catCount(c,list)>0; });
   var wchip=(wn>0)?('<div class="chip wish '+(wishMode?"active":"")+'" onclick="toggleWishMode()" aria-pressed="'+wishMode+'">\u2764 My Garden <span class="chip-n">'+wn+'</span></div>'):"";
-  var allChip='<div class="chip '+((!activeCats.length&&!wishMode)?"active":"")+'" onclick="clearCats()">All <span class="chip-n">'+pool.length+'</span></div>';
+  var allChip='<div class="chip '+((!activeCat&&!wishMode)?"active":"")+'" onclick="setCategory(\'All\')">All <span class="chip-n">'+list.length+'</span></div>';
   box.innerHTML=wchip+allChip+cats.map(function(c){
-    var n=catCount(c,pool), sel=catSelected(c);
-    /* A zero-count facet stays visible but greyed rather than disappearing.
-     * Removing chips as you filter makes the row reflow and the chip you were
-     * reaching for jump out from under your finger. */
-    return '<div class="chip'+(sel?" active":"")+(n?"":" empty")+'" onclick="toggleCategory(\''+c.replace(/'/g,"\\'")+'\')" aria-pressed="'+sel+'">'+c+' <span class="chip-n">'+n+'</span></div>';
+    var n=catCount(c,list), sel=catSelected(c);
+    return '<div class="chip'+(sel?" active":"")+'" onclick="setCategory(\''+c.replace(/'/g,"\\'")+'\')" aria-pressed="'+sel+'">'+c+' <span class="chip-n">'+n+'</span></div>';
   }).join(""); syncMobileCat(); }
-function toggleCategory(c){ wishMode=false; var i=activeCats.indexOf(c); if(i===-1) activeCats.push(c); else activeCats.splice(i,1); buildFilters(); buildMobileNav(); render(); }
-function clearCats(){ activeCats=[]; wishMode=false; buildFilters(); buildMobileNav(); render(); }
-function toggleWishMode(){ wishMode=!wishMode; if(wishMode) activeCats=[]; buildFilters(); buildMobileNav(); render(); }
-/* The mobile <select> can only express one choice, so it REPLACES the selection
- * rather than adding to it. Still named setCategory() because index.html binds
- * onchange="setCategory(this.value)". */
-function setCategory(c){ if(c==="__multi") return; wishMode=(c==="__wish"); activeCats=(c==="All"||c==="__wish")?[]:[c]; buildFilters(); buildMobileNav(); render(); }
+function toggleWishMode(){ wishMode=!wishMode; if(wishMode) activeCat=""; refilter(); }
+/* Single-select: choosing a category REPLACES the current one. Shared by the
+ * chips, the mobile drawer and the mobile <select>, so all three stay in step.
+ * index.html binds onchange="setCategory(this.value)". */
+function setCategory(c){ wishMode=(c==="__wish"); activeCat=(c==="All"||c==="__wish")?"":c; refilter(); }
 function updateCounts(filtered){ var el=document.getElementById("prodCounts"); if(!el)return; var total=0;
   PRODUCTS.forEach(function(p){ if(p.inStock===false||isExcluded(p)||(Number(p.price)||0)<=0)return; total++; });
   el.innerHTML='<strong>'+total+'</strong> total &middot; <strong>'+filtered+'</strong> shown'; }
 function openMnav(){ var o=document.getElementById("mnavOverlay"),m=document.getElementById("mnav"); if(o)o.classList.add("open"); if(m)m.classList.add("open"); buildMobileNav(); }
 function closeMnav(){ var o=document.getElementById("mnavOverlay"),m=document.getElementById("mnav"); if(o)o.classList.remove("open"); if(m)m.classList.remove("open"); }
-/* The drawer deliberately stays OPEN on a category tap now — with multi-select
- * you are usually picking more than one, and closing after each would make
- * choosing two categories a four-tap job. The close button is right there. */
-function buildMobileNav(){ var cats=orderedCategories(), pool=facetPool(); var cw=document.getElementById("mnavCats");
-  if(cw) cw.innerHTML='<a class="mnav-link '+((!activeCats.length&&!wishMode)?'active':'')+'" onclick="clearCats()">All <span class="chip-n">'+pool.length+'</span></a>'+
-    cats.map(function(c){ var n=catCount(c,pool);
-      return '<a class="mnav-link '+(catSelected(c)?'active':'')+(n?'':' empty')+'" onclick="toggleCategory(\''+c.replace(/'/g,"\\'")+'\')">'+c+' <span class="chip-n">'+n+'</span></a>'; }).join("");
-  var vendors=["All"].concat(Array.from(new Set(PRODUCTS.filter(function(p){return p.inStock!==false&&!isExcluded(p);}).map(function(p){return p.vendor;}))).sort());
+/* Both drawer lists are cross-derived exactly like the desktop ones: the
+ * categories come from the store's pool, the stores from the category's pool.
+ * Neither closes the drawer on tap, so you can narrow on both axes in one
+ * visit; the close button is right there. */
+function buildMobileNav(){ var catList=pool("cat"), storeList=pool("store");
+  var cats=orderedCategories(catList).filter(function(c){ return catCount(c,catList)>0; });
+  var cw=document.getElementById("mnavCats");
+  if(cw) cw.innerHTML='<a class="mnav-link '+((!activeCat&&!wishMode)?'active':'')+'" onclick="setCategory(\'All\')">All <span class="chip-n">'+catList.length+'</span></a>'+
+    cats.map(function(c){
+      return '<a class="mnav-link '+(catSelected(c)?'active':'')+'" onclick="setCategory(\''+c.replace(/'/g,"\\'")+'\')">'+c+' <span class="chip-n">'+catCount(c,catList)+'</span></a>'; }).join("");
+  var vendors=Array.from(new Set(storeList.map(function(p){return p.vendor;}))).sort();
   var sw=document.getElementById("mnavStores");
-  if(sw) sw.innerHTML=vendors.map(function(v){return '<a class="mnav-link '+(v===activeStore?'active':'')+'" onclick="setStore(\''+(v==="All"?"All":v.replace(/'/g,"\\'"))+'\');closeMnav();">'+(v==="All"?"All Stores":v)+'</a>';}).join(""); }
+  if(sw) sw.innerHTML='<a class="mnav-link '+(activeStore==="All"?'active':'')+'" onclick="setStore(\'All\')">All Stores <span class="chip-n">'+storeList.length+'</span></a>'+
+    vendors.map(function(v){
+      return '<a class="mnav-link '+(v===activeStore?'active':'')+'" onclick="setStore(\''+v.replace(/'/g,"\\'")+'\')">'+v+' <span class="chip-n">'+storeCount(v,storeList)+'</span></a>'; }).join(""); }
 function syncMobileCat(){ var sel=document.getElementById("mobileCat"); if(!sel)return;
-  var cats=orderedCategories(), pool=facetPool();
-  var multi=(!wishMode&&activeCats.length>1);
-  var cur=wishMode?"__wish":(activeCats.length===1?activeCats[0]:"All");
-  /* When more than one chip is on, the <select> cannot represent it. Say so
-   * rather than showing "All Categories", which would be a plain lie about
-   * what the grid is currently showing. */
-  var head=multi?('<option value="__multi" selected>'+activeCats.length+' categories selected</option>'):"";
-  sel.innerHTML=head+'<option value="All"'+((!multi&&cur==="All")?' selected':'')+'>All Categories ('+pool.length+')</option>'+
-    cats.map(function(c){ var n=catCount(c,pool);
-      return '<option value="'+c+'"'+((!multi&&cur===c)?' selected':'')+'>'+c+' ('+n+')</option>'; }).join(""); }
+  var list=pool("cat");
+  var cats=orderedCategories(list).filter(function(c){ return catCount(c,list)>0; });
+  var cur=wishMode?"__wish":(activeCat||"All");
+  sel.innerHTML='<option value="All"'+(cur==="All"?' selected':'')+'>All Categories ('+list.length+')</option>'+
+    cats.map(function(c){
+      return '<option value="'+c+'"'+(cur===c?' selected':'')+'>'+c+' ('+catCount(c,list)+')</option>'; }).join(""); }
 
 /* ---- Wishlist ---- */
 var WISH={};
@@ -670,15 +693,16 @@ function render(){
   var grid=document.getElementById("grid"); if(!grid)return;
   var q=searchQuery();
   var items=PRODUCTS.filter(function(p){ if(!baseVisible(p))return false;
-    if(wishMode && !isWished(p.id))return false; if(activeStore!=="All"&&p.vendor!==activeStore)return false;
-    var catOk=!activeCats.length||activeCats.some(function(c){ return matchesCat(p,c); });
-    var qOk=!q||((p.name||"")+(p.blurb||"")+(p.vendor||"")+(p.category||"")).toLowerCase().indexOf(q)!==-1; return catOk&&qOk; });
+    if(wishMode && !isWished(p.id))return false;
+    if(!matchesStore(p,activeStore))return false;
+    if(!matchesCat(p,activeCat))return false;
+    return !q||((p.name||"")+(p.blurb||"")+(p.vendor||"")+(p.category||"")).toLowerCase().indexOf(q)!==-1; });
   var num=function(p){ return Number(p.price)||0; }; var hwRank=function(p){ return isDiffuserHardware(p)?0:1; };
   if(activeSort==="cheapest"){ items.sort(function(a,b){ return nssRank(a)-nssRank(b)||num(a)-num(b); }); }
   else if(activeSort==="highest"){ items.sort(function(a,b){ return nssRank(a)-nssRank(b)||num(b)-num(a); }); }
   else if(activeSort==="az"){ items.sort(function(a,b){ return nssRank(a)-nssRank(b)||(a.name||"").localeCompare(b.name||""); }); }
   else { items.sort(function(a,b){ return catRank(a.category)-catRank(b.category)||(a.category||"").localeCompare(b.category||"")||nssRank(a)-nssRank(b)||(a.vendor||"").localeCompare(b.vendor||"")||hwRank(a)-hwRank(b)||seriesKey(a).localeCompare(seriesKey(b))||(a.name||"").localeCompare(b.name||""); }); }
-  var showHeaders=(!wishMode&&activeSort==="featured"&&activeStore==="All"&&!activeCats.length); updateCounts(items.length); injectProductLd(items);
+  var showHeaders=(!wishMode&&activeSort==="featured"&&activeStore==="All"&&!activeCat); updateCounts(items.length); injectProductLd(items);
   if(!items.length){ grid.innerHTML=wishMode?'<div class="empty">Your Garden is empty &mdash; tap the \u2764 on any product to save it here.</div>':'<div class="empty">No botanicals found. Try another whisper.</div>'; return; }
   var lastCat=null; var showXsell=catSelected("CBD");
   var body=items.map(function(p){ var header=""; if(showHeaders&&p.category!==lastCat){ lastCat=p.category; header='<h2 class="cat-header"><span>'+p.category+'</span></h2>'; }
