@@ -13,17 +13,16 @@ const BRAND_AFFILIATES = {
   "Soul CBD":{awinmid:"",couponCode:"JACOBKENNEDY",percent:20},
   "Natural Smoke Shop":{awinmid:"",trackParam:{key:"tr",val:"138"},couponCode:"JACOBKENNEDY",percent:10},
   "Charlotte's Web":{awinmid:"",couponCode:"",percent:0},
-  /* Rishi Tea & Botanicals — on Awin, merchant profile 53225. (ShareASale, where
-   * they used to be listed, folded into Awin in Oct 2025.) awinmid stays EMPTY
-   * until the Awin application is approved: withAffiliate() only builds a
-   * cread.php link when both AWIN_PUBLISHER_ID and awinmid are set, so until
-   * then shoppers get a clean direct link that simply earns nothing. Putting an
-   * unapproved mid in here would route real shoppers through a tracking link
-   * that credits no one — worse than no tracking. Flip it to "53225" (verify in
-   * the Awin dashboard first) the day approval lands; no other change needed.
+  /* Rishi Tea & Botanicals — Awin merchant 53225, approved 2026-08-08. (They
+   * were previously listed on ShareASale, which folded into Awin in Oct 2025.)
+   * Live from here: withAffiliate() builds a cread.php link because both
+   * AWIN_PUBLISHER_ID and awinmid are now set, so every Rishi click is
+   * attributed. It sat empty until approval on purpose — an unapproved mid
+   * routes real shoppers through a tracking link that credits no one, which is
+   * worse than a clean direct link.
    * No coupon: we have no negotiated code with Rishi, and percent:0 keeps
-   * getCoupon() from advertising one. */
-  "Rishi Tea":{awinmid:"",couponCode:"",percent:0}
+   * getCoupon() from advertising one that does not exist. */
+  "Rishi Tea":{awinmid:"53225",couponCode:"",percent:0}
 };
 function getCoupon(vendor){ var c=BRAND_AFFILIATES[vendor]; if(!c||!c.couponCode||!(c.percent>0))return null; return {code:c.couponCode,percent:c.percent}; }
 function vendorCode(vendor){ var c=BRAND_AFFILIATES[vendor]; return (c&&c.couponCode)?c.couponCode:""; }
