@@ -222,11 +222,37 @@ blank until the impact.com publisher account is issued. Per vendor (all in
   cookie, server-validated on their end.
 - **Natural Smoke Shop**: `?tr=138`, attribution UNCONFIRMED; treat reports from
   it as soft until proven.
-- **Secret Nature, Soul CBD, Charlotte's Web**: `awinmid` empty, Awin
-  applications pending; links go direct until approval.
+- **Secret Nature, Soul CBD**: `awinmid` empty, Awin applications pending;
+  links go direct until approval.
+- **Charlotte's Web**: registered on BOTH networks, Awin pending and impact.com
+  pending (programme 44451, Creator, 10%). An existing vendor whose handoff has
+  never been attributed, which makes it the cheapest revenue on the list. The
+  two registrations do not cancel each other: `withAffiliate()` tries impact
+  first and falls through to Awin, so whichever approval lands first starts
+  crediting.
 - **Tea For Guys, Purest Mushrooms, Wooden Spoon Herbs, Balls Deep Tea Company,
   St. Francis Herb Farm, Republic of Tea, Tea Sparrow**: registered 2026-08-12,
-  all PENDING, all linking direct. Rishi Tea was dropped the same day.
+  all impact.com, all PENDING, all linking direct. Rishi Tea was dropped the
+  same day.
+
+**`IMPACT_PROGRAMS` in `lib/hlm.ts` says which programme to apply to**, with the
+id, payout label and rate from the marketplace export. It is server-side on
+purpose: none of it builds a link, and the storefront should not ship a table of
+our commission rates to every visitor. Two rules live there because both cost
+real money:
+
+- **Take the Creator programme.** Where an advertiser runs both, Creator often
+  pays more for identical traffic: Wooden Spoon Herbs is 5% standard against
+  20% Creator. Search the export by domain and take the best-paying row, not
+  the first match.
+- **Read `payoutLabel`, not just the rate.** `Recurring Sales` pays on repeat
+  orders, `Online Sale` pays once. Tea For Guys runs both at 15%, which is not
+  the coin toss it looks like: tea is rebought, so 40494 (recurring) is worth
+  more per customer than 44574 (a one-shot content placement).
+
+An approval supplies a tracked link and a commission. It does NOT supply a
+feed, which is why an approved maker can still sit `pending` in
+`SHOPIFY_STORES` until someone reads their catalogue (section 5).
 
 **impact.com links are shaped nothing like Awin's.** Awin hangs one merchant id
 off a shared gateway, so a wrong `awinmid` still lands the shopper on the shop.

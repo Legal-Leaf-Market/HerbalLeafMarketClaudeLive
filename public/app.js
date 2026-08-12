@@ -49,24 +49,29 @@ const BRAND_AFFILIATES = {
   "Secret Nature":{awinmid:"",couponCode:"",percent:0},
   "Soul CBD":{awinmid:"",couponCode:"",percent:0},
   "Natural Smoke Shop":{awinmid:"",trackParam:{key:"tr",val:"138"},couponCode:"JACOBKENNEDY",percent:10},
-  "Charlotte's Web":{awinmid:"",couponCode:"",percent:0},
+  /* Charlotte's Web is an EXISTING vendor whose handoff has never been tracked:
+   * their Awin application is still pending and awinmid is still empty, so
+   * every click we have ever sent them has been unattributed. They run
+   * "Charlotte's Web - Creator" on impact.com (programme 44451), so the impact
+   * block is added alongside the awinmid rather than replacing it. Neither
+   * application is cancelled by the other; withAffiliate() tries impact first
+   * and falls through to Awin, so whichever is approved first starts crediting
+   * and the other stays harmless. Nothing about today's behaviour changes:
+   * both are empty, so the link is still direct. */
+  "Charlotte's Web":{awinmid:"",impact:{host:"",campaign:"",ad:""},couponCode:"",percent:0},
   /* ---- impact.com intake, registered 2026-08-12, EVERY ONE PENDING ----
    * Seven makers pre-registered ahead of approval. host/campaign/ad stay empty
    * until impact.com issues them, so withAffiliate() links direct for all of
    * these today; filling in the three values for a maker is what switches that
    * maker live, and nothing else has to change.
    *
-   * Which network each maker actually sits on is confirmed per maker, because
-   * it is not uniform. Confirmed on impact.com from the maker's own affiliate
-   * page: Republic of Tea and Tea Sparrow. The other five publish an affiliate
-   * programme but do not name impact.com publicly (Wooden Spoon Herbs lists
-   * Sovrn / ShareASale / Shopnomix, Tea For Guys lists Sovrn and Cuelinks,
-   * Purest Mushrooms runs its own sign-up, Balls Deep Tea lists Sovrn, St.
-   * Francis Herb Farm names none). If any of those comes back accepted on a
-   * different network, its entry swaps to that network's shape (an awinmid, a
-   * ref, a trackParam) instead of gaining impact ids. Registering them all
-   * this way costs nothing while pending, since every shape falls through to
-   * the same direct link.
+   * All seven are confirmed present in the impact.com marketplace export of
+   * 2026-08-11, so this is one network, not seven guesses. IMPACT_PROGRAMS in
+   * lib/hlm.ts carries the programme id, payout label and rate for each; it
+   * lives server-side because none of that is needed to build a link and the
+   * storefront should not ship a table of our commission rates to every
+   * visitor. Read it before applying: two of these makers run more than one
+   * programme, and the programmes are not equivalent.
    *
    * percent:0 on all seven, and it should stay that way until a code is put
    * through the maker's own checkout. Purest Mushrooms advertises a 10% code
