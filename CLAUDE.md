@@ -231,9 +231,25 @@ blank until the impact.com publisher account is issued. Per vendor (all in
   first and falls through to Awin, so whichever approval lands first starts
   crediting.
 - **Tea For Guys, Purest Mushrooms, Wooden Spoon Herbs, Balls Deep Tea Company,
-  St. Francis Herb Farm, Republic of Tea, Tea Sparrow**: registered 2026-08-12,
-  all impact.com, all PENDING, all linking direct. Rishi Tea was dropped the
-  same day.
+  St. Francis Herb Farm, Republic of Tea, Tea Sparrow, Encha Matcha, RE
+  Botanicals**: registered 2026-08-12, all impact.com, all PENDING, all linking
+  direct. Rishi Tea was dropped the same day. Encha and RE Botanicals are the
+  best-paying of the nine at 25%.
+
+**Two of the nine are NOT Shopify.** St. Francis Herb Farm and RE Botanicals
+run WordPress (their paths are `/shop/` and `/about/` with trailing slashes,
+not `/collections/` and `/products/`), so they have no `products.json`, no row
+in `SHOPIFY_STORES` and no place in `SHOPIFY_VENDORS`. Ingesting either needs a
+scraper of the shape `getSmokingBlendsIds()` uses for Natural Smoke Shop.
+Checking the URL shape before writing a store entry is worth the ten seconds:
+the registry cannot tell you, and a Shopify `/cart/` permalink on a WooCommerce
+site 404s rather than filling.
+
+**RE Botanicals collides with the organic-copy rule (section 11).** Their whole
+brand is a USDA certified-organic claim, so their product titles carry it, and
+their feed would put those titles on cards. Section 11's only carve-out is for
+the maker's own URLs, not the maker's own product names. Settle which side an
+ingested title falls on BEFORE clearing their pending flag, not after it ships.
 
 **`IMPACT_PROGRAMS` in `lib/hlm.ts` says which programme to apply to**, with the
 id, payout label and rate from the marketplace export. It is server-side on
