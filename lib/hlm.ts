@@ -67,11 +67,11 @@ const SHOPIFY_STORES: ShopifyStore[] = [
    * then `pending` keeps an unexamined catalogue off the shelf. See the
    * `pending` doc on ShopifyStore for the sequence.
    *
-   * St. Francis Herb Farm is registered everywhere else but is absent from
-   * THIS list on purpose: their site is WordPress, not Shopify, so there is no
-   * products.json to page through. Ingesting them means a scraper of the shape
-   * getSmokingBlendsIds() uses for Natural Smoke Shop, which is a separate
-   * piece of work rather than a row in this table. */
+   * St. Francis Herb Farm and RE Botanicals are registered everywhere else but
+   * are absent from THIS list on purpose: both run WordPress, not Shopify, so
+   * there is no products.json to page through. Ingesting either means a
+   * scraper of the shape getSmokingBlendsIds() uses for Natural Smoke Shop,
+   * which is a separate piece of work rather than a row in this table. */
   { vendor: "Tea For Guys", domain: "https://teaforguys.com", prefix: "tfg", pending: true },
   { vendor: "Purest Mushrooms", domain: "https://purestmushrooms.com", prefix: "pmush", pending: true },
   { vendor: "Wooden Spoon Herbs", domain: "https://woodenspoonherbs.com", prefix: "wsh", pending: true },
@@ -80,6 +80,13 @@ const SHOPIFY_STORES: ShopifyStore[] = [
   /* .ca, not .com: Tea Sparrow is Vancouver-based and republicoftea.com's
    * neighbour in the tld is a different company entirely. */
   { vendor: "Tea Sparrow", domain: "https://www.teasparrow.ca", prefix: "tspw", pending: true },
+  /* Encha sells whisks, bowls and scoops in an /collections/accessories
+   * alongside the matcha, so this one will definitely need an include list
+   * rather than the whole feed, and it must NOT be given a TEA_VENDORS
+   * shortcut in app.js. Matcha is a powder AND a tea, so once the real
+   * product_types are known the powders keep their own category and isTea()
+   * picks them up as well, the way a matcha should appear in both places. */
+  { vendor: "Encha Matcha", domain: "https://encha.com", prefix: "encha", pending: true },
 ]
 /* =========================================================================
  * impact.com programmes
@@ -131,6 +138,17 @@ export const IMPACT_PROGRAMS: Record<string, ImpactProgram> = {
    * having for the shelf, not worth planning revenue on. */
   "Republic of Tea": { id: "", label: "Online Sale", rate: "4%" },
   "Tea Sparrow": { id: "", label: "Online Sale", rate: "5%" },
+  /* The two best-paying makers on the list, both 25%. Encha is ceremonial
+   * matcha out of Uji; RE Botanicals is a hemp apothecary, which puts them in
+   * isCBD() territory and means the Legal Leaf cross-sell tag will render on
+   * their cards. */
+  "Encha Matcha": { id: "", label: "Online Sale", rate: "25%" },
+  "RE Botanicals": {
+    id: "",
+    label: "Online Sale",
+    rate: "25%",
+    note: "Their brand leads with a USDA certified-organic claim, which this site removed from its own copy on 2026-08-08. Settle whether an ingested product title counts as the maker's words before their feed goes live.",
+  },
   /* Not a new maker: already in SHOPIFY_STORES above, and every click we have
    * sent them so far has gone unattributed while their Awin application sits
    * pending. Attaching attribution to a handoff that already happens is the
@@ -172,6 +190,8 @@ const HLM_DEFAULT_RULES = {
     "St. Francis Herb Farm": 0,
     "Republic of Tea": 0,
     "Tea Sparrow": 0,
+    "Encha Matcha": 0,
+    "RE Botanicals": 0,
   },
 }
 

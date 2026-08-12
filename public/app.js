@@ -73,7 +73,7 @@ const BRAND_AFFILIATES = {
    * visitor. Read it before applying: two of these makers run more than one
    * programme, and the programmes are not equivalent.
    *
-   * percent:0 on all seven, and it should stay that way until a code is put
+   * percent:0 on all nine, and it should stay that way until a code is put
    * through the maker's own checkout. Purest Mushrooms advertises a 10% code
    * to its affiliates, but the code is issued on acceptance and has never been
    * tested at their till, so advertising it now would be exactly the
@@ -84,7 +84,22 @@ const BRAND_AFFILIATES = {
   "Balls Deep Tea Company":{impact:{host:"",campaign:"",ad:""},couponCode:"",percent:0},
   "St. Francis Herb Farm":{impact:{host:"",campaign:"",ad:""},couponCode:"",percent:0},
   "Republic of Tea":{impact:{host:"",campaign:"",ad:""},couponCode:"",percent:0},
-  "Tea Sparrow":{impact:{host:"",campaign:"",ad:""},couponCode:"",percent:0}
+  "Tea Sparrow":{impact:{host:"",campaign:"",ad:""},couponCode:"",percent:0},
+  /* Added 2026-08-12, the two 25% names from the same export and the best-paying
+   * makers on this list. Both need a closer read than the rate suggests:
+   *   Encha sells accessories (whisks, bowls, scoops) beside the matcha, so
+   *     they are the textbook case for why TEA_VENDORS stays empty until a feed
+   *     is read. A wholesale "all tea" shortcut on this maker files a bamboo
+   *     whisk under Tea.
+   *   RE Botanicals is a CBD maker, so isCBD() picks their tinctures up and the
+   *     sister-shop cross-sell tag renders on their cards, which is correct and
+   *     automatic. Their whole brand is built on a USDA certified-organic
+   *     claim, though, and this site removed organic claims from its copy on
+   *     2026-08-08. Their product TITLES will carry it. Before their feed goes
+   *     live somebody has to decide whether a maker's own product name counts
+   *     as their words (the way NSS product-URL slugs do) or as ours. */
+  "Encha Matcha":{impact:{host:"",campaign:"",ad:""},couponCode:"",percent:0},
+  "RE Botanicals":{impact:{host:"",campaign:"",ad:""},couponCode:"",percent:0}
 };
 function getCoupon(vendor){ var c=BRAND_AFFILIATES[vendor]; if(!c||!c.couponCode||!(c.percent>0))return null; return {code:c.couponCode,percent:c.percent}; }
 function vendorCode(vendor){ var c=BRAND_AFFILIATES[vendor]; return (c&&c.couponCode)?c.couponCode:""; }
@@ -104,12 +119,13 @@ function vendorCode(vendor){ var c=BRAND_AFFILIATES[vendor]; return (c&&c.coupon
  * Bear Blend's free-shipping threshold is $69, read from their own cart API
  * (free_shipping_threshold:69) on 2026-08-08; it was listed here as 75, which
  * overstated the spend needed for free postage.
- * The seven impact.com registrations are all unknown on purpose: their rates
+ * The nine impact.com registrations are all unknown on purpose: their rates
  * have never been read at their checkouts, and Tea For Guys is the reason the
  * unknown state had to exist at all, since their offer is free shipping on two
  * or more items, a rule this map has no way to say. */
 var SHIPPING={ "Bear Blend":{flat:6.95,freeOver:69},"Puff Herbals":{flat:5.99,freeOver:50},"Secret Nature":{flat:6.00,freeOver:50},"Soul CBD":{flat:5.95,freeOver:60},"Natural Smoke Shop":{flat:5.95,freeOver:35},"Charlotte's Web":{flat:5.99,freeOver:50},
-  "Tea For Guys":{unknown:true},"Purest Mushrooms":{unknown:true},"Wooden Spoon Herbs":{unknown:true},"Balls Deep Tea Company":{unknown:true},"St. Francis Herb Farm":{unknown:true},"Republic of Tea":{unknown:true},"Tea Sparrow":{unknown:true} };
+  "Tea For Guys":{unknown:true},"Purest Mushrooms":{unknown:true},"Wooden Spoon Herbs":{unknown:true},"Balls Deep Tea Company":{unknown:true},"St. Francis Herb Farm":{unknown:true},"Republic of Tea":{unknown:true},"Tea Sparrow":{unknown:true},
+  "Encha Matcha":{unknown:true},"RE Botanicals":{unknown:true} };
 function shipInfo(vendor,after){ var s=SHIPPING[vendor];
   if(!s||s.unknown) return {cost:0,free:false,freeOver:0,unknown:true};
   var free=(s.freeOver>0&&after>=s.freeOver)||!(s.flat>0);
@@ -574,11 +590,13 @@ function submitAuth(){ var email=(document.getElementById("authEmail").value||""
  * hole. Listing a vendor early is inert rather than risky: this list is only
  * ever consulted for a vendor that has items in the cart, and items only exist
  * for a vendor whose products.json actually answered, which is what makes it
- * Shopify in the first place. St. Francis Herb Farm is the exception and is
- * absent deliberately: their site is WordPress, not Shopify, so a /cart/
- * permalink would 404 rather than fill. */
+ * Shopify in the first place. St. Francis Herb Farm and RE Botanicals are the
+ * exceptions and are absent deliberately: both run WordPress, not Shopify
+ * (their paths are /shop/ and /about/ with trailing slashes, not /collections/
+ * and /products/), so a /cart/ permalink would 404 rather than fill. */
 var SHOPIFY_VENDORS=["Puff Herbals","Secret Nature","Soul CBD","Charlotte's Web",
-  "Tea For Guys","Purest Mushrooms","Wooden Spoon Herbs","Balls Deep Tea Company","Republic of Tea","Tea Sparrow"];
+  "Tea For Guys","Purest Mushrooms","Wooden Spoon Herbs","Balls Deep Tea Company","Republic of Tea","Tea Sparrow",
+  "Encha Matcha"];
 var HOUSE_CODE="JACOBKENNEDY";
 /* writeText rejects (not throws) when the document lacks focus or permission,
  * so the promise needs its own catch or the console fills with unhandled

@@ -38,8 +38,8 @@ PAGE_LIMIT = 250
 MAX_PAGES = 4
 
 # The pending roster in lib/hlm.ts, so a bare run probes exactly what is held
-# back. St. Francis Herb Farm is absent because they are on WordPress and have
-# no products.json for this to read.
+# back. St. Francis Herb Farm and RE Botanicals are absent because both run
+# WordPress and have no products.json for this to read.
 PENDING = [
     ("Tea For Guys", "https://teaforguys.com", "tfg"),
     ("Purest Mushrooms", "https://purestmushrooms.com", "pmush"),
@@ -47,6 +47,7 @@ PENDING = [
     ("Balls Deep Tea Company", "https://ballsdeeptea.com", "bdt"),
     ("Republic of Tea", "https://www.republicoftea.com", "rot"),
     ("Tea Sparrow", "https://www.teasparrow.ca", "tspw"),
+    ("Encha Matcha", "https://encha.com", "encha"),
 ]
 
 # product_types that are almost never botanicals. Only a HINT for the eye: the
