@@ -81,6 +81,63 @@ const SHOPIFY_STORES: ShopifyStore[] = [
    * neighbour in the tld is a different company entirely. */
   { vendor: "Tea Sparrow", domain: "https://www.teasparrow.ca", prefix: "tspw", pending: true },
 ]
+/* =========================================================================
+ * impact.com programmes
+ *
+ * Which programme to apply to, per maker, from the marketplace export of
+ * 2026-08-11 (10,325 rows). This is application paperwork rather than runtime
+ * config: nothing here builds a link. It lives on the server precisely because
+ * of that, since the storefront has no use for a table of our commission rates
+ * and every byte of public/app.js is served to every visitor.
+ *
+ * Two traps in that export, both of which bite here:
+ *
+ * 1. CREATOR PROGRAMMES OFTEN PAY MORE FOR THE SAME SALE. Where an advertiser
+ *    runs both a standard and a "- Creator" programme, the Creator one is
+ *    frequently the better rate: Wooden Spoon Herbs is 5% standard against 20%
+ *    Creator, a fourfold difference for identical traffic. Before applying to
+ *    anything, search the export for the maker's domain and take the
+ *    best-paying programme rather than the first match.
+ * 2. THE PAYOUT LABEL CHANGES WHAT THE RATE MEANS. "Recurring Sales" pays on
+ *    repeat orders, "Online Sale" pays once. Tea For Guys runs both at 15%,
+ *    which looks like a coin toss and is not: tea is a consumable that people
+ *    rebuy, so the recurring programme is worth materially more per customer.
+ *
+ * `id` is blank where this maker's row was identified by name and rate but the
+ * id was not carried over; it is in the export, look it up rather than
+ * guessing. A wrong id applies to somebody else's programme.
+ *
+ * Rates are what the maker published to the marketplace, not a negotiated
+ * deal, and they are NOT a coupon. Nothing here entitles the storefront to
+ * advertise a discount: see the coupon rule in HLM_DEFAULT_RULES. */
+type ImpactProgram = { id: string; label: string; rate: string; note?: string }
+export const IMPACT_PROGRAMS: Record<string, ImpactProgram> = {
+  "Tea For Guys": {
+    id: "40494",
+    label: "Recurring Sales",
+    rate: "15%",
+    note: 'Also runs "Tea For Guys - Product Reviews" (id 44574, Online Sale, 15%). Apply to 40494: same headline rate, but it pays on the repeat orders a tea drinker actually makes. 44574 is a content placement, worth holding as a second programme if they allow both, never instead.',
+  },
+  "Purest Mushrooms": { id: "", label: "Online Sale", rate: "25%", note: "Highest rate of the seven." },
+  "Wooden Spoon Herbs": {
+    id: "",
+    label: "Online Sale",
+    rate: "20%",
+    note: 'MUST be the "- Creator" programme. The standard programme is 5% for the same traffic.',
+  },
+  "Balls Deep Tea Company": { id: "", label: "Online Sale", rate: "15%" },
+  "St. Francis Herb Farm": { id: "", label: "Online Sale", rate: "15%" },
+  /* The two established tea houses pay what established tea houses pay. Worth
+   * having for the shelf, not worth planning revenue on. */
+  "Republic of Tea": { id: "", label: "Online Sale", rate: "4%" },
+  "Tea Sparrow": { id: "", label: "Online Sale", rate: "5%" },
+  /* Not a new maker: already in SHOPIFY_STORES above, and every click we have
+   * sent them so far has gone unattributed while their Awin application sits
+   * pending. Attaching attribution to a handoff that already happens is the
+   * cheapest revenue on this list. */
+  "Charlotte's Web": { id: "44451", label: "Online Sale", rate: "10%", note: "Creator programme. Existing vendor, currently untracked." },
+}
+
 const NSS_ORIGIN = "https://www.smokingblends.com"
 const NSS_CACHE_KEY = "nss_ids_v1"
 
