@@ -335,6 +335,11 @@
      shop DOM, which is harmless: the whole body is inside try/catch and the
      functions above are top-level declarations, so they exist regardless. -->
 <script src="/hlm-api.js"></script>
+<!-- products.js before app.js, the order index.html uses. It defines
+     SEED_PRODUCTS, which getSeedProducts() and mergeLive() read. Without it
+     this page shows no Natural Smoke Shop products at all: they have no rows
+     in /api/inventory and their whole range lives in the seed catalogue. -->
+<script src="/products.js"></script>
 <script src="/app.js"></script>
 <script>
 (function () {
@@ -394,10 +399,22 @@
       "</div></a>";
   }
 
-  function paint(all) {
-    // The endpoint's documented contract is a bare array, and its error path
-    // returns an object instead. app.js guards the same way; without this an
-    // error body would land here and throw inside the filter.
+  /* The storefront never renders the live feed raw: mergeLive() keeps seed
+     products for any vendor MISSING from live, and Natural Smoke Shop is
+     exactly such a vendor. /api/inventory returns 353 rows across four
+     vendors and none of them is theirs; their range comes entirely from
+     products.js. Rendering the live array alone showed an empty range on the
+     one page that exists to be about them. */
+  var liveHadVendor = false;
+  function catalogue(live) {
+    var arr = Array.isArray(live) ? live : [];
+    liveHadVendor = arr.some(function (p) { return p && p.vendor === VENDOR; });
+    try { if (typeof mergeLive === "function") return mergeLive(arr); } catch (e) {}
+    return arr;
+  }
+
+  function paint(live) {
+    var all = catalogue(live);
     if (!Array.isArray(all)) { fail(); return; }
     var mine = all.filter(function (p) {
       // Same gate the shop grid uses: a real price, and not known out of stock.
@@ -418,14 +435,27 @@
     gridEl.hidden = false;
     statusEl.hidden = true;
 
+    /* Do not claim "from their own feed" when it is not. NSS has no live rows,
+       so these prices are our last snapshot and can drift. The footer already
+       discloses that feeds go stale; saying which source a price came from is
+       the same promise kept one level down. */
     noteEl.textContent = mine.length + (mine.length === 1 ? " product" : " products") +
-      " in stock, cheapest first, prices from their own feed." +
-      (cp && cp.percent ? " Prices shown include the " + cp.percent + "% code." : "");
+      ", cheapest first. " +
+      (liveHadVendor
+        ? "Prices from their live feed."
+        : "Prices are from our last snapshot of their shop, so confirm at their checkout.") +
+      (cp && cp.percent ? " Shown with the " + cp.percent + "% code applied." : "");
     noteEl.hidden = false;
   }
 
+  /* A failed fetch is not a dead end: the storefront falls back to the seed
+     catalogue in exactly this case, so do the same rather than showing an
+     error where products could be. */
   function fail() {
-    statusEl.innerHTML = 'The live range did not load. Their full catalogue is at ' +
+    try {
+      if (typeof mergeLive === "function") { paint(null); return; }
+    } catch (e) {}
+    statusEl.innerHTML = 'The range did not load. Their full catalogue is at ' +
       '<a href="https://www.smokingblends.com/?tr=138" rel="nofollow sponsored noopener">smokingblends.com</a>.';
   }
 
