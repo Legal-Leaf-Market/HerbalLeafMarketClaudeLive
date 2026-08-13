@@ -324,7 +324,7 @@ function rule(k,def){ return (HLM_RULES && HLM_RULES[k]!==undefined)?HLM_RULES[k
  *
  * My Garden is a MODE, not a category — it used to be smuggled in as the magic
  * category "__wish", which entangles it with the facet logic. */
-let activeCat="", activeStore="All", activeSort="featured", wishMode=false;
+let activeCat="", activeStore="All", activeSort="shuffle", wishMode=false;
 function activeCatLabel(){ return wishMode?"__wish":(activeCat||"All"); }
 function catSelected(c){ return activeCat===c; }
 /* CBD and Tea are cross-cutting views over the catalogue; everything else is a
@@ -370,6 +370,42 @@ function setSort(v){ activeSort=v; render(); }
 const CATEGORY_ORDER=["Herbal Blends","Herbal Smokes","Herbal Diffusers","Herbal Diffusers (Single-Use)","Hemp Flower","Single Herbs","Tinctures","Topicals","Pills","Powders","Gummies","Tea","Beverages","Bundles","Wraps","Pets","Misc"];
 function catRank(c){ if(c==="CBD")return -2; if(c==="Tea")return -1; var i=CATEGORY_ORDER.indexOf(c); return i===-1?500:i; }
 function nssRank(p){ return p.vendor==="Natural Smoke Shop"?0:1; }
+/* ============================================================
+   Shuffle ordering, ported from legal-leaf's public/js/shelf-order.js rather
+   than written fresh, so the two sites cannot drift on it.
+
+   One seed per PAGE LOAD, deliberately not per call: render() re-runs on every
+   keystroke and filter change, and re-rolling there would reshuffle the grid
+   under the reader's cursor while they were using it. Stable for the visit,
+   different on the next one.
+
+   Legal-leaf also sinks sub-$15 items, because 21% of its accessory shelf is
+   rolling papers and filter tips and a uniform shuffle made that page read as
+   junk. That tuning is NOT ported: this catalogue is blends, CBD and tea in a
+   narrow band, and the cheap end here is legitimate single herbs rather than
+   $1 filler. The mechanism ports, its thresholds do not.
+   ============================================================ */
+var SHELF_SEED=(Math.floor(Math.random()*2147483646)+1);
+function shelfRnd(){ SHELF_SEED=(SHELF_SEED*16807)%2147483647; return (SHELF_SEED-1)/2147483646; }
+/* Assigned once per product OBJECT, so the order holds while a reader filters.
+   PRODUCTS is rebuilt on each ingest, so a genuine reload deals a new order. */
+function shelfKey(p){ if(p._shelfKey===undefined) p._shelfKey=shelfRnd(); return p._shelfKey; }
+/* Walk the ranked list and take the first item whose vendor has not appeared in
+   the last SPREAD_GAP picks, falling back to the best remaining when every
+   vendor is on cooldown. Rank order is otherwise preserved: this rearranges
+   neighbours, it does not re-sort. */
+var SPREAD_GAP=3;
+function spreadVendors(rows){
+  var out=[], pool=rows.slice(), recent=[];
+  while(pool.length){
+    var pick=0;
+    for(var i=0;i<pool.length;i++){ if(recent.indexOf(String(pool[i].vendor||""))<0){ pick=i; break; } }
+    var p=pool.splice(pick,1)[0];
+    out.push(p); recent.push(String(p.vendor||""));
+    if(recent.length>SPREAD_GAP) recent.shift();
+  }
+  return out;
+}
 const EXCLUDE_PATTERN=/\b(thca|delta[\s-]?8|delta[\s-]?9|delta[\s-]?10|diet[\s-]?8|\bd8\b|\bd9\b|\bd10\b|\bhhc\b|thcv|thcp|courses?|class(es)?|workshops?|webinars?|masterclass|meditation club|membership|breath ?work|wim hof|consultations?|gift ?cards?|e-?gift|free gift|digital downloads?|videos?|savedby|package protection|sample pack|test [a-z0-9]\b)\b/i;
 function isExcluded(p){ if(/\bwholesale\b/i.test(p.name||"")) return true; if(EXCLUDE_PATTERN.test((p.name||"")+" "+(p.category||""))) return true; if(hasUnnegatedTHC(p)) return true; return false; }
 /* Takes the pool to derive from, so the category list reflects the store facet
@@ -947,7 +983,13 @@ function render(){
     if(!matchesCat(p,activeCat))return false;
     return !q||((p.name||"")+(p.blurb||"")+(p.vendor||"")+(p.category||"")).toLowerCase().indexOf(q)!==-1; });
   var num=function(p){ return Number(p.price)||0; }; var hwRank=function(p){ return isDiffuserHardware(p)?0:1; };
-  if(activeSort==="cheapest"){ items.sort(function(a,b){ return nssRank(a)-nssRank(b)||num(a)-num(b); }); }
+  if(activeSort==="shuffle"){
+    /* Deliberately no nssRank here. Every other branch pins Natural Smoke Shop
+       above all other vendors, which is exactly what a shuffle exists to undo. */
+    items.sort(function(a,b){ var la=(a.inStock===false)?1:0, lb=(b.inStock===false)?1:0; return la-lb||shelfKey(a)-shelfKey(b); });
+    items=spreadVendors(items);
+  }
+  else if(activeSort==="cheapest"){ items.sort(function(a,b){ return nssRank(a)-nssRank(b)||num(a)-num(b); }); }
   else if(activeSort==="highest"){ items.sort(function(a,b){ return nssRank(a)-nssRank(b)||num(b)-num(a); }); }
   else if(activeSort==="az"){ items.sort(function(a,b){ return nssRank(a)-nssRank(b)||(a.name||"").localeCompare(b.name||""); }); }
   else { items.sort(function(a,b){ return catRank(a.category)-catRank(b.category)||(a.category||"").localeCompare(b.category||"")||nssRank(a)-nssRank(b)||(a.vendor||"").localeCompare(b.vendor||"")||hwRank(a)-hwRank(b)||seriesKey(a).localeCompare(seriesKey(b))||(a.name||"").localeCompare(b.name||""); }); }
@@ -1043,7 +1085,19 @@ function hideLoader(){ var el=document.getElementById("hlmLoader"); if(el){ el.c
 function setHeaderHeightVar(){ try{ var h=document.querySelector("header");
   if(h) document.documentElement.style.setProperty("--hdr-h", h.getBoundingClientRect().height+"px"); }catch(e){} }
 function hlmInit(){ try{ if(hlmHandleGo()) return; var y=document.getElementById("year"); if(y)y.textContent=new Date().getFullYear();
-  loadCart(); loadWish(); loadSelv(); loadRitualFB(); PRODUCTS=normalizeCategories(getSeedProducts());
+  loadCart(); loadWish(); loadSelv(); loadRitualFB();
+  /* Maker-profile pages (natural-smoke-shop.html) include this file only for
+   * its helpers: withAffiliate, hlmOutUrl, hlmImg, getCoupon. Those are hoisted
+   * function declarations and already defined by the time this runs, so bailing
+   * here costs nothing and saves a page of guarded no-ops plus TWO network
+   * requests, one of which re-fetches a catalogue that page already fetched.
+   *
+   * Sentinel is #storeFilter, not #grid: anecdote-library.html has its own
+   * #grid and #filters for an unrelated story list, so either of those would
+   * send a non-shop page down the shop path the day it includes this file.
+   * #storeFilter and #cartDrawer are on index.html alone. */
+  if(!document.getElementById("storeFilter")){ setHeaderHeightVar(); window.addEventListener("resize", setHeaderHeightVar); return; }
+  PRODUCTS=normalizeCategories(getSeedProducts());
   var _openCartFromAdd=hlmHandleAdd();
   buildFilters(); buildStoreFilter(); render(); updateCartBadge(); renderCart(); updateAccountUI(); setAuthMode("signup");
   if(_openCartFromAdd) openCart();
