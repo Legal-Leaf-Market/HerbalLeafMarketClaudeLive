@@ -6,6 +6,33 @@ var SISTER_URL="https://legal-leafmarket.com";
 var FACTS_URL="?page=facts";
 var HLM_SHOP_URL="https://herballeafmarket.com";  /* email/button fallback */
 const AWIN_PUBLISHER_ID = "3004653";
+/* impact.com (formerly Impact Radius) is the second affiliate network this
+ * storefront speaks, and the one every new maker is now brought in through.
+ * Its links do NOT work like Awin's. Awin hangs one merchant id off a shared
+ * gateway; impact.com gives each advertiser its own tracking host plus a
+ * campaign id and an ad id:
+ *     https://<host>/c/<publisherId>/<campaignId>/<adId>?u=<destination>
+ * <host> is the maker's own impact.com domain (a *.pxf.io subdomain, or
+ * imp.i<advertiserId>.net) and ?u= carries the deep link to the exact product
+ * page. All four parts are issued together the moment a program ACCEPTS the
+ * application, and not one of them can be guessed while it is pending. That
+ * matters more here than it did for Awin: a cread.php link with a wrong mid
+ * still lands the shopper on the shop, whereas an impact.com link with an
+ * invented campaign or ad id dies at the network and the shopper never
+ * arrives at all.
+ *
+ * IMPACT_PUBLISHER_ID is our media-partner id, the one value every program
+ * shares, so it is set ONCE here rather than repeated per maker. Blank until
+ * the impact.com publisher account is issued; withAffiliate() reads blank as
+ * "not live yet" and hands out a clean direct link, exactly as an empty
+ * awinmid does. That is the whole point of registering a maker before
+ * approval: an unapproved tracking link credits nobody, which is strictly
+ * worse than the plain link it replaced. */
+const IMPACT_PUBLISHER_ID = "";
+/* Rides along on every impact.com click as ?sharedid=. Unlike subId1, this one
+ * surfaces in the MAKER's reporting as well as ours, so a brand still weighing
+ * our application can see which of the sister sites its traffic came from. */
+const IMPACT_SHARED_ID = "herballeafmarket";
 /* Coupon reality check, 2026-08-08, tested at each maker's own checkout:
  * JACOBKENNEDY is VALID only at Natural Smoke Shop (their Store API accepts it
  * as a percent coupon). Bear Blend ("Invalid code", tested with an item in the
@@ -22,32 +49,102 @@ const BRAND_AFFILIATES = {
   "Secret Nature":{awinmid:"",couponCode:"",percent:0},
   "Soul CBD":{awinmid:"",couponCode:"",percent:0},
   "Natural Smoke Shop":{awinmid:"",trackParam:{key:"tr",val:"138"},couponCode:"JACOBKENNEDY",percent:10},
-  "Charlotte's Web":{awinmid:"",couponCode:"",percent:0},
-  /* Rishi Tea & Botanicals — Awin merchant 53225, approved 2026-08-08. (They
-   * were previously listed on ShareASale, which folded into Awin in Oct 2025.)
-   * Live from here: withAffiliate() builds a cread.php link because both
-   * AWIN_PUBLISHER_ID and awinmid are now set, so every Rishi click is
-   * attributed. It sat empty until approval on purpose — an unapproved mid
-   * routes real shoppers through a tracking link that credits no one, which is
-   * worse than a clean direct link.
-   * No coupon: we have no negotiated code with Rishi, and percent:0 keeps
-   * getCoupon() from advertising one that does not exist. */
-  "Rishi Tea":{awinmid:"53225",couponCode:"",percent:0}
+  /* Charlotte's Web is an EXISTING vendor whose handoff has never been tracked:
+   * their Awin application is still pending and awinmid is still empty, so
+   * every click we have ever sent them has been unattributed. They run
+   * "Charlotte's Web - Creator" on impact.com (programme 44451), so the impact
+   * block is added alongside the awinmid rather than replacing it. Neither
+   * application is cancelled by the other; withAffiliate() tries impact first
+   * and falls through to Awin, so whichever is approved first starts crediting
+   * and the other stays harmless. Nothing about today's behaviour changes:
+   * both are empty, so the link is still direct. */
+  "Charlotte's Web":{awinmid:"",impact:{host:"",campaign:"",ad:""},couponCode:"",percent:0},
+  /* ---- impact.com intake, registered 2026-08-12, EVERY ONE PENDING ----
+   * Seven makers pre-registered ahead of approval. host/campaign/ad stay empty
+   * until impact.com issues them, so withAffiliate() links direct for all of
+   * these today; filling in the three values for a maker is what switches that
+   * maker live, and nothing else has to change.
+   *
+   * All seven are confirmed present in the impact.com marketplace export of
+   * 2026-08-11, so this is one network, not seven guesses. IMPACT_PROGRAMS in
+   * lib/hlm.ts carries the programme id, payout label and rate for each; it
+   * lives server-side because none of that is needed to build a link and the
+   * storefront should not ship a table of our commission rates to every
+   * visitor. Read it before applying: two of these makers run more than one
+   * programme, and the programmes are not equivalent.
+   *
+   * percent:0 on all nine, and it should stay that way until a code is put
+   * through the maker's own checkout. Purest Mushrooms advertises a 10% code
+   * to its affiliates, but the code is issued on acceptance and has never been
+   * tested at their till, so advertising it now would be exactly the
+   * struck-through price this storefront must never ship. */
+  "Tea For Guys":{impact:{host:"",campaign:"",ad:""},couponCode:"",percent:0},
+  "Purest Mushrooms":{impact:{host:"",campaign:"",ad:""},couponCode:"",percent:0},
+  "Wooden Spoon Herbs":{impact:{host:"",campaign:"",ad:""},couponCode:"",percent:0},
+  "Balls Deep Tea Company":{impact:{host:"",campaign:"",ad:""},couponCode:"",percent:0},
+  "St. Francis Herb Farm":{impact:{host:"",campaign:"",ad:""},couponCode:"",percent:0},
+  "Republic of Tea":{impact:{host:"",campaign:"",ad:""},couponCode:"",percent:0},
+  "Tea Sparrow":{impact:{host:"",campaign:"",ad:""},couponCode:"",percent:0},
+  /* Added 2026-08-12, the two 25% names from the same export and the best-paying
+   * makers on this list. Both need a closer read than the rate suggests:
+   *   Encha sells accessories (whisks, bowls, scoops) beside the matcha, so
+   *     they are the textbook case for why TEA_VENDORS stays empty until a feed
+   *     is read. A wholesale "all tea" shortcut on this maker files a bamboo
+   *     whisk under Tea.
+   *   RE Botanicals is a CBD maker, so isCBD() picks their tinctures up and the
+   *     sister-shop cross-sell tag renders on their cards, which is correct and
+   *     automatic. Their whole brand is built on a USDA certified-organic
+   *     claim, though, and this site removed organic claims from its copy on
+   *     2026-08-08. Their product TITLES will carry it. Before their feed goes
+   *     live somebody has to decide whether a maker's own product name counts
+   *     as their words (the way NSS product-URL slugs do) or as ours. */
+  "Encha Matcha":{impact:{host:"",campaign:"",ad:""},couponCode:"",percent:0},
+  "RE Botanicals":{impact:{host:"",campaign:"",ad:""},couponCode:"",percent:0}
 };
 function getCoupon(vendor){ var c=BRAND_AFFILIATES[vendor]; if(!c||!c.couponCode||!(c.percent>0))return null; return {code:c.couponCode,percent:c.percent}; }
 function vendorCode(vendor){ var c=BRAND_AFFILIATES[vendor]; return (c&&c.couponCode)?c.couponCode:""; }
-/* A vendor missing from this map is treated as FREE shipping by shipInfo(), so
- * every new vendor needs an entry or the cart quietly makes a promise the maker
- * never made. Rishi: $8 flat, free over $60 (their Sparkling Botanicals and
- * Concentrates ship at $12 instead, which is exactly why those product types
- * are excluded from the feed in lib/hlm.ts — one flat rate per vendor is all
- * this map can express). Bear Blend's free-shipping threshold is $69, read
- * from their own cart API (free_shipping_threshold:69) on 2026-08-08 — it was
- * listed here as 75, which overstated the spend needed for free postage. */
-var SHIPPING={ "Bear Blend":{flat:6.95,freeOver:69},"Puff Herbals":{flat:5.99,freeOver:50},"Secret Nature":{flat:6.00,freeOver:50},"Soul CBD":{flat:5.95,freeOver:60},"Natural Smoke Shop":{flat:5.95,freeOver:35},"Charlotte's Web":{flat:5.99,freeOver:50},"Rishi Tea":{flat:8.00,freeOver:60} };
-function shipInfo(vendor,after){ var s=SHIPPING[vendor]; if(!s) return {cost:0,free:true,freeOver:0}; var free=(s.freeOver>0&&after>=s.freeOver)||!(s.flat>0); return {cost:free?0:s.flat,free:free,freeOver:s.freeOver||0}; }
+/* Shipping is a PROMISE the cart makes on a maker's behalf, so this map only
+ * ever carries rates read off that maker's own checkout. Three states:
+ *     {flat, freeOver}   a rate somebody actually read at the till
+ *     {unknown:true}     a registered maker whose rate has not been read yet
+ *     absent from map    nobody registered this maker at all
+ * The last two both resolve to "unknown", and that is a change: shipInfo() used
+ * to return FREE for anything it did not recognise, so forgetting a vendor did
+ * not fail loudly, it quietly promised postage the maker never offered. Unknown
+ * says "shown at the maker's checkout" instead and keeps that vendor out of the
+ * out-the-door figure, which is honest about what we do not know.
+ * One flat rate per vendor is all this map can express, so a maker whose lines
+ * ship at different rates needs the pricier lines kept out of the feed (or
+ * per-product shipping, which this does not have).
+ * Bear Blend's free-shipping threshold is $69, read from their own cart API
+ * (free_shipping_threshold:69) on 2026-08-08; it was listed here as 75, which
+ * overstated the spend needed for free postage.
+ * The nine impact.com registrations are all unknown on purpose: their rates
+ * have never been read at their checkouts, and Tea For Guys is the reason the
+ * unknown state had to exist at all, since their offer is free shipping on two
+ * or more items, a rule this map has no way to say. */
+var SHIPPING={ "Bear Blend":{flat:6.95,freeOver:69},"Puff Herbals":{flat:5.99,freeOver:50},"Secret Nature":{flat:6.00,freeOver:50},"Soul CBD":{flat:5.95,freeOver:60},"Natural Smoke Shop":{flat:5.95,freeOver:35},"Charlotte's Web":{flat:5.99,freeOver:50},
+  "Tea For Guys":{unknown:true},"Purest Mushrooms":{unknown:true},"Wooden Spoon Herbs":{unknown:true},"Balls Deep Tea Company":{unknown:true},"St. Francis Herb Farm":{unknown:true},"Republic of Tea":{unknown:true},"Tea Sparrow":{unknown:true},
+  "Encha Matcha":{unknown:true},"RE Botanicals":{unknown:true} };
+function shipInfo(vendor,after){ var s=SHIPPING[vendor];
+  if(!s||s.unknown) return {cost:0,free:false,freeOver:0,unknown:true};
+  var free=(s.freeOver>0&&after>=s.freeOver)||!(s.flat>0);
+  return {cost:free?0:s.flat,free:free,freeOver:s.freeOver||0,unknown:false}; }
 function appendParam(url,key,val){ if(!url||url==="#"||!/^https?:\/\//i.test(url)) return url; if(new RegExp("[?&]"+key+"=").test(url)) return url; return url+(url.indexOf("?")===-1?"?":"&")+key+"="+encodeURIComponent(val); }
+/* All four parts or nothing. A link short one of them is not a weaker link, it
+ * is a broken one: impact.com resolves /c/<pub>/<campaign>/<ad> as a whole and
+ * has nowhere to send a shopper when a segment is empty. The http(s) test on
+ * the destination guards the same failure from the other end, since ?u=%23 (a
+ * product with no url, carrying the "#" placeholder) would hand the network a
+ * click it can only dead-end. Either way the caller falls through to the
+ * direct link. */
+function impactUrl(cfg,base){ var i=cfg&&cfg.impact;
+  if(!IMPACT_PUBLISHER_ID||!i||!i.host||!i.campaign||!i.ad) return "";
+  if(!/^https?:\/\//i.test(base)) return "";
+  return "https://"+i.host+"/c/"+encodeURIComponent(IMPACT_PUBLISHER_ID)+"/"+encodeURIComponent(i.campaign)+"/"+encodeURIComponent(i.ad)
+    +"?u="+encodeURIComponent(base)+(IMPACT_SHARED_ID?("&sharedid="+encodeURIComponent(IMPACT_SHARED_ID)):""); }
 function withAffiliate(product){ var base=(product&&product.url)?product.url:"#"; var cfg=BRAND_AFFILIATES[product.vendor];
+  if(cfg && cfg.impact){ var imp=impactUrl(cfg,base); if(imp) return imp; }
   if(cfg && AWIN_PUBLISHER_ID && cfg.awinmid){ return "https://www.awin1.com/cread.php?awinmid="+encodeURIComponent(cfg.awinmid)+"&awinaffid="+encodeURIComponent(AWIN_PUBLISHER_ID)+"&ued="+encodeURIComponent(base); }
   if(cfg && cfg.ref){ return appendParam(base,"ref",cfg.ref); }
   if(cfg && cfg.trackParam && cfg.trackParam.key){ return appendParam(base,cfg.trackParam.key,cfg.trackParam.val); }
@@ -111,13 +208,21 @@ function isCBG(p){ return /\bcbg\b|cannabigerol/i.test((p.name||"")+" "+(p.blurb
 /* The Tea facet is a CROSS-CUTTING view, not a category: it gathers anything a
  * shopper would steep, wherever it sits in the taxonomy. It used to be hard-
  * wired to Natural Smoke Shop, which meant an actual tea company was excluded
- * from the tea filter the moment one was added.
- * - Rishi Tea: the whole ingested catalogue is tea (loose leaf, sachets, and
- *   matcha powders), so vendor alone is enough.
+ * from the tea filter the moment one was added. Never wire it to one vendor.
+ *
+ * TEA_VENDORS is the wholesale shortcut, for makers whose ENTIRE ingested
+ * catalogue is steepable. A maker earns a place in it only once somebody has
+ * read their feed: "Tea" in the company name is not evidence, because most tea
+ * companies also sell pots, tins and gift sets, and a shortcut taken on the
+ * name alone files a teapot under Tea. Rishi held the only slot and is gone.
+ * The impact.com registrations are judged on category until their feeds are
+ * ingested and read (scripts/vendor_probe.py prints exactly that breakdown),
+ * at which point the all-tea ones can be added here by name.
  * - Natural Smoke Shop: only their steepable lines, not the smokables.
  * - Anyone else: whatever the ingest labelled "Tea". */
+var TEA_VENDORS={};
 function isTea(p){
-  if(p.vendor==="Rishi Tea") return true;
+  if(TEA_VENDORS[p.vendor]) return true;
   if(p.vendor==="Natural Smoke Shop") return (p.category==="Single Herbs"||p.category==="Herbal Blends");
   return p.category==="Tea";
 }
@@ -273,7 +378,7 @@ function orderedCategories(live){
   var present=Array.from(new Set(live.map(function(p){return p.category;})));
   /* CBD and Tea are synthetic cross-cutting facets, unshifted below. Drop them
    * from the literal-category list first or a vendor whose product category
-   * genuinely IS "Tea" — Rishi's loose leaf and sachets both map to it —
+   * genuinely IS "Tea" (any tea maker whose feed carries a Tea product_type)
    * renders a second, identical Tea chip. Also drops blank categories, which
    * would otherwise render an unlabelled chip. */
   present=present.filter(function(c){ return c && c!=="Tea" && c!=="CBD"; });
@@ -475,10 +580,23 @@ function submitAuth(){ var email=(document.getElementById("authEmail").value||""
 
 /* Every Shopify vendor must be listed here or doCheckout() falls into the
  * non-Shopify branch and opens the maker's bare homepage instead of a filled
- * cart. Rishi was missing at first (added to lib/hlm.ts but not here), which
- * is exactly how that failure looks: "checkout" lands on rishi-tea.com with
- * nothing in the cart. Registration #4 for a Shopify vendor, in effect. */
-var SHOPIFY_VENDORS=["Puff Herbals","Secret Nature","Soul CBD","Charlotte's Web","Rishi Tea"];
+ * cart. Rishi was missing at first (added to lib/hlm.ts but not here), which is
+ * exactly how that failure looks: "checkout" lands on the maker's site with
+ * nothing in the cart. Registration #4 for a Shopify vendor, in effect, and the
+ * one most easily forgotten because nothing complains.
+ *
+ * The impact.com makers are listed here NOW, while their feeds are still
+ * pending in lib/hlm.ts, so that flipping a feed live cannot reopen that same
+ * hole. Listing a vendor early is inert rather than risky: this list is only
+ * ever consulted for a vendor that has items in the cart, and items only exist
+ * for a vendor whose products.json actually answered, which is what makes it
+ * Shopify in the first place. St. Francis Herb Farm and RE Botanicals are the
+ * exceptions and are absent deliberately: both run WordPress, not Shopify
+ * (their paths are /shop/ and /about/ with trailing slashes, not /collections/
+ * and /products/), so a /cart/ permalink would 404 rather than fill. */
+var SHOPIFY_VENDORS=["Puff Herbals","Secret Nature","Soul CBD","Charlotte's Web",
+  "Tea For Guys","Purest Mushrooms","Wooden Spoon Herbs","Balls Deep Tea Company","Republic of Tea","Tea Sparrow",
+  "Encha Matcha"];
 var HOUSE_CODE="JACOBKENNEDY";
 /* writeText rejects (not throws) when the document lacks focus or permission,
  * so the promise needs its own catch or the console fills with unhandled
@@ -664,7 +782,7 @@ window.addEventListener("appinstalled", function(){ var b=document.getElementByI
 function renderCart(){ var body=document.getElementById("cartBody"); if(!body)return; var ids=Object.keys(CART);
   if(!ids.length){ body.innerHTML='<div class="cart-empty"><svg width="40" height="46" style="opacity:.5;margin-bottom:10px"><use href="#lilyIcon"/></svg><p>Your cart is empty.</p><span>Gather a few botanicals and they will bloom here, grouped by maker.</span></div>'; return; }
   var groups={}; ids.forEach(function(k){ var p=productById(k); if(!p)return; (groups[p.vendor]=groups[p.vendor]||[]).push({p:p,qty:CART[k],key:k}); });
-  var gO=0,gF=0,gShip=0,html="";
+  var gO=0,gF=0,gShip=0,gShipUnknown=false,html="";
   Object.keys(groups).sort().forEach(function(vendor){ var coupon=getCoupon(vendor), vO=0, isShop=SHOPIFY_VENDORS.indexOf(vendor)!==-1;
     var rows=groups[vendor].map(function(it){ var p=it.p,qty=it.qty,key=it.key,li=lineInfo(key),line=li.price*qty;
       /* A line the maker cannot sell (went out of stock after it was added)
@@ -676,19 +794,27 @@ function renderCart(){ var body=document.getElementById("cartBody"); if(!body)re
       var sizeLbl=li.sizeTxt?(' <span>&middot; '+li.sizeTxt+'</span>'):""; var kEsc=key.replace(/'/g,"\\'");
       var soldNote=dead?'<div class="cart-item-price" style="color:var(--red,#b3403f);font-weight:600;">Sold out at the maker &middot; won\'t be sent at checkout</div>':"";
       return '<div class="cart-item"'+(dead?' style="opacity:.65;"':"")+'><div class="cart-thumb">'+img+'</div><div class="cart-item-info"><div class="cart-item-name">'+p.name+'</div><div class="cart-item-price">$'+li.price.toFixed(2)+sizeLbl+'</div>'+soldNote+'<div class="cart-qty"><button onclick="bumpQty(\''+kEsc+'\',-1)">-</button><input type="text" value="'+qty+'" onchange="setQty(\''+kEsc+'\',this.value)" /><button onclick="bumpQty(\''+kEsc+'\',1)">+</button><button class="cart-remove" onclick="removeItem(\''+kEsc+'\')">remove</button></div></div><div class="cart-line-total">'+(dead?'':('$'+line.toFixed(2)))+'</div></div>'; }).join("");
-    var vF=coupon?vO*(1-coupon.percent/100):vO; gO+=vO; gF+=vF; var ship=shipInfo(vendor,vF); gShip+=ship.cost; var otd=vF+ship.cost;
+    var vF=coupon?vO*(1-coupon.percent/100):vO; gO+=vO; gF+=vF; var ship=shipInfo(vendor,vF); gShip+=ship.cost; if(ship.unknown)gShipUnknown=true; var otd=vF+ship.cost;
     var bd='<div class="cart-bd"><div class="cart-bd-row"><span>Subtotal</span><span>$'+vO.toFixed(2)+'</span></div>';
     if(coupon) bd+='<div class="cart-bd-row save"><span>Code '+coupon.code+' ('+coupon.percent+'% off)</span><span>-$'+(vO-vF).toFixed(2)+'</span></div>';
-    if(ship.free){ var near=(ship.freeOver>0)?' <span class="cart-bd-hint">(free over $'+ship.freeOver.toFixed(0)+')</span>':''; bd+='<div class="cart-bd-row"><span>Est. shipping'+near+'</span><span class="ship-free">FREE</span></div>'; }
+    /* Unknown is not free and must never be shown as free. It reads as a
+     * deferral, and the "+ shipping" it adds to the out-the-door line keeps
+     * that figure from posing as a total it cannot be. */
+    if(ship.unknown){ bd+='<div class="cart-bd-row"><span>Est. shipping</span><span class="cart-bd-hint">shown at '+vendor+' checkout</span></div>'; }
+    else if(ship.free){ var near=(ship.freeOver>0)?' <span class="cart-bd-hint">(free over $'+ship.freeOver.toFixed(0)+')</span>':''; bd+='<div class="cart-bd-row"><span>Est. shipping'+near+'</span><span class="ship-free">FREE</span></div>'; }
     else { var away=ship.freeOver>0?(ship.freeOver-vF):0; var h2=(away>0)?' <span class="cart-bd-hint">(add $'+away.toFixed(2)+' for free ship)</span>':''; bd+='<div class="cart-bd-row"><span>Est. shipping'+h2+'</span><span>$'+ship.cost.toFixed(2)+'</span></div>'; }
-    bd+='<div class="cart-bd-row otd"><span>Est. out-the-door</span><span>$'+otd.toFixed(2)+'</span></div></div>';
+    bd+='<div class="cart-bd-row otd"><span>Est. out-the-door</span><span>$'+otd.toFixed(2)+(ship.unknown?' + shipping':'')+'</span></div></div>';
     var note=isShop?'<div class="cart-checkout-note">Cart auto-fills at '+vendor+(vendorCode(vendor)?(' with code '+vendorCode(vendor)+' applied'):'')+'.</div>':'<div class="cart-checkout-note">Opens '+vendor+(vendorCode(vendor)?(' with code '+vendorCode(vendor)+' copied'):'')+'.</div>';
     html+='<div class="cart-group"><div class="cart-group-head"><span class="cart-vendor">'+vendor+'</span></div>'+rows+bd+'<button class="cart-checkout" onclick="checkoutVendor(\''+vendor.replace(/'/g,"\\'")+'\')">Checkout at '+vendor+' &rarr;</button>'+note+'</div>'; });
   var acct=isLoggedIn()?"":'<p class="cart-login-note">Checkout hands you to each maker\'s own site. A free sign-in keeps your cart and discount together, or you can continue without one.</p>';
   var gOTD=gF+gShip; var grand='<div class="cart-grand"><div class="cart-grand-row sm"><span>Items subtotal</span><span>$'+gO.toFixed(2)+'</span></div>';
   if(gF<gO) grand+='<div class="cart-grand-row sm save"><span>Coupon savings</span><span>-$'+(gO-gF).toFixed(2)+'</span></div>';
-  grand+='<div class="cart-grand-row sm"><span>Est. shipping</span><span>'+(gShip>0?('$'+gShip.toFixed(2)):'FREE')+'</span></div>';
-  grand+='<div class="cart-grand-row"><span>Est. out-the-door</span><span>$'+gOTD.toFixed(2)+'</span></div></div>';
+  /* One unknown maker anywhere in the cart makes the whole shipping line a
+   * partial figure, so it says so rather than totalling up to a confident FREE
+   * that only covers the makers we happen to have rates for. */
+  var gShipTxt=gShip>0?('$'+gShip.toFixed(2)+(gShipUnknown?' + more':'')):(gShipUnknown?'At checkout':'FREE');
+  grand+='<div class="cart-grand-row sm"><span>Est. shipping</span><span>'+gShipTxt+'</span></div>';
+  grand+='<div class="cart-grand-row"><span>Est. out-the-door</span><span>$'+gOTD.toFixed(2)+(gShipUnknown?' + shipping':'')+'</span></div></div>';
   body.innerHTML=html+grand+acct+'<p class="cart-note">Totals are <strong>estimates</strong> including each maker\'s typical shipping &amp; your code. Final price (incl. tax &amp; exact shipping) shows at each maker\'s checkout.</p><button class="cart-clear" onclick="clearCart()">Empty cart</button>'; }
 
 function cbdCrossBanner(){ return '<a class="xsell" href="'+SISTER_URL+'" target="_blank" rel="noopener" onclick="hlmTrack(\'sister-banner\',{vendor:\'Legal Leaf Market\',category:\'CBD\'})"><span class="xsell-emoji" aria-hidden="true"></span><span class="xsell-txt"><b>Want more &mdash; and more affordable &mdash; CBD?</b> Our sister shop <u>Legal Leaf Market</u> carries a wider CBD selection at friendlier prices.</span><span class="xsell-go">Visit Legal Leaf Market &rarr;</span></a>'; }
@@ -857,7 +983,7 @@ function render(){
      * would die there. */
     var comp=cardCompound(p);
     var ship=shipInfo(p.vendor,orig);
-    var shipTxt=ship.free?"Free shipping":("$"+ship.cost.toFixed(2)+(ship.freeOver>0?(" · free over $"+ship.freeOver):""));
+    var shipTxt=ship.unknown?"Shown at the maker's checkout":(ship.free?"Free shipping":("$"+ship.cost.toFixed(2)+(ship.freeOver>0?(" · free over $"+ship.freeOver):"")));
     var sizesTxt=""; if(p.variants&&p.variants.length>1){ var vps=p.variants.map(function(v){return Number(v.price)||0;}).filter(function(n){return n>0;}); var vmn=vps.length?Math.min.apply(null,vps):0; sizesTxt=p.variants.length+" options"+(vmn>0?(" from $"+vmn.toFixed(2)):""); }
     var knowHtml=comp?('<div class="bk-know"><b>'+comp.label+'</b> '+comp.structureFn+'<span class="bk-cite">'+comp.tierLabel+' · '+comp.cite+'</span></div>'):"";
     var specHtml='<dl class="bk-spec"><dt>Maker</dt><dd>'+p.vendor+'</dd>'+(p.category?('<dt>Category</dt><dd>'+p.category+'</dd>'):"")+(sizesTxt?('<dt>Sizes</dt><dd>'+sizesTxt+'</dd>'):"")+'<dt>Shipping</dt><dd>'+shipTxt+'</dd>'+(coupon?('<dt>Coupon</dt><dd>'+coupon.code+' · '+coupon.percent+'% off</dd>'):"")+'</dl>';

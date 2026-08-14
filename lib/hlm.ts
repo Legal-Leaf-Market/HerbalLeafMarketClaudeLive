@@ -21,22 +21,37 @@ type ShopifyStore = {
   prefix: string
   /* Optional product_type allow-list. Present = ONLY these types are ingested.
    * Matched case-insensitively against Shopify's product_type. This exists
-   * because a vendor's whole catalogue is not necessarily a fit: Rishi sells
-   * 289 things, but 46 are teaware, 25 are gift sets and 7 are "FREE GIFT"
-   * placeholders. An allow-list rather than a deny-list on purpose — a new
-   * product_type they invent later stays OUT until we look at it, instead of
-   * silently appearing on the storefront. */
+   * because a vendor's whole catalogue is not necessarily a fit: a tea maker
+   * with 289 listings can easily have 46 pieces of teaware, 25 gift sets and 7
+   * "FREE GIFT" placeholders among them. An allow-list rather than a deny-list
+   * on purpose: a new product_type they invent later stays OUT until we look at
+   * it, instead of silently appearing on the storefront. */
   include?: string[]
   /* Optional product_type deny-list, for stores where taking everything-but is
    * the more natural expression. Applied after `include`. */
   exclude?: string[]
   /* Optional product_type -> site category rename, applied at ingest so the
    * storefront taxonomy stays consistent. Shopify product_type is whatever the
-   * vendor typed: Rishi's are SHOUTING ("LOOSE LEAF"), which would render as
-   * all-caps chips sitting next to "Herbal Blends" and sort to the bottom,
+   * vendor typed, and plenty of them SHOUT ("LOOSE LEAF"), which would render
+   * as an all-caps chip sitting next to "Herbal Blends" and sort to the bottom,
    * since catRank() matches CATEGORY_ORDER exactly and "POWDERS" !== "Powders".
    * Keys are matched trimmed and case-insensitively. */
   categoryMap?: Record<string, string>
+  /* Registered but NOT scraped. A pending store is a maker we have signed up to
+   * in every other respect (affiliate config, shipping, checkout route) whose
+   * feed nobody has actually read yet, so there is no honest `include` list to
+   * give it and no verified shipping rate to price it with. buildInventory
+   * skips these and says so in the log.
+   *
+   * The alternative, ingesting an unread feed, is the worse failure in both
+   * directions: with no include list the shelf fills with whatever the maker
+   * happens to sell (gift cards, teaware, subscriptions), and with a guessed
+   * one the store matches nothing and reads as a maker with an empty
+   * catalogue. Run scripts/vendor_probe.py against the domain, read the
+   * product_type histogram it prints, write the include/categoryMap from what
+   * is actually there, read the shipping rate off the maker's own checkout into
+   * SHIPPING in app.js, then delete this flag. */
+  pending?: boolean
 }
 
 const SHOPIFY_STORES: ShopifyStore[] = [
@@ -44,28 +59,103 @@ const SHOPIFY_STORES: ShopifyStore[] = [
   { vendor: "Secret Nature", domain: "https://secretnature.com", prefix: "sn" },
   { vendor: "Soul CBD", domain: "https://mysoulcbd.com", prefix: "soul" },
   { vendor: "Charlotte's Web", domain: "https://www.charlottesweb.com", prefix: "cw" },
-  /* Rishi Tea & Botanicals — added 2026-08-08.
-   * Loose leaf / sachets / powders only: 187 of their 289 products.
-   * Deliberately excluded, and why:
-   *   ACCESSORIES (46), GIFT SETS (25), MERCHANDISE (6), FREE GIFT (7),
-   *     GIFT CARD (1), OTHER (2)  -- teaware and gifting, not botanicals.
-   *   SPARKLING BOTANICALS (5), CONCENTRATES (5), ICED TEA (5) -- these ship at
-   *     a $12 flat rate rather than Rishi's usual $8, and SHIPPING in app.js
-   *     holds ONE flat rate per vendor. Including them would quote the shopper
-   *     the wrong postage. Add them only alongside per-product shipping. */
-  {
-    vendor: "Rishi Tea",
-    domain: "https://www.rishi-tea.com",
-    prefix: "rishi",
-    include: ["LOOSE LEAF", "SACHETS", "POWDERS"],
-    /* Loose leaf and sachets are both simply "Tea" to a shopper — the
-     * distinction is packaging, not product. Powders (matcha and friends) keep
-     * their own existing category so they group with other powders; isTea() in
-     * app.js still counts them under the Tea facet, so they appear in both
-     * places, which is correct: a matcha IS a tea AND is a powder. */
-    categoryMap: { "LOOSE LEAF": "Tea", SACHETS: "Tea", POWDERS: "Powders" },
-  },
+  /* ---- impact.com intake, registered 2026-08-12, all PENDING ----
+   * Six makers whose affiliate, shipping and checkout registrations are in
+   * place (see BRAND_AFFILIATES, SHIPPING and SHOPIFY_VENDORS in app.js) but
+   * whose feeds have not been read, so none of them is scraped yet. Each needs
+   * one probe run before it can carry an include list worth trusting; until
+   * then `pending` keeps an unexamined catalogue off the shelf. See the
+   * `pending` doc on ShopifyStore for the sequence.
+   *
+   * St. Francis Herb Farm and RE Botanicals are registered everywhere else but
+   * are absent from THIS list on purpose: both run WordPress, not Shopify, so
+   * there is no products.json to page through. Ingesting either means a
+   * scraper of the shape getSmokingBlendsIds() uses for Natural Smoke Shop,
+   * which is a separate piece of work rather than a row in this table. */
+  { vendor: "Tea For Guys", domain: "https://teaforguys.com", prefix: "tfg", pending: true },
+  { vendor: "Purest Mushrooms", domain: "https://purestmushrooms.com", prefix: "pmush", pending: true },
+  { vendor: "Wooden Spoon Herbs", domain: "https://woodenspoonherbs.com", prefix: "wsh", pending: true },
+  { vendor: "Balls Deep Tea Company", domain: "https://ballsdeeptea.com", prefix: "bdt", pending: true },
+  { vendor: "Republic of Tea", domain: "https://www.republicoftea.com", prefix: "rot", pending: true },
+  /* .ca, not .com: Tea Sparrow is Vancouver-based and republicoftea.com's
+   * neighbour in the tld is a different company entirely. */
+  { vendor: "Tea Sparrow", domain: "https://www.teasparrow.ca", prefix: "tspw", pending: true },
+  /* Encha sells whisks, bowls and scoops in an /collections/accessories
+   * alongside the matcha, so this one will definitely need an include list
+   * rather than the whole feed, and it must NOT be given a TEA_VENDORS
+   * shortcut in app.js. Matcha is a powder AND a tea, so once the real
+   * product_types are known the powders keep their own category and isTea()
+   * picks them up as well, the way a matcha should appear in both places. */
+  { vendor: "Encha Matcha", domain: "https://encha.com", prefix: "encha", pending: true },
 ]
+/* =========================================================================
+ * impact.com programmes
+ *
+ * Which programme to apply to, per maker, from the marketplace export of
+ * 2026-08-11 (10,325 rows). This is application paperwork rather than runtime
+ * config: nothing here builds a link. It lives on the server precisely because
+ * of that, since the storefront has no use for a table of our commission rates
+ * and every byte of public/app.js is served to every visitor.
+ *
+ * Two traps in that export, both of which bite here:
+ *
+ * 1. CREATOR PROGRAMMES OFTEN PAY MORE FOR THE SAME SALE. Where an advertiser
+ *    runs both a standard and a "- Creator" programme, the Creator one is
+ *    frequently the better rate: Wooden Spoon Herbs is 5% standard against 20%
+ *    Creator, a fourfold difference for identical traffic. Before applying to
+ *    anything, search the export for the maker's domain and take the
+ *    best-paying programme rather than the first match.
+ * 2. THE PAYOUT LABEL CHANGES WHAT THE RATE MEANS. "Recurring Sales" pays on
+ *    repeat orders, "Online Sale" pays once. Tea For Guys runs both at 15%,
+ *    which looks like a coin toss and is not: tea is a consumable that people
+ *    rebuy, so the recurring programme is worth materially more per customer.
+ *
+ * `id` is blank where this maker's row was identified by name and rate but the
+ * id was not carried over; it is in the export, look it up rather than
+ * guessing. A wrong id applies to somebody else's programme.
+ *
+ * Rates are what the maker published to the marketplace, not a negotiated
+ * deal, and they are NOT a coupon. Nothing here entitles the storefront to
+ * advertise a discount: see the coupon rule in HLM_DEFAULT_RULES. */
+type ImpactProgram = { id: string; label: string; rate: string; note?: string }
+export const IMPACT_PROGRAMS: Record<string, ImpactProgram> = {
+  "Tea For Guys": {
+    id: "40494",
+    label: "Recurring Sales",
+    rate: "15%",
+    note: 'Also runs "Tea For Guys - Product Reviews" (id 44574, Online Sale, 15%). Apply to 40494: same headline rate, but it pays on the repeat orders a tea drinker actually makes. 44574 is a content placement, worth holding as a second programme if they allow both, never instead.',
+  },
+  "Purest Mushrooms": { id: "", label: "Online Sale", rate: "25%", note: "Highest rate of the seven." },
+  "Wooden Spoon Herbs": {
+    id: "",
+    label: "Online Sale",
+    rate: "20%",
+    note: 'MUST be the "- Creator" programme. The standard programme is 5% for the same traffic.',
+  },
+  "Balls Deep Tea Company": { id: "", label: "Online Sale", rate: "15%" },
+  "St. Francis Herb Farm": { id: "", label: "Online Sale", rate: "15%" },
+  /* The two established tea houses pay what established tea houses pay. Worth
+   * having for the shelf, not worth planning revenue on. */
+  "Republic of Tea": { id: "", label: "Online Sale", rate: "4%" },
+  "Tea Sparrow": { id: "", label: "Online Sale", rate: "5%" },
+  /* The two best-paying makers on the list, both 25%. Encha is ceremonial
+   * matcha out of Uji; RE Botanicals is a hemp apothecary, which puts them in
+   * isCBD() territory and means the Legal Leaf cross-sell tag will render on
+   * their cards. */
+  "Encha Matcha": { id: "", label: "Online Sale", rate: "25%" },
+  "RE Botanicals": {
+    id: "",
+    label: "Online Sale",
+    rate: "25%",
+    note: "Their brand leads with a USDA certified-organic claim, which this site removed from its own copy on 2026-08-08. Settle whether an ingested product title counts as the maker's words before their feed goes live.",
+  },
+  /* Not a new maker: already in SHOPIFY_STORES above, and every click we have
+   * sent them so far has gone unattributed while their Awin application sits
+   * pending. Attaching attribution to a handoff that already happens is the
+   * cheapest revenue on this list. */
+  "Charlotte's Web": { id: "44451", label: "Online Sale", rate: "10%", note: "Creator programme. Existing vendor, currently untracked." },
+}
+
 const NSS_ORIGIN = "https://www.smokingblends.com"
 const NSS_CACHE_KEY = "nss_ids_v1"
 
@@ -89,7 +179,19 @@ const HLM_DEFAULT_RULES = {
     "Soul CBD": 0,
     "Natural Smoke Shop": 10,
     "Charlotte's Web": 0,
-    "Rishi Tea": 0,
+    /* impact.com registrations, 2026-08-12. Zero on all seven: any code these
+     * programs issue arrives with the acceptance, and an issued code is still
+     * not a verified one until it has been applied at that maker's own
+     * checkout. */
+    "Tea For Guys": 0,
+    "Purest Mushrooms": 0,
+    "Wooden Spoon Herbs": 0,
+    "Balls Deep Tea Company": 0,
+    "St. Francis Herb Farm": 0,
+    "Republic of Tea": 0,
+    "Tea Sparrow": 0,
+    "Encha Matcha": 0,
+    "RE Botanicals": 0,
   },
 }
 
@@ -111,24 +213,38 @@ const env = {
  * shipping a pipeline change behind a still-warm 6h cache that only the
  * admin password can bust -- left the Secret Nature COA join invisible on
  * production for hours while the code sat correct and deployed. */
-const INVENTORY_KEY = "hlm_live_v4"
+/* v4 -> v5 on 2026-08-12: Rishi Tea left the roster, and a warm v4 key would
+ * have gone on serving their products for up to six hours after the deploy that
+ * removed them, on a shelf whose app.js no longer knew their shipping, their
+ * checkout route or their coupon. Dropping a vendor changes this payload just
+ * as surely as adding a field does. */
+const INVENTORY_KEY = "hlm_live_v5"
 /* TTL 6h, but the refresh-inventory cron rebuilds every 4h, so in normal
  * operation the key NEVER expires and no visitor ever pays for a scrape.
  * The TTL is the safety net for when the cron is down, not the schedule. */
 const INVENTORY_TTL = 21600
 
-/* The full scrape: five Shopify feeds + the Secret Nature lab page, mapped,
+/* The full scrape: every non-pending Shopify feed + the Secret Nature lab page, mapped,
  * COAs joined, written to KV. This is the expensive path (~10-20s) and it is
  * meant to run from the CRON, in the background, where nobody is waiting. */
 export async function buildInventory(): Promise<any[]> {
   let out: any[] = []
   try {
+    /* Filter to the live stores ONCE and index everything off that same array.
+     * batches[i] is matched back to its store by position, so filtering inside
+     * the loop instead would slide every store one place along and file one
+     * maker's products under another maker's name. */
+    const live = SHOPIFY_STORES.filter((s) => !s.pending)
+    const held = SHOPIFY_STORES.filter((s) => s.pending).map((s) => s.vendor)
+    if (held.length) {
+      console.log(`[inventory] pending, not scraped: ${held.join(", ")} (see ShopifyStore.pending)`)
+    }
     const [batches, snCoas] = await Promise.all([
-      Promise.all(SHOPIFY_STORES.map((s) => fetchStoreProducts(s))),
+      Promise.all(live.map((s) => fetchStoreProducts(s))),
       fetchSecretNatureCoas().catch(() => new Map<string, SnDoc[]>()),
     ])
     for (let i = 0; i < batches.length; i++) {
-      out = out.concat(mapShopify(SHOPIFY_STORES[i], batches[i]))
+      out = out.concat(mapShopify(live[i], batches[i]))
     }
     attachSecretNatureCoas(out, snCoas)
   } catch {}
@@ -286,9 +402,10 @@ export async function refreshInventory(): Promise<string> {
 
 /* Shopify caps products.json at 250 rows per page. A single limit=250 call
  * therefore TRUNCATES any store with a bigger catalogue, silently — no error,
- * the feed just comes back smaller than the shop and nothing says so. Rishi has
- * 289, so they were the first vendor to expose it. Page until a short page
- * comes back.
+ * the feed just comes back smaller than the shop and nothing says so. A former
+ * vendor with 289 products was the first to expose it, and the pending makers
+ * make it live again: Republic of Tea alone lists well past 250. Page until a
+ * short page comes back.
  *
  * The page cap is a runaway guard, not a product decision. If a store ever hits
  * it we log, because a silent cap here reads as "that vendor only has 1000

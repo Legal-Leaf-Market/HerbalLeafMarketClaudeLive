@@ -53,6 +53,7 @@ public/
 scripts/
   branding.py          Regenerates every icon + share card from icon.svg
   sn_coa_audit.py      Reference implementation of the Secret Nature COA join
+  vendor_probe.py      product_type histogram for a candidate feed (section 5)
 ```
 
 ---
@@ -116,35 +117,55 @@ else. This family of bug survives review because the diff still looks like text.
 
 ---
 
-## 5. Vendors: one vendor, THREE registrations, or the storefront lies
+## 5. Vendors: one vendor, FOUR registrations, or the storefront lies
 
-Adding or changing a Shopify vendor touches three places, and all three ship
+Adding or changing a Shopify vendor touches four places, and all four ship
 together or a shopper gets told something false:
 
-1. **`SHOPIFY_STORES` in `lib/hlm.ts` (line 42).** The feed. Prefer an
-   `include` allow-list of `product_type`s: a new type the vendor invents later
-   stays OUT until reviewed, instead of silently appearing on the shelf. Use
-   `categoryMap` to rename their taxonomy into ours at ingest (Rishi's SHOUTING
+1. **`SHOPIFY_STORES` in `lib/hlm.ts`.** The feed. Prefer an `include`
+   allow-list of `product_type`s: a new type the vendor invents later stays OUT
+   until reviewed, instead of silently appearing on the shelf. Use
+   `categoryMap` to rename their taxonomy into ours at ingest (a SHOUTING
    "LOOSE LEAF" becomes "Tea", or it renders as an all-caps chip that sorts
    last, since `catRank()` matches `CATEGORY_ORDER` exactly).
-2. **`SHIPPING` in `public/app.js` (line 35).** A vendor missing from this map
-   is treated by `shipInfo()` as FREE shipping, so a missing entry is the cart
-   promising postage the maker never offered. One flat rate per vendor is all it
-   can express, which is exactly why Rishi's $12-rate lines (Sparkling
-   Botanicals, Concentrates, Iced Tea) are excluded from the feed in `hlm.ts`.
-3. **`BRAND_AFFILIATES` in `app.js` (line 9) AND `HLM_DEFAULT_RULES.coupons` in
-   `lib/hlm.ts` (line 72).** Attribution and the advertised discount. `percent:0`
+2. **`SHIPPING` in `public/app.js`.** Three states: a verified
+   `{flat, freeOver}`, an honest `{unknown:true}`, or absent. Absent and
+   unknown both resolve to unknown, which renders as "shown at the maker's
+   checkout" and keeps that vendor out of the out-the-door figure. Before
+   2026-08-12 a missing vendor resolved to FREE, so forgetting one did not
+   fail loudly, it promised postage the maker never offered. One flat rate per
+   vendor is all this map can express, so a maker whose lines ship at different
+   rates needs the pricier ones kept out of the feed.
+3. **`BRAND_AFFILIATES` in `app.js` AND `HLM_DEFAULT_RULES.coupons` in
+   `lib/hlm.ts`.** Attribution and the advertised discount. `percent:0`
    keeps `getCoupon()` from advertising a code that does not exist.
+4. **`SHOPIFY_VENDORS` in `app.js`.** The checkout route. A Shopify vendor
+   missing here falls into the non-Shopify branch and "checkout" opens the
+   maker's bare homepage with an empty cart. Nothing complains, which is why
+   this one gets forgotten.
+
+**`pending: true` is the honest halfway house.** A maker registered in 2, 3 and
+4 but whose feed nobody has read yet goes into `SHOPIFY_STORES` with `pending`
+set; `buildInventory` skips it and logs which vendors it held back. Run
+`py -3 scripts/vendor_probe.py <domain>` to print the real `product_type`
+histogram, write the `include`/`categoryMap` from what is actually there, read
+the shipping rate off the maker's own checkout, then delete the flag. Guessing
+instead fails in both directions: no `include` fills the shelf with teaware and
+gift cards, a guessed one matches nothing and reads as a maker who sells
+nothing.
 
 Shopify's `products.json` caps at 250 rows per page and truncates silently.
 `fetchStoreProducts` pages until a short page comes back, with a 4-page runaway
-guard that logs if it ever trips (Rishi's 289 products found this bug).
+guard that logs if it ever trips (a 289-product vendor found this bug).
 
-After any vendor change, the 6h KV cache (`hlm_live_v4`) still holds the old
+After any vendor change, the 6h KV cache (`hlm_live_v5`) still holds the old
 catalogue. Bust it: `POST /api/rpc {"fn":"refreshInventory","args":["<ADMIN_PW>"]}`,
-or wait for the 4h cron. If you changed the payload's SHAPE (new vendor, new
-field), bump `INVENTORY_KEY`'s version in the same commit; a warm cache once hid
-the Secret Nature COA join on production for hours while the code sat correct.
+or wait for the 4h cron. If you changed the payload's SHAPE, bump
+`INVENTORY_KEY`'s version in the same commit. That means REMOVING a vendor too,
+not just adding one: a warm key goes on serving a dropped maker's products onto
+a shelf whose `app.js` no longer knows their shipping, checkout or coupon. A
+warm cache once hid the Secret Nature COA join on production for hours while
+the code sat correct.
 
 ---
 
@@ -162,7 +183,7 @@ The three crons (`vercel.json`): `click-report` Mon 12:00 UTC, `digest` Mon
 13:00 UTC, `refresh-inventory` every 4h. All three **fail closed on
 `CRON_SECRET`**: unset returns 503, wrong bearer returns 401. The 4h refresh
 inside the 6h TTL means the inventory key never expires in normal operation and
-no visitor ever pays for the five-store scrape; the TTL is the safety net for a
+no visitor ever pays for the multi-store scrape; the TTL is the safety net for a
 dead cron, not the schedule. The rebuild overwrites, never delete-then-rebuild.
 
 `/api/inventory?debug` returns `{count, coas, byVendor}` with per-vendor
@@ -192,22 +213,76 @@ read the `Age:` header for CDN copy age.
 
 ## 8. Affiliates: real money, easily polluted
 
-`AWIN_PUBLISHER_ID = "3004653"`. Per vendor (all in `BRAND_AFFILIATES`):
+Two networks. `AWIN_PUBLISHER_ID = "3004653"` is live; `IMPACT_PUBLISHER_ID` is
+blank until the impact.com publisher account is issued. Per vendor (all in
+`BRAND_AFFILIATES`):
 
 - **Puff Herbals**: Awin, `awinmid: 74076`.
-- **Rishi Tea**: Awin merchant 53225, approved 2026-08-08 and now live. It sat
-  empty until approval on purpose: an unapproved mid routes shoppers through a
-  tracking link that credits no one, worse than a clean direct link.
 - **Bear Blend**: `?ref=JAC6375`, verified to set a 30-day `affiliate_code`
   cookie, server-validated on their end.
 - **Natural Smoke Shop**: `?tr=138`, attribution UNCONFIRMED; treat reports from
   it as soft until proven.
-- **Secret Nature, Soul CBD, Charlotte's Web**: `awinmid` empty, Awin
-  applications pending; links go direct until approval.
+- **Secret Nature, Soul CBD**: `awinmid` empty, Awin applications pending;
+  links go direct until approval.
+- **Charlotte's Web**: registered on BOTH networks, Awin pending and impact.com
+  pending (programme 44451, Creator, 10%). An existing vendor whose handoff has
+  never been attributed, which makes it the cheapest revenue on the list. The
+  two registrations do not cancel each other: `withAffiliate()` tries impact
+  first and falls through to Awin, so whichever approval lands first starts
+  crediting.
+- **Tea For Guys, Purest Mushrooms, Wooden Spoon Herbs, Balls Deep Tea Company,
+  St. Francis Herb Farm, Republic of Tea, Tea Sparrow, Encha Matcha, RE
+  Botanicals**: registered 2026-08-12, all impact.com, all PENDING, all linking
+  direct. Rishi Tea was dropped the same day. Encha and RE Botanicals are the
+  best-paying of the nine at 25%.
 
-**Never GET an `awin1.com/cread.php` link while testing.** Every GET registers
-a real click and pollutes the owner's conversion stats with our own traffic.
-Inspect the URL string; do not follow it.
+**Two of the nine are NOT Shopify.** St. Francis Herb Farm and RE Botanicals
+run WordPress (their paths are `/shop/` and `/about/` with trailing slashes,
+not `/collections/` and `/products/`), so they have no `products.json`, no row
+in `SHOPIFY_STORES` and no place in `SHOPIFY_VENDORS`. Ingesting either needs a
+scraper of the shape `getSmokingBlendsIds()` uses for Natural Smoke Shop.
+Checking the URL shape before writing a store entry is worth the ten seconds:
+the registry cannot tell you, and a Shopify `/cart/` permalink on a WooCommerce
+site 404s rather than filling.
+
+**RE Botanicals collides with the organic-copy rule (section 11).** Their whole
+brand is a USDA certified-organic claim, so their product titles carry it, and
+their feed would put those titles on cards. Section 11's only carve-out is for
+the maker's own URLs, not the maker's own product names. Settle which side an
+ingested title falls on BEFORE clearing their pending flag, not after it ships.
+
+**`IMPACT_PROGRAMS` in `lib/hlm.ts` says which programme to apply to**, with the
+id, payout label and rate from the marketplace export. It is server-side on
+purpose: none of it builds a link, and the storefront should not ship a table of
+our commission rates to every visitor. Two rules live there because both cost
+real money:
+
+- **Take the Creator programme.** Where an advertiser runs both, Creator often
+  pays more for identical traffic: Wooden Spoon Herbs is 5% standard against
+  20% Creator. Search the export by domain and take the best-paying row, not
+  the first match.
+- **Read `payoutLabel`, not just the rate.** `Recurring Sales` pays on repeat
+  orders, `Online Sale` pays once. Tea For Guys runs both at 15%, which is not
+  the coin toss it looks like: tea is rebought, so 40494 (recurring) is worth
+  more per customer than 44574 (a one-shot content placement).
+
+An approval supplies a tracked link and a commission. It does NOT supply a
+feed, which is why an approved maker can still sit `pending` in
+`SHOPIFY_STORES` until someone reads their catalogue (section 5).
+
+**impact.com links are shaped nothing like Awin's.** Awin hangs one merchant id
+off a shared gateway, so a wrong `awinmid` still lands the shopper on the shop.
+impact.com issues a per-advertiser host plus a campaign and an ad id, resolved
+as a unit: `https://<host>/c/<publisherId>/<campaignId>/<adId>?u=<destination>`.
+A link built from an invented campaign or ad id does not degrade, it dies at the
+network and the shopper never arrives. So `impactUrl()` demands all four parts
+plus an `http(s)` destination and returns "" otherwise, and `withAffiliate()`
+falls through to the direct link. Filling in `host`/`campaign`/`ad` for one
+maker is the whole of switching that maker live.
+
+**Never GET an `awin1.com/cread.php` or `*.pxf.io/c/...` link while testing.**
+Every GET registers a real click and pollutes the owner's conversion stats with
+our own traffic. Inspect the URL string; do not follow it.
 
 **Coupons are verified at the till, not assumed** (tested 2026-08-08 at each
 maker's own checkout): `JACOBKENNEDY` is live ONLY at Natural Smoke Shop.
@@ -248,10 +323,14 @@ join is caught by eye before it reaches a card.
   against the pool with the OTHER facet applied but not itself, so no visible
   choice can land on an empty grid. Zero-count options are REMOVED, not greyed.
   My Garden is a mode, not a category.
-- **`isTea()` is a cross-cutting view, not a category.** Rishi is all tea by
-  vendor; NSS counts only its steepable lines; anyone else, whatever ingest
-  labelled "Tea". It was once hard-wired to NSS, which excluded an actual tea
-  company from the tea filter. Never wire it to one vendor again.
+- **`isTea()` is a cross-cutting view, not a category.** `TEA_VENDORS` is the
+  wholesale shortcut for makers whose entire ingested catalogue is steepable;
+  NSS counts only its steepable lines; anyone else, whatever ingest labelled
+  "Tea". It was once hard-wired to NSS, which excluded an actual tea company
+  from the tea filter. Never wire it to one vendor again. `TEA_VENDORS` is
+  currently empty and a maker only earns a place in it once somebody has read
+  their feed: "Tea" in the company name is not evidence, since most tea
+  companies also sell pots, tins and gift sets.
 - **The lily-of-the-valley bell has ONE geometry** (cup + flared skirt), reused
   at five scales in `#lilyIcon`, in `#sprigIcon`, and in `icon.svg`. The skirt
   carries the cup's fill and must stay an OPEN path: SVG closes it implicitly
@@ -312,11 +391,16 @@ join is caught by eye before it reaches a card.
 - Do NOT push without pulling first; v0.dev also writes to this repo.
 - Do NOT rewrite `know-the-facts.html` or `anecdote-library.html` with a normal
   editor save; byte-patch through ISO-8859-1 (section 4).
-- Do NOT add a vendor without all three registrations (section 5).
+- Do NOT add a vendor without all four registrations (section 5).
+- Do NOT clear a store's `pending` flag without running `vendor_probe.py` and
+  writing the `include` list from what the feed actually holds (section 5).
+- Do NOT put a guessed number in `SHIPPING`; `{unknown:true}` is the honest
+  entry until a rate has been read at the maker's own checkout.
 - Do NOT cache `/api/*` in the service worker, ever.
 - Do NOT broaden `isExcluded`/`EXCLUDE_PATTERN`-style filters without checking
   live product names first; a broad regex silently hides real inventory.
 - Do NOT reintroduce "certified-organic" or any organic claim in copy.
-- Do NOT GET-request an awin1.com tracking link in testing (section 8).
+- Do NOT GET-request an awin1.com or *.pxf.io tracking link in testing
+  (section 8).
 - Do NOT let `sn_coa_audit.py` and the `hlm.ts` matcher drift apart.
 - Do NOT trust the first post-deploy page check; the SW serves JS one load behind.
