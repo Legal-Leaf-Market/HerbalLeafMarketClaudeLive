@@ -76,23 +76,24 @@
     <p class="eyebrow">Privacy</p>
     <h1>What we keep, and where</h1>
     <p class="lede">Written in plain English by the people who built the site, so it can be precise
-      about what the site actually does. <em>Last updated 8 August 2026.</em></p>
+      about what the site actually does. <em>Last updated 12 August 2026.</em></p>
   </div>
 
   <section>
     <p class="num">I</p>
     <h2>The short version</h2>
     <p>We set no cookies of our own and we sell nothing about you to anybody. Browsing,
-      filtering and filling a cart all happen inside your own browser. The one time your
-      details reach our server is when <b>you type an email address into a form and press
-      the button</b>: that is what the Garden is, and it is described below, honestly.</p>
+      filtering and filling a cart all happen inside your own browser. Two things do reach
+      our server: <b>anonymous usage counts</b>, which carry a random id and never your
+      name or your email, and <b>whatever you type into a form and send</b>, which is what
+      the Garden is. Both are described below, honestly.</p>
   </section>
 
   <section>
     <p class="num">II</p>
     <h2>What stays on your device</h2>
     <p>The site keeps a few things in your browser's local storage so it can remember you
-      between visits. These are not cookies, and they are not sent to us:</p>
+      between visits. These are not cookies, and they stay on your device:</p>
     <ul>
       <li>your cart, and the sizes you picked</li>
       <li>your Garden hearts (the wishlist), if you use it without signing up</li>
@@ -100,8 +101,14 @@
       <li>that you confirmed you are 21 or older</li>
       <li>your answers to the Ritual builder's feedback prompt</li>
     </ul>
-    <p class="soft">Clearing site data for this domain in your browser wipes all of it.
-      Nothing breaks; the site simply forgets you.</p>
+    <p>Two more entries are kept for the usage counts in section III: a random visitor id
+      and a random session id. They are the exception to the line above, because the
+      visitor id is sent with those counts. Neither is derived from your device, your
+      details or your address, so neither can be matched back to you, and neither is any
+      use to anyone trying to recognise you on a different site.</p>
+    <p class="soft">Clearing site data for this domain in your browser wipes all of it,
+      the two ids included. Nothing breaks; the site simply forgets you, and the next
+      visit counts as a new one.</p>
   </section>
 
   <section>
@@ -119,6 +126,16 @@
       If you are signed in, the record includes your email. We use this to learn which
       makers and products our visitors actually want, and to show makers honest referral
       numbers. It is not sold, shared or used for advertising.</p>
+    <h3>Usage counts</h3>
+    <p>As you move around, the site sends us a short record of what happened: the pages
+      you opened, the filters and searches you used, the products and makers you clicked,
+      and whether a cart was started. Each record carries the two random ids from section
+      II, your time zone, the address of the page that sent you here, the browser
+      user-agent string, and the country, region and city your network resolves to.</p>
+    <p>It does <b>not</b> carry your name, your email or your IP address, and there is no
+      field in it for who you are: signed in or not, the record is the same. It is not
+      joined to your Garden. We use it to see which parts of the shop people actually
+      use, and it lands as a log line on our own server.</p>
   </section>
 
   <section>
@@ -126,13 +143,25 @@
     <h2>The short list of other companies</h2>
     <table>
       <tr><th>who</th><th>what they get</th><th>why</th></tr>
-      <tr><td><b>Vercel</b></td><td>ordinary request logs, which include IP addresses</td><td>they host the site</td></tr>
+      <tr><td><b>Vercel</b></td><td>ordinary request logs, which include IP addresses, and the usage counts in section III</td><td>they host the site</td></tr>
       <tr><td><b>Neon</b></td><td>the Garden records and click counts described above</td><td>they host our database</td></tr>
       <tr><td><b>Resend</b></td><td>your email address, if you made a Garden</td><td>they deliver the emails</td></tr>
       <tr><td><b>Google</b></td><td>a font request from your browser</td><td>the typefaces on our pages</td></tr>
       <tr><td><b>Awin</b></td><td>that a click came from us; not who you are</td><td>affiliate credit for some makers</td></tr>
       <tr><td><b>impact.com</b></td><td>that a click came from us; not who you are</td><td>affiliate credit for some makers</td></tr>
     </table>
+    <!-- LOAD-BEARING, and the analytics layer is what can break it.
+         The sentence below is true only while /js/analytics.js has no measurement id:
+         GA_ID is "" and no page sets data-ga, so gtag.js is never fetched, Google is
+         sent nothing, and no third-party analytics cookie is set. Turning GA4 on flips
+         THREE claims on this page at once and none of them live near the switch:
+           1. "no tag manager"  -> googletagmanager.com would be loaded on every page
+           2. the Google row above says "a font request from your browser" -> it would
+              also be receiving behavioural events
+           3. "That is the whole list" -> GA4 would be missing from it
+         The same applies to ANALYTICS_WEBHOOK, which forwards the whole usage record to
+         a Google Apps Script. Set either one and this section must be rewritten in the
+         same commit, or the site starts making a promise it does not keep. -->
     <p>That is the whole list. No advertising network, no tag manager, no session recorder,
       no chat widget, no data broker.</p>
   </section>
@@ -154,6 +183,12 @@
       You can ask what we hold on you, ask for a copy, or ask us to delete it. We will
       delete the record without requiring a reason. For most people the honest answer will
       be: an email address, a list of saved botanicals, and it is gone now.</p>
+    <p>The usage counts in section III are the one thing we cannot look up for you, and
+      the reason is the point of them: they are filed under a random id with nothing
+      linking it to your name, your email or your address, so we have no way to find
+      yours and neither would anybody else. To stop them, clear site data for this domain
+      (which throws the id away and starts a new one) or block the script at
+      <code>/js/analytics.js</code>. The site works exactly the same either way.</p>
     <p>This site is for adults 21 and over. We do not knowingly collect anything from
       anyone under 21, and if we learn that we have, we will delete it.</p>
     <p>If we change how any of this works, we will change this page and move the date at
