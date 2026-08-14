@@ -31,6 +31,15 @@
 <meta name="twitter:image" content="https://herballeafmarket.com/og-image.png" />
 <meta name="twitter:image:alt" content="Herbal Leaf Market, botanical apothecary: the lily-of-the-valley mark beside the wordmark" />
 <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+<!-- impact.com publisher site verification, the account-level check that gates
+     the nine impact.com programmes sitting pending in section 8. The token is
+     in `value`, not `content`, because that is how impact.com issues the tag
+     and what their checker reads; `value` is not a standard <meta> attribute,
+     so do not "correct" it. It is public by definition, since it ships in the
+     HTML of the homepage. Only index.html carries it: verification fetches the
+     site root, and the two content pages are the mixed-eol files section 4
+     warns against rewriting with an ordinary editor save. -->
+<meta name="impact-site-verification" value="0ff0b586-dd12-433f-ac73-6dec26dbde5b" />
 <!-- One @graph, Nicotia's shape: WebSite + Organization + CollectionPage with
      cross-referencing @ids, instead of the old flat Organization block. The
      per-render product ItemList stays separate in #hlmProductLd below. -->
@@ -55,7 +64,14 @@
 <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 <script>
   if("serviceWorker" in navigator){ window.addEventListener("load", function(){ navigator.serviceWorker.register("/sw.js").catch(function(){}); }); }
-  function hlmIsBot(){ return /bot|crawl|spider|slurp|bingpreview|facebookexternalhit|embedly|quora|pinterest|slackbot|whatsapp|telegrambot|discordbot|linkedinbot|google-inspection/i.test(navigator.userAgent||""); }
+  /* NAMED AGENTS ONLY. This used to lead with a bare `bot`, unanchored and case-insensitive against
+     the whole user-agent string -- broad enough to match a real browser by accident, and the bypass
+     sets ok=true, so an accidental match means no gate at all for that visitor. The list below is
+     specific. It is still spoofable, and that is fine: the gate is an attestation, so anyone willing
+     to edit their user agent was always going to click "Yes, I am 21+". Its job is to keep Googlebot's
+     rendered snapshot of the page from being an interstitial, which is an SEO concern and not a
+     compliance one. */
+  function hlmIsBot(){ return /(googlebot|bingbot|bingpreview|slurp|duckduckbot|baiduspider|yandexbot|applebot|google-inspection|chrome-lighthouse|pagespeed|gtmetrix|ahrefsbot|semrushbot|facebookexternalhit|twitterbot|linkedinbot|slackbot|discordbot|telegrambot|whatsapp|embedly|quora|pinterest|redditbot)/i.test(navigator.userAgent||""); }
   function passGate(){ try{ localStorage.setItem("hlm_age_ok","1"); }catch(e){} var g=document.getElementById("ageGate"); if(g){ g.classList.add("hidden"); g.style.display="none"; } return false; }
   function hlmCheckGate(){ var ok=false; try{ ok=(localStorage.getItem("hlm_age_ok")==="1"); }catch(e){} if(hlmIsBot())ok=true; var g=document.getElementById("ageGate"); if(g&&ok){ g.classList.add("hidden"); g.style.display="none"; } }
   document.addEventListener("DOMContentLoaded", hlmCheckGate);
@@ -280,7 +296,12 @@
   .legal{border-top:1px solid #3c4634;margin-top:32px;padding-top:24px;color:#9c9a84;font-size:.76rem;line-height:1.6}
   .legal strong{color:#c6c3ab}
   .aff-note{font-size:.78rem;color:#9c9a84;margin-top:12px}
-  .gate{position:fixed;inset:0;z-index:100;background:radial-gradient(circle at 50% 40%,rgba(34,42,28,.9),rgba(16,22,14,.97));backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:22px}
+  /* z-index 300, not 100. #hlmLoader is a FULL-SCREEN OPAQUE overlay at z-index 200, so at 100
+     the gate was painted underneath it and only became visible once the loader faded -- which
+     on a slow inventory fetch is seconds of the site looking ungated, and if the loader ever
+     fails to fade the gate is behind a wall permanently. 300 is above every layer in this file
+     (the highest was the loader's 200), so the gate is up first and the shelf loads behind it. */
+  .gate{position:fixed;inset:0;z-index:300;background:radial-gradient(circle at 50% 40%,rgba(34,42,28,.9),rgba(16,22,14,.97));backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:22px}
   .gate-card{background:var(--card);border-radius:var(--radius);max-width:460px;width:100%;padding:44px 38px;text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.5);border:1px solid var(--gold)}
   .gate-card .lily{width:56px;height:64px;margin-bottom:8px}
   .gate-card h2{margin:6px 0 10px;font-size:1.9rem}
@@ -706,7 +727,7 @@
 <div class="wrap">
   <div class="controls">
     <div class="ctl"><label for="storeFilter">Store</label><select id="storeFilter" onchange="setStore(this.value)"><option value="All">All Stores</option></select></div>
-    <div class="ctl"><label for="sortSelect">Sort</label><select id="sortSelect" onchange="setSort(this.value)"><option value="featured">Featured</option><option value="cheapest">Cheapest</option><option value="highest">Highest Price</option><option value="az">A - Z</option></select></div>
+    <div class="ctl"><label for="sortSelect">Sort</label><select id="sortSelect" onchange="setSort(this.value)"><option value="shuffle">Shuffle</option><option value="featured">Featured</option><option value="cheapest">Cheapest</option><option value="highest">Highest Price</option><option value="az">A - Z</option></select></div>
     <div class="grow"></div>
     <span class="prod-counts" id="prodCounts"></span>
   </div>
