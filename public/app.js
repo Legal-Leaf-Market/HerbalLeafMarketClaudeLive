@@ -390,16 +390,23 @@ function shelfRnd(){ SHELF_SEED=(SHELF_SEED*16807)%2147483647; return (SHELF_SEE
 /* Assigned once per product OBJECT, so the order holds while a reader filters.
    PRODUCTS is rebuilt on each ingest, so a genuine reload deals a new order. */
 function shelfKey(p){ if(p._shelfKey===undefined) p._shelfKey=shelfRnd(); return p._shelfKey; }
-/* Walk the ranked list and take the first item whose vendor has not appeared in
-   the last SPREAD_GAP picks, falling back to the best remaining when every
-   vendor is on cooldown. Rank order is otherwise preserved: this rearranges
-   neighbours, it does not re-sort. */
+/* Walk the ranked list and weight each candidate by how many times its vendor
+   already shows up in the last SPREAD_GAP picks, instead of banning a repeat
+   outright. A hard ban reads as a metronome the moment one vendor dominates
+   the shelf: with Bear Blend and Natural Smoke Shop over 90% of the catalogue
+   between them, an outright ban settles into a fixed "3 of one, 1 of the
+   other" block on repeat, which looks sorted, not shuffled. An escalating
+   chance of skipping a repeat still spreads vendors apart but leaves run
+   lengths irregular, the way an actual shuffle does. Rank order is otherwise
+   preserved: this rearranges neighbours, it does not re-sort. */
 var SPREAD_GAP=3;
 function spreadVendors(rows){
   var out=[], pool=rows.slice(), recent=[];
   while(pool.length){
     var pick=0;
-    for(var i=0;i<pool.length;i++){ if(recent.indexOf(String(pool[i].vendor||""))<0){ pick=i; break; } }
+    for(var i=0;i<pool.length;i++){ var v=String(pool[i].vendor||""), hits=0;
+      for(var j=0;j<recent.length;j++){ if(recent[j]===v) hits++; }
+      if(hits===0||shelfRnd()>hits/(hits+1)){ pick=i; break; } }
     var p=pool.splice(pick,1)[0];
     out.push(p); recent.push(String(p.vendor||""));
     if(recent.length>SPREAD_GAP) recent.shift();
