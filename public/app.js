@@ -390,6 +390,11 @@ function shelfRnd(){ SHELF_SEED=(SHELF_SEED*16807)%2147483647; return (SHELF_SEE
 /* Assigned once per product OBJECT, so the order holds while a reader filters.
    PRODUCTS is rebuilt on each ingest, so a genuine reload deals a new order. */
 function shelfKey(p){ if(p._shelfKey===undefined) p._shelfKey=shelfRnd(); return p._shelfKey; }
+/* Assigned once per product OBJECT too, same reason as shelfKey: render() re-runs
+   on every keystroke and filter change, and drawing a fresh shelfRnd() inside
+   spreadVendors on each of those runs would reroll every repeat/skip decision,
+   reshuffling the grid under the reader's cursor instead of holding for the visit. */
+function spreadRoll(p){ if(p._spreadRoll===undefined) p._spreadRoll=shelfRnd(); return p._spreadRoll; }
 /* Walk the ranked list and weight each candidate by how many times its vendor
    already shows up in the last SPREAD_GAP picks, instead of banning a repeat
    outright. A hard ban reads as a metronome the moment one vendor dominates
@@ -406,7 +411,7 @@ function spreadVendors(rows){
     var pick=0;
     for(var i=0;i<pool.length;i++){ var v=String(pool[i].vendor||""), hits=0;
       for(var j=0;j<recent.length;j++){ if(recent[j]===v) hits++; }
-      if(hits===0||shelfRnd()>hits/(hits+1)){ pick=i; break; } }
+      if(hits===0||spreadRoll(pool[i])>hits/(hits+1)){ pick=i; break; } }
     var p=pool.splice(pick,1)[0];
     out.push(p); recent.push(String(p.vendor||""));
     if(recent.length>SPREAD_GAP) recent.shift();
