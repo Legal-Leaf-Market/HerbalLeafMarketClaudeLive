@@ -217,12 +217,12 @@
   .card:hover .card-turn{color:var(--terracotta-dk)}
   .card-turn .ico{font-size:.85rem;line-height:1;transition:transform .3s;display:inline-block}
   .card:hover .card-turn .ico{transform:rotate(180deg)}
-  /* THE FLIP, MADE OBVIOUS -- Nicotia's pink wash, ported. The pink belongs
-     to the interaction, not the palette, so it stays a local literal here
-     exactly as it does on Nicotia (never a shared token). pointer-events
+  /* THE FLIP, MADE OBVIOUS -- Nicotia's wash, ported, recolored cool purple
+     for this site. The wash belongs to the interaction, not the palette, so
+     it stays a local literal here (never a shared token). pointer-events
      none keeps the heart button hitable; z-index 4 clears the badge (2)
      and the heart (3), so it covers rather than hides behind. */
-  .thumb::after{content:"Click for details";position:absolute;inset:0;z-index:4;pointer-events:none;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;background:rgba(255,64,146,.44);color:#fff;font-family:var(--sans);font-weight:800;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;text-shadow:0 1px 10px rgba(0,0,0,.6);opacity:0;transition:opacity .15s ease}
+  .thumb::after{content:"Click for details";position:absolute;inset:0;z-index:4;pointer-events:none;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;background:rgba(124,58,237,.44);color:#fff;font-family:var(--sans);font-weight:800;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;text-shadow:0 1px 10px rgba(0,0,0,.6);opacity:0;transition:opacity .15s ease}
   .card:hover .thumb::after,.card .card-front:focus-visible .thumb::after{opacity:1}
   .card.on .thumb::after{opacity:0}
   @media (hover:none){
