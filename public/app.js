@@ -986,6 +986,90 @@ function hlmWireFlip(){ var grid=document.getElementById("grid"); if(!grid||grid
   grid.addEventListener("keydown",function(e){ if(e.key!=="Enter"&&e.key!==" ") return; var f=e.target;
     if(!f||!f.classList||!f.classList.contains("card-front")) return; e.preventDefault(); hlmFlipCard(f); }); }
 
+/* ============================================================
+   PHOTO VIEWER -- pop the card image full screen, zoom on click, three ways
+   out (Escape, the backdrop, the phone's back button). Ported from Legal
+   Leaf's photo-view.js, same reasoning: a 230px thumbnail cannot show
+   trichome cover or cure. Scoped to the grid; HLM has no other photo
+   surface worth this (no drawer, no image modal -- the COA link opens a
+   PDF, not a picture).
+   ============================================================ */
+var hlmZoomOv,hlmZoomWrap,hlmZoomPic,hlmZoomCap,hlmZoomOpen=false,hlmZoomLastFocus=null;
+function hlmZoomBuild(){
+  if(hlmZoomOv) return;
+  hlmZoomOv=document.createElement("div"); hlmZoomOv.id="hlmZoom";
+  hlmZoomOv.setAttribute("role","dialog"); hlmZoomOv.setAttribute("aria-modal","true"); hlmZoomOv.setAttribute("aria-label","Product photo");
+  hlmZoomOv.innerHTML='<button id="hlmZoomX" type="button" aria-label="Close photo">×</button><div id="hlmZoomWrap"><img alt=""></div><div id="hlmZoomCap"></div>';
+  document.body.appendChild(hlmZoomOv);
+  hlmZoomWrap=hlmZoomOv.querySelector("#hlmZoomWrap"); hlmZoomPic=hlmZoomOv.querySelector("img"); hlmZoomCap=hlmZoomOv.querySelector("#hlmZoomCap");
+  /* Click the picture to zoom, anywhere else to close -- the picture stops
+     its own click from reaching the backdrop. */
+  hlmZoomPic.addEventListener("click",function(e){ e.stopPropagation(); hlmZoomPic.classList.toggle("zoomed"); });
+  hlmZoomPic.addEventListener("load",hlmZoomCapToNatural);
+  if(hlmZoomPic.complete&&hlmZoomPic.naturalWidth) hlmZoomCapToNatural();
+  hlmZoomOv.addEventListener("click",hlmZoomClose);
+  hlmZoomOv.querySelector("#hlmZoomX").addEventListener("click",function(e){ e.stopPropagation(); hlmZoomClose(); });
+}
+/* Ask the CDN for a bigger original before upscaling a thumbnail. The grid
+   only needs ~600px and that's often exactly what the card's src already is;
+   every Shopify-family store this catalogue draws from takes the size in
+   the URL or the filename, so the honest fix is to ask for the master
+   rather than interpolate a small one. A wrong guess just 404s back to the
+   exact src the card already showed -- worst case is what we had, never a
+   broken picture. */
+function hlmZoomHiRes(src){
+  try{
+    var u=new URL(src,location.href), big=false;
+    ["w","width","maxwidth","max-w"].forEach(function(p){ if(u.searchParams.has(p)&&Number(u.searchParams.get(p))<1600){ u.searchParams.set(p,"1600"); big=true; } });
+    if(big){ ["h","height"].forEach(function(p){ u.searchParams.delete(p); }); return u.toString(); }
+    var path=u.pathname.replace(/_\d+x\d*(_crop_[a-z]+)?(?=\.(jpe?g|png|webp|gif)$)/i,"");
+    if(path!==u.pathname){ u.pathname=path; return u.toString(); }
+  }catch(e){}
+  return src;
+}
+/* Caps growth at 2x the file's own pixels once hlmZoomHiRes() can't find a
+   bigger original -- big enough to fill a phone screen without the upscale
+   turning to mush. Recomputed per image since it depends on the file. */
+function hlmZoomCapToNatural(){
+  var nw=hlmZoomPic.naturalWidth||0, nh=hlmZoomPic.naturalHeight||0;
+  if(!nw||!nh){ hlmZoomPic.style.maxWidth=""; hlmZoomPic.style.maxHeight=""; return; }
+  hlmZoomPic.style.maxWidth=(nw*2)+"px"; hlmZoomPic.style.maxHeight=(nh*2)+"px";
+}
+function hlmShowPhoto(src,label){
+  hlmZoomBuild();
+  var want=hlmZoomHiRes(src);
+  hlmZoomPic.onerror = want===src?null:function(){ hlmZoomPic.onerror=null; hlmZoomPic.src=src; };
+  hlmZoomPic.style.maxWidth=""; hlmZoomPic.style.maxHeight="";
+  hlmZoomPic.src=want; hlmZoomPic.alt=label||"Product photo"; hlmZoomPic.classList.remove("zoomed");
+  hlmZoomCap.textContent=label||"";
+  hlmZoomOv.classList.add("on"); hlmZoomOpen=true; hlmZoomLastFocus=document.activeElement;
+  /* The page behind must not scroll: on a phone a flick meant for the photo
+     otherwise scrolls the grid underneath and the overlay comes back over a
+     different part of the shelf. */
+  document.documentElement.style.overflow="hidden";
+  try{ hlmZoomOv.querySelector("#hlmZoomX").focus(); }catch(e){}
+}
+function hlmZoomClose(){
+  if(!hlmZoomOv) return;
+  hlmZoomOv.classList.remove("on"); hlmZoomOpen=false;
+  document.documentElement.style.overflow="";
+  /* Dropped rather than left loaded: a full-size photo held in an offscreen
+     node is real memory on a phone, and the next open sets it again. */
+  hlmZoomPic.removeAttribute("src");
+  try{ if(hlmZoomLastFocus&&hlmZoomLastFocus.focus) hlmZoomLastFocus.focus(); }catch(e){}
+}
+function hlmOpenPhoto(btn){
+  var thumb=btn.closest(".thumb"); if(!thumb) return;
+  var img=thumb.querySelector("img[src]"); if(!img) return;
+  var src=img.currentSrc||img.getAttribute("src")||""; if(!src) return;
+  var card=btn.closest(".card"), label=""; if(card){ var h=card.querySelector("h3"); label=(h&&h.textContent||"").trim(); }
+  hlmShowPhoto(src,label);
+}
+document.addEventListener("keydown",function(e){ if(!hlmZoomOpen) return; if(e.key==="Escape"){ e.preventDefault(); hlmZoomClose(); } });
+/* A photo you can open and not close is worse than one you cannot open, and
+   the phone's back button is what a shopper reaches for first. */
+window.addEventListener("popstate",function(){ if(hlmZoomOpen) hlmZoomClose(); });
+
 function render(){
   var grid=document.getElementById("grid"); if(!grid)return;
   var q=searchQuery();
@@ -1014,7 +1098,8 @@ function render(){
     if(coupon){ var disc=orig*(1-coupon.percent/100); priceHtml='<span class="price" id="price-'+p.id+'">'+fromTxt+'<span style="text-decoration:line-through;color:var(--muted);font-weight:400;font-size:.85rem;margin-right:7px;">$'+orig.toFixed(2)+'</span>$'+disc.toFixed(2)+'</span>'; couponHtml='<div class="coupon-pill">'+coupon.percent+'% off with code <strong>'+coupon.code+'</strong></div>'; }
     else { priceHtml='<span class="price" id="price-'+p.id+'">'+fromTxt+'$'+orig.toFixed(2)+'</span>'; }
     var unitTxt=(p.unit&&p.unit!=="from")?p.unit:""; var ph='<div class="thumb-ph"><svg class="ph-lily"><use href="#lilyIcon"/></svg><span>'+p.name+'</span></div>';
-    var imgHtml=p.image?'<img src="'+hlmImg(p.image)+'" alt="'+p.name+'" width="600" height="600" loading="lazy" decoding="async" onerror="this.parentNode.classList.add(\'noimg\'); this.remove();" />'+ph:'<div class="noimg-wrap">'+ph+'</div>';
+    var expandBtn='<button type="button" class="hlm-expand" aria-label="Expand photo to full view" title="Expand to full view" onclick="event.stopPropagation();hlmOpenPhoto(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3H3v6M15 3h6v6M9 21H3v-6M15 21h6v-6"/></svg></button>';
+    var imgHtml=p.image?'<img src="'+hlmImg(p.image)+'" alt="'+p.name+'" width="600" height="600" loading="lazy" decoding="async" onerror="var t=this.parentNode; t.classList.add(\'noimg\'); this.remove(); var eb=t.querySelector(\'.hlm-expand\'); if(eb) eb.remove();" />'+ph+expandBtn:'<div class="noimg-wrap">'+ph+'</div>';
     /* Default the drop-down to a size the maker can actually sell: a <select>
      * renders a disabled option as the selection if told to, which is how
      * sold-out sizes were reaching carts. availableIdx skips them. */
