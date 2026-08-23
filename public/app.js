@@ -1004,7 +1004,9 @@ function hlmZoomBuild(){
   hlmZoomWrap=hlmZoomOv.querySelector("#hlmZoomWrap"); hlmZoomPic=hlmZoomOv.querySelector("img"); hlmZoomCap=hlmZoomOv.querySelector("#hlmZoomCap");
   /* Click the picture to zoom, anywhere else to close -- the picture stops
      its own click from reaching the backdrop. */
-  hlmZoomPic.addEventListener("click",function(e){ e.stopPropagation(); hlmZoomPic.classList.toggle("zoomed"); });
+  hlmZoomPic.addEventListener("click",function(e){ e.stopPropagation();
+    if(!hlmZoomHitsPicture(e)){ hlmZoomClose(); return; }
+    hlmZoomPic.classList.toggle("zoomed"); });
   hlmZoomPic.addEventListener("load",hlmZoomCapToNatural);
   if(hlmZoomPic.complete&&hlmZoomPic.naturalWidth) hlmZoomCapToNatural();
   hlmZoomOv.addEventListener("click",hlmZoomClose);
@@ -1026,6 +1028,25 @@ function hlmZoomHiRes(src){
     if(path!==u.pathname){ u.pathname=path; return u.toString(); }
   }catch(e){}
   return src;
+}
+/* The backdrop click has a dead zone without this. #hlmZoom img is sized
+   width:100%/height:100% so a small derivative still fills the screen, and
+   object-fit:contain then letterboxes the PICTURE inside an element box that
+   still spans the whole overlay. Those empty margins belong to the <img>, so
+   a click on what plainly looks like backdrop hit the image and toggled zoom
+   instead of closing -- on a square photo in a wide window that dead zone is
+   most of the screen. Measure where the picture is actually painted and let a
+   click outside it fall through to close, which is what the shopper aimed at.
+   getBoundingClientRect() already carries the .zoomed transform, so the same
+   arithmetic holds zoomed in and out. */
+function hlmZoomHitsPicture(e){
+  var nw=hlmZoomPic.naturalWidth||0, nh=hlmZoomPic.naturalHeight||0;
+  if(!nw||!nh) return true;            /* size unknown: keep the old behaviour */
+  var r=hlmZoomPic.getBoundingClientRect();
+  if(!r.width||!r.height) return true;
+  var scale=Math.min(r.width/nw,r.height/nh), pw=nw*scale, ph=nh*scale;
+  var px=r.left+(r.width-pw)/2, py=r.top+(r.height-ph)/2;
+  return e.clientX>=px && e.clientX<=px+pw && e.clientY>=py && e.clientY<=py+ph;
 }
 /* Caps growth at 2x the file's own pixels once hlmZoomHiRes() can't find a
    bigger original -- big enough to fill a phone screen without the upscale
