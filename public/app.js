@@ -1040,6 +1040,13 @@ function hlmZoomHiRes(src){
    getBoundingClientRect() already carries the .zoomed transform, so the same
    arithmetic holds zoomed in and out. */
 function hlmZoomHitsPicture(e){
+  /* A CLICK WITHOUT A POINTER HAS NO COORDINATES. Keyboard activation and any
+     programmatic .click() arrive with clientX/clientY at 0,0 and detail 0 --
+     read geometrically that is the top-left corner, which is backdrop, so the
+     viewer would close on a keystroke that means "zoom". Only a click that
+     actually came from a pointer has a place on the screen worth measuring.
+     Legal Leaf's suite drives exactly this case and caught it there. */
+  if(!e.detail) return true;
   var nw=hlmZoomPic.naturalWidth||0, nh=hlmZoomPic.naturalHeight||0;
   if(!nw||!nh) return true;            /* size unknown: keep the old behaviour */
   var r=hlmZoomPic.getBoundingClientRect();
