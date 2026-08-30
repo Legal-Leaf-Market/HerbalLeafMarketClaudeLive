@@ -347,6 +347,110 @@ function activeCatLabel(){ return wishMode?"__wish":(activeCat||"All"); }
 function catSelected(c){ return activeCat===c; }
 /* CBD and Tea are cross-cutting views over the catalogue; everything else is a
  * literal category string set at ingest. "" means All. */
+/* ============================================================
+   FULFILMENT: delivery or local pickup, by state
+
+   How a shopper wants to receive something, which is a different question from
+   what they want. It is a MODE the way My Garden is a mode, applied inside
+   pool() before the facets rather than beside them, so that switching to local
+   recounts the category chips and the store list against what is actually
+   collectable rather than leaving counts that promise a shelf you cannot have.
+
+   BY STATE, NOT BY RADIUS. A radius needs the shopper's coordinates or at
+   least a postcode, which is a permission prompt and a stored location for a
+   question a dropdown answers. A state is something a person knows without
+   being asked, needs no geocoding table shipped to every visitor, and does not
+   pretend to a precision this has not earned: nothing here is hyper-local yet.
+
+   THE MAP IS DELIBERATELY THIN, and thin is the honest state. A maker earns a
+   row here the way they earn a SHIPPING entry: somebody confirms it. Absent
+   means unknown, and unknown resolves to "ships, no pickup", which is right
+   for every vendor on this shelf today because all of them are mail-order
+   brands with no counter to walk up to. It is also the safe direction: an
+   unregistered maker can never be wrongly advertised as collectable, only
+   wrongly left out of a local search, and the second mistake is recoverable by
+   a shopper and the first is a wasted drive.
+
+   THE FOUR INDIANA MAKERS ARE NOT IN HERE, and that is not an oversight. They
+   are on deck: their products are held out of /api/inventory entirely and they
+   have not agreed to be listed. Adding them would ship their names, cities and
+   the fact that we are courting them to every visitor of the site, which is
+   the same promise the /deck/ pages make in words. They go in on the day they
+   say yes, in the same commit that clears their deck flag. Until then "local"
+   in Indiana correctly finds nothing. */
+var VENDOR_PLACES={
+  /* The only maker on this shelf with a door. Portland, Oregon; they keep shop
+   * hours and they run Shopify, so a shopper can order for collection through
+   * the maker's own checkout without us handling anything. */
+  "Brown Bear Herbs":{city:"Portland",state:"OR",stateName:"Oregon",pickup:true,ships:true},
+  /* Online brands. No counter, so no pickup; listed explicitly rather than
+   * left to the default so the map reads as checked rather than unfinished. */
+  "Puff Herbals":{pickup:false,ships:true},
+  "Secret Nature":{pickup:false,ships:true},
+  "Soul CBD":{pickup:false,ships:true},
+  "Charlotte's Web":{pickup:false,ships:true},
+  "Bear Blend":{pickup:false,ships:true},
+  "Natural Smoke Shop":{pickup:false,ships:true}
+};
+var FULFIL="all";      /* "all" | "delivery" | "local" */
+var activeState="";    /* two-letter code; only meaningful in local mode */
+function placeOf(v){ return VENDOR_PLACES[v]||null; }
+function matchesFulfil(p){
+  if(FULFIL==="all") return true;
+  var pl=placeOf(p.vendor);
+  if(FULFIL==="delivery") return !pl||pl.ships!==false;
+  if(!pl||!pl.pickup) return false;
+  return !activeState||pl.state===activeState;
+}
+/* States that actually have a collectable maker, counted from the live
+ * catalogue rather than from the map, so a maker who is registered here but
+ * has no products in the payload never offers an empty state. Same rule the
+ * category chips follow: a visible choice must never land on an empty grid. */
+function pickupStates(){
+  var seen={};
+  PRODUCTS.forEach(function(p){
+    if(!baseVisible(p)) return;
+    var pl=placeOf(p.vendor);
+    if(!pl||!pl.pickup||!pl.state) return;
+    var e=seen[pl.state]||(seen[pl.state]={code:pl.state,name:pl.stateName||pl.state,n:0,vendors:{}});
+    e.n++; e.vendors[p.vendor]=1;
+  });
+  return Object.keys(seen).map(function(k){return seen[k];})
+    .sort(function(a,b){return a.name.localeCompare(b.name);});
+}
+function setFulfil(m){
+  FULFIL=(m==="delivery"||m==="local")?m:"all";
+  if(FULFIL!=="local") activeState="";
+  ["all","delivery","local"].forEach(function(k){
+    var b=document.getElementById("ful"+k.charAt(0).toUpperCase()+k.slice(1));
+    if(b){ b.classList.toggle("on",FULFIL===k); b.setAttribute("aria-pressed",String(FULFIL===k)); }
+  });
+  buildStateFilter();
+  refilter();
+}
+function setState(v){ activeState=v||""; buildStateFilter(); refilter(); }
+function buildStateFilter(){
+  var wrap=document.getElementById("fulfilState"), sel=document.getElementById("stateSelect"),
+      note=document.getElementById("fulfilNote");
+  if(!wrap||!sel) return;
+  wrap.hidden=(FULFIL!=="local");
+  if(FULFIL!=="local") return;
+  var states=pickupStates();
+  sel.innerHTML='<option value="">Choose a state</option>'+states.map(function(st){
+    return '<option value="'+st.code+'"'+(st.code===activeState?" selected":"")+'>'+st.name+" ("+Object.keys(st.vendors).length+")</option>";
+  }).join("");
+  if(activeState&&!states.some(function(st){return st.code===activeState;})) activeState="";
+  sel.value=activeState;
+  if(note){
+    if(!states.length) note.innerHTML="No maker on the shelf offers collection yet.";
+    else if(!activeState) note.innerHTML=states.length+" state"+(states.length===1?"":"s")+" with a maker you can collect from.";
+    else {
+      var st=states.filter(function(x){return x.code===activeState;})[0];
+      var names=st?Object.keys(st.vendors):[];
+      note.innerHTML=names.length?("Collect from <b>"+names.join(", ")+"</b>."):"";
+    }
+  }
+}
 function matchesCat(p,c){ if(!c) return true; if(c==="CBD") return isCBD(p); if(c==="Tea") return isTea(p); return p.category===c; }
 function matchesStore(p,v){ return v==="All"||p.vendor===v; }
 function baseVisible(p){ return !isExcluded(p) && (Number(p.price)||0)>0 && p.inStock!==false; }
@@ -360,6 +464,7 @@ function pool(ignore){ var q=searchQuery();
   return PRODUCTS.filter(function(p){
     if(!baseVisible(p)) return false;
     if(wishMode && !isWished(p.id)) return false;
+    if(!matchesFulfil(p)) return false;
     if(ignore!=="store" && !matchesStore(p,activeStore)) return false;
     if(ignore!=="cat" && !matchesCat(p,activeCat)) return false;
     if(q && ((p.name||"")+(p.blurb||"")+(p.vendor||"")+(p.category||"")).toLowerCase().indexOf(q)===-1) return false;
@@ -382,7 +487,7 @@ function buildStoreFilter(){ var sel=document.getElementById("storeFilter"); if(
 /* Search and store are inputs to the facet counts, so both must rebuild the
  * chips, not just the grid. Miss this and the chips keep showing counts from
  * the previous query — worse than no counts, because they look authoritative. */
-function refilter(){ buildFilters(); buildStoreFilter(); buildMobileNav(); render(); }
+function refilter(){ buildFilters(); buildStoreFilter(); buildStateFilter(); buildMobileNav(); render(); }
 function setStore(v){ activeStore=v; refilter(); }
 function setSort(v){ activeSort=v; render(); }
 const CATEGORY_ORDER=["Herbal Blends","Herbal Smokes","Herbal Diffusers","Herbal Diffusers (Single-Use)","Hemp Flower","Single Herbs","Tinctures","Topicals","Pills","Powders","Gummies","Tea","Beverages","Bundles","Wraps","Pets","Misc"];
@@ -467,11 +572,11 @@ function buildFilters(){ var box=document.getElementById("filters"); if(!box)ret
     return '<div class="chip'+(sel?" active":"")+'" onclick="setCategory(\''+c.replace(/'/g,"\\'")+'\')" aria-pressed="'+sel+'">'+c+' <span class="chip-n">'+n+'</span></div>';
   }).join("")+rchip; syncMobileCat(); }
 function toggleWishMode(){ wishMode=!wishMode; if(wishMode) activeCat=""; refilter(); }
-function filtersActive(){ var s=document.getElementById("search"); return !!(activeCat||activeStore!=="All"||wishMode||(s&&s.value.trim())); }
+function filtersActive(){ var s=document.getElementById("search"); return !!(activeCat||activeStore!=="All"||wishMode||FULFIL!=="all"||(s&&s.value.trim())); }
 /* One tap back to the whole shop: state is reset directly and refiltered once,
  * rather than chaining setCategory/setStore (each of which rebuilds everything). */
 function resetFilters(){ var s=document.getElementById("search"); if(s)s.value="";
-  activeCat=""; activeStore="All"; wishMode=false; refilter(); closeMnav(); }
+  activeCat=""; activeStore="All"; wishMode=false; setFulfil("all"); closeMnav(); }
 /* Single-select: choosing a category REPLACES the current one. Shared by the
  * chips, the mobile drawer and the mobile <select>, so all three stay in step.
  * index.html binds onchange="setCategory(this.value)". */
@@ -1118,12 +1223,12 @@ window.addEventListener("popstate",function(){ if(hlmZoomOpen) hlmZoomClose(); }
 
 function render(){
   var grid=document.getElementById("grid"); if(!grid)return;
-  var q=searchQuery();
-  var items=PRODUCTS.filter(function(p){ if(!baseVisible(p))return false;
-    if(wishMode && !isWished(p.id))return false;
-    if(!matchesStore(p,activeStore))return false;
-    if(!matchesCat(p,activeCat))return false;
-    return !q||((p.name||"")+(p.blurb||"")+(p.vendor||"")+(p.category||"")).toLowerCase().indexOf(q)!==-1; });
+  /* pool() with no argument is exactly this filter, and it used to be copied
+     out here instead. The copy is what let the fulfilment mode reach the store
+     list and the category chips while the grid went on showing all 279
+     products, because only one of the two predicates learned about it. One
+     definition, so a filter added in pool() cannot silently miss the shelf. */
+  var items=pool();
   var num=function(p){ return Number(p.price)||0; }; var hwRank=function(p){ return isDiffuserHardware(p)?0:1; };
   if(activeSort==="shuffle"){
     /* Deliberately no nssRank here. Every other branch pins Natural Smoke Shop
@@ -1218,7 +1323,7 @@ function setLivePill(state){ try{ var p=document.getElementById("livePill"),t=do
   else { p.classList.add("checking"); t.textContent="Checking…"; p.title="Checking the makers' catalogues"; }
 }catch(e){} }
 function loadLiveInventory(){ if(typeof google==="undefined" || !google.script || !google.script.run){ setLivePill("sample"); hideLoader(); return; }
-  google.script.run.withSuccessHandler(function(data){ var merged=false; try{ if(Array.isArray(data)&&data.length){ PRODUCTS=mergeLive(data); applyNSSIds(); buildFilters(); buildStoreFilter(); window.__hlmInvLoaded=true; render(); renderCart(); merged=true; } }catch(e){} setLivePill(merged?"live":"sample"); try{ window.__hlmInvLoaded=true; document.dispatchEvent(new CustomEvent("hlm:inventory")); }catch(e){} hideLoader(); })
+  google.script.run.withSuccessHandler(function(data){ var merged=false; try{ if(Array.isArray(data)&&data.length){ PRODUCTS=mergeLive(data); applyNSSIds(); buildFilters(); buildStoreFilter(); buildStateFilter(); window.__hlmInvLoaded=true; render(); renderCart(); merged=true; } }catch(e){} setLivePill(merged?"live":"sample"); try{ window.__hlmInvLoaded=true; document.dispatchEvent(new CustomEvent("hlm:inventory")); }catch(e){} hideLoader(); })
     .withFailureHandler(function(){ setLivePill("sample"); try{ window.__hlmInvLoaded=true; document.dispatchEvent(new CustomEvent("hlm:inventory")); }catch(e){} hideLoader(); }).getInventory(); }
 function hideLoader(){ var el=document.getElementById("hlmLoader"); if(el){ el.classList.add("hide"); setTimeout(function(){ el.style.display="none"; },600); } }
 
@@ -1242,7 +1347,7 @@ function hlmInit(){ try{ if(hlmHandleGo()) return; var y=document.getElementById
   if(!document.getElementById("storeFilter")){ setHeaderHeightVar(); window.addEventListener("resize", setHeaderHeightVar); return; }
   PRODUCTS=normalizeCategories(getSeedProducts());
   var _openCartFromAdd=hlmHandleAdd();
-  buildFilters(); buildStoreFilter(); render(); updateCartBadge(); renderCart(); updateAccountUI(); setAuthMode("signup");
+  buildFilters(); buildStoreFilter(); buildStateFilter(); render(); updateCartBadge(); renderCart(); updateAccountUI(); setAuthMode("signup");
   if(_openCartFromAdd) openCart();
   hlmWireFlip();
   setHeaderHeightVar(); window.addEventListener("resize", setHeaderHeightVar);
