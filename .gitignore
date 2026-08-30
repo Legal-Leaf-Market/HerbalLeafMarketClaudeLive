@@ -16,3 +16,10 @@ node_modules
 # Python bytecode from scripts/
 __pycache__/
 *.pyc
+
+# Build artefacts. tsconfig.tsbuildinfo and next-env.d.ts are regenerated
+# by every build; pnpm-workspace.yaml was written by a pnpm 11 install prompt
+# and its placeholder value is not valid config.
+tsconfig.tsbuildinfo
+next-env.d.ts
+pnpm-workspace.yaml
