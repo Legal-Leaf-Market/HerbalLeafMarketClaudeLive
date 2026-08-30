@@ -722,6 +722,150 @@ async function clickStats(days: number): Promise<any> {
   return { total, byVendor, byType, top, days }
 }
 
+/* =========================================================================
+ * SITE STATS — the numbers behind /admin.
+ *
+ * AGGREGATED IN SQL, NOT IN THE BROWSER
+ *
+ * The raw table is every event on the site. Shipping it to the client and
+ * counting there would mean the admin page downloads the whole log, which is
+ * slow on a season of data and a far bigger thing to leak if the password
+ * ever escaped. The browser only ever receives totals.
+ *
+ * SESSIONS, NOT EVENTS, IN EVERY FUNNEL
+ *
+ * A funnel counted in events lies. One person opening the ritual builder,
+ * changing six goals and adding nothing looks like six steps of enthusiasm.
+ * Every step below counts DISTINCT sid, so a visit contributes at most one
+ * to each step and a drop between steps is a drop in people.
+ *
+ * The consequence when reading it: these are per-tab sessions, so one person
+ * across two visits is two sessions. Right for shape, wrong for "how many
+ * humans", and nothing here claims the latter.
+ * ====================================================================== */
+async function siteStats(days: number): Promise<any> {
+  /* Clamped: an unbounded window is a full table scan on a shared Neon
+   * instance, and the admin page only offers these four. */
+  const d = [1, 7, 30, 90].indexOf(days) === -1 ? 7 : days
+  const since = Date.now() - d * 864e5
+
+  const q = async (text: any): Promise<any[]> => {
+    const r: any = await db.execute(text)
+    return Array.isArray(r) ? r : r?.rows ?? []
+  }
+  const n = (v: any) => Number(v ?? 0)
+
+  try {
+    const [totals, byName, topProducts, topVendors, topPages, searches, zero, funnel] =
+      await Promise.all([
+        q(sql`SELECT count(DISTINCT sid) AS sessions,
+                     count(*) FILTER (WHERE name = 'page_view') AS views,
+                     count(*) FILTER (WHERE name = 'outbound_click') AS outbound,
+                     count(DISTINCT sid) FILTER (WHERE name = 'outbound_click') AS outbound_sessions,
+                     count(*) FILTER (WHERE name = 'cart_add') AS carted
+              FROM site_events WHERE ts >= ${since}`),
+
+        q(sql`SELECT name, count(*) AS c, count(DISTINCT sid) AS s
+              FROM site_events WHERE ts >= ${since}
+              GROUP BY name ORDER BY c DESC`),
+
+        /* Ranked by the furthest thing we can observe, never by views: we do
+         * not take the order, so "popular" here means most clicked out. */
+        q(sql`SELECT product, max(vendor) AS vendor,
+                     count(*) FILTER (WHERE name = 'outbound_click') AS clicks,
+                     count(*) FILTER (WHERE name = 'cart_add') AS carted
+              FROM site_events
+              WHERE ts >= ${since} AND product <> ''
+              GROUP BY product
+              HAVING count(*) FILTER (WHERE name IN ('outbound_click','cart_add')) > 0
+              ORDER BY clicks DESC, carted DESC LIMIT 25`),
+
+        q(sql`SELECT vendor,
+                     count(*) FILTER (WHERE name = 'outbound_click') AS clicks,
+                     count(DISTINCT sid) AS sessions
+              FROM site_events
+              WHERE ts >= ${since} AND vendor <> ''
+              GROUP BY vendor ORDER BY clicks DESC LIMIT 25`),
+
+        q(sql`SELECT page, count(*) AS views, count(DISTINCT sid) AS sessions
+              FROM site_events
+              WHERE ts >= ${since} AND name = 'page_view'
+              GROUP BY page ORDER BY views DESC LIMIT 15`),
+
+        q(sql`SELECT meta AS term, count(*) AS c FROM site_events
+              WHERE ts >= ${since} AND name = 'search' AND meta <> ''
+              GROUP BY meta ORDER BY c DESC LIMIT 25`),
+
+        /* The most actionable list on the page: searched for, found nothing.
+         * Things people came here wanting, in their own words, that the
+         * shelf does not carry. */
+        q(sql`SELECT meta AS term, count(*) AS c FROM site_events
+              WHERE ts >= ${since} AND name = 'search_zero' AND meta <> ''
+              GROUP BY meta ORDER BY c DESC LIMIT 25`),
+
+        q(sql`SELECT name, count(DISTINCT sid) AS s FROM site_events
+              WHERE ts >= ${since}
+                AND name IN ('page_view','card_open','cart_add','cart_open',
+                             'checkout_click','outbound_click',
+                             'ritual_open','ritual_goal','ritual_result','ritual_click')
+              GROUP BY name`),
+      ])
+
+    const step = (k: string) => n(funnel.find((r: any) => r.name === k)?.s)
+    const t = totals[0] || {}
+
+    return {
+      ok: true,
+      days: d,
+      totals: {
+        sessions: n(t.sessions), views: n(t.views), outbound: n(t.outbound),
+        outboundSessions: n(t.outbound_sessions), carted: n(t.carted),
+      },
+      byName: byName.map((r: any) => ({ name: r.name, c: n(r.c), s: n(r.s) })),
+      topProducts: topProducts.map((r: any) => ({
+        product: r.product, vendor: r.vendor, clicks: n(r.clicks), carted: n(r.carted),
+      })),
+      topVendors: topVendors.map((r: any) => ({
+        vendor: r.vendor, clicks: n(r.clicks), sessions: n(r.sessions),
+      })),
+      topPages: topPages.map((r: any) => ({ page: r.page || "(home)", views: n(r.views), sessions: n(r.sessions) })),
+      searches: searches.map((r: any) => ({ term: r.term, c: n(r.c) })),
+      zeroSearches: zero.map((r: any) => ({ term: r.term, c: n(r.c) })),
+      funnels: [
+        {
+          key: "shop",
+          title: "Shelf to hand-off",
+          note: "Sessions reaching each step. Everyone who arrives is the first bar.",
+          steps: [
+            { label: "arrived", sessions: step("page_view") },
+            { label: "opened a card", sessions: step("card_open") },
+            { label: "added to cart", sessions: step("cart_add") },
+            { label: "opened the cart", sessions: step("cart_open") },
+            { label: "left for a maker", sessions: step("checkout_click") + step("outbound_click") },
+          ],
+        },
+        {
+          key: "ritual",
+          title: "Build Your Ritual",
+          note: "Where the builder loses people. A wide gap between goal and result means the matrix is coming back empty.",
+          steps: [
+            { label: "opened", sessions: step("ritual_open") },
+            { label: "picked a goal", sessions: step("ritual_goal") },
+            { label: "saw a bundle", sessions: step("ritual_result") },
+            { label: "took something", sessions: step("ritual_click") },
+          ],
+        },
+      ],
+    }
+  } catch (e: any) {
+    /* Surfaced rather than swallowed: the reader is the owner, and "the
+     * table does not exist yet" needs a different reaction from "the query
+     * is wrong". The sink creates the table on its first write, so an empty
+     * site legitimately has no table until somebody visits. */
+    return { ok: false, error: String(e?.message || e), days: d }
+  }
+}
+
 export async function getClickStats(days: number): Promise<any> {
   return await clickStats(days || 7)
 }
@@ -1099,6 +1243,7 @@ const ADMIN_RPC: Record<string, Handler> = {
   refreshInventory: () => refreshInventory(),
   refreshSmokingBlendsIds: () => refreshSmokingBlendsIds(),
   hlmGetClickStats: (a) => getClickStats((a && a[1]) || 7),
+  hlmSiteStats: (a) => siteStats(Number((a && a[1]) || 7)),
   hlmSendWeeklyDigest: () => sendWeeklyDigest(),
   hlmSendWeeklyClickReport: () => sendWeeklyClickReport(),
   hlmGardenSelfTest: () => gardenSelfTest(),
