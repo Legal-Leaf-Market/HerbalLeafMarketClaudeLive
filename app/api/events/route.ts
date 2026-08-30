@@ -103,7 +103,7 @@ function ensureTable(): Promise<void> {
       ensured = null
       throw e
     })
-  return ensured
+  return ensured as Promise<void>
 }
 
 /* Swept here rather than on a cron because the crons on this project all
@@ -141,7 +141,7 @@ export async function POST(req: NextRequest) {
       cat: str(e?.cat),
       meta: str(e?.meta),
     }))
-    .filter((r: { name: string }) => ALLOWED.has(r.name))
+    .filter((r: any) => ALLOWED.has(r.name))
 
   if (!rows.length) return ok()
 
