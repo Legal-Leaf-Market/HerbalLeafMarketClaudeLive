@@ -148,5 +148,9 @@
   window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
 </script>
 <script defer src="/_vercel/insights/script.js"></script>
+
+<!-- First-party analytics. Revives the hlmTrack() call sites that have
+     been dead since the Apps Script migration; see /js/events.js. -->
+<script src="/js/events.js"></script>
 </body>
 </html>

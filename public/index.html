@@ -927,6 +927,9 @@
 <script src="/products.js"></script>
 <script src="/knowledge.js"></script>
 <script src="/app.js"></script>
+<!-- First-party analytics. Revives the hlmTrack() call sites that have
+     been dead since the Apps Script migration; see /js/events.js. -->
+<script src="/js/events.js"></script>
 <!-- Email deep-link "zoom to card": reads ?focus=<id> / #<id> from index.js hlmCardHref_ and highlights the matching product card -->
 <script src="/focus.js"></script>
 <!-- Vercel Web Analytics, the script-tag form the sisters use: cookieless

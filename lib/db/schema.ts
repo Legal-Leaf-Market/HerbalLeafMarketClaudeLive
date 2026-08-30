@@ -1,4 +1,4 @@
-import { pgTable, text, bigint, doublePrecision, bigserial } from "drizzle-orm/pg-core"
+import { pgTable, text, bigint, doublePrecision, bigserial, timestamp, index } from "drizzle-orm/pg-core"
 
 // Email mailing list + each member's saved "garden" (JSON blobs kept as text,
 // exactly matching the original Cloudflare D1 shape).
@@ -36,3 +36,45 @@ export const kv = pgTable("kv", {
   v: text("v").notNull(),
   expiresAt: bigint("expires_at", { mode: "number" }),
 })
+
+/**
+ * What visitors actually do here. Ported from Kawaii Katz, IDENTICAL shape to
+ * that site's `site_events`, so two sites sharing a database later need no
+ * reconciliation. Same reason `kv` matches across the sister sites.
+ *
+ * THIS REPLACES A PIPELINE THAT HAS BEEN DEAD SINCE THE VERCEL MIGRATION.
+ * `hlmTrack()` in public/app.js returns immediately unless `google.script.run`
+ * exists, which it does only inside a Google Apps Script web app. Every call
+ * site in app.js has been a no-op since, and the `clicks` table above has had
+ * nothing writing to it. The failure was silent and total: an empty analytics
+ * table looks exactly like a site nobody visits.
+ *
+ * `clicks` is left alone rather than migrated. It is the older single-purpose
+ * outbound log and admin.html's "Clicks (7d)" tile still reads it; deleting a
+ * table to tidy up is not worth the risk on a live database. Nothing new writes
+ * to it.
+ *
+ * `sid` is a random per-tab value from sessionStorage: no IP, no cookie, no
+ * fingerprint. It exists so a funnel can tell one visit's steps from another's
+ * and for nothing else.
+ */
+export const siteEvents = pgTable(
+  "site_events",
+  {
+    id: text("id").primaryKey(),
+    ts: timestamp("ts", { withTimezone: true }).notNull().defaultNow(),
+    sid: text("sid").notNull(),
+    name: text("name").notNull(),
+    path: text("path"),
+    productId: text("product_id"),
+    vendor: text("vendor"),
+    cat: text("cat"),
+    meta: text("meta"),
+  },
+  (t) => [
+    index("site_events_ts_idx").on(t.ts),
+    index("site_events_name_ts_idx").on(t.name, t.ts),
+    index("site_events_sid_idx").on(t.sid),
+    index("site_events_product_idx").on(t.productId),
+  ]
+)

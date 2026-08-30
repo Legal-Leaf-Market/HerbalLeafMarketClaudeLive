@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>What the site is doing | Herbal Leaf Market</title>
+<!-- OPERATOR PAGE. noindex, in no nav, in no sitemap. It is not a shopper
+     page and a crawler finding it helps nobody. -->
+<meta name="robots" content="noindex,nofollow"/>
+<meta name="color-scheme" content="dark"/>
+<meta name="theme-color" content="#0b120d"/>
+<style>
+  /* ============================================================
+     EVERY CHART HERE IS ONE SERIES, AND THAT IS DELIBERATE.
+
+     Ranked bars and funnel steps are magnitude-by-identity: one measure,
+     many rows. One measure means one hue, no legend, no second axis. The
+     temptation on a page like this is to put views and clicks on the same
+     bar so nothing is "wasted", which produces a two-scale chart where a
+     long bar means different things in different rows. Views are a plain
+     number in the row instead, and the bar always means the same thing:
+     clicks out to a maker.
+
+     Colour carries no information anywhere here. One accent for every bar,
+     because rank is already encoded by position.
+
+     The ONE exception is --win, and it colours a sentence rather than a
+     mark: the note under a funnel's goal step. The Kawaii Katz version of
+     this page printed "lost N here" in alarm red under the outbound step,
+     which read as a leak and had it exactly backwards. Leaving for a maker
+     is the only event on this site that can earn anything.
+     ============================================================ */
+  :root{
+    --bg:#0b120d; --bg2:#0f1a10; --panel:#0f1811; --chip:#162212;
+    --line:#1e3024; --ink:#eaf3ec; --muted:#9fb6a6; --dim:#6b8574;
+    --sage:#4ade80; --gold:#f0b93c; --win:#86efac;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.65 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+    padding:28px 18px 90px}
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{font-size:22px;line-height:1.4;margin:0 0 4px;color:var(--sage)}
+  h2{font-size:14px;line-height:1.7;margin:0;color:var(--ink)}
+  a{color:var(--sage)}
+  p.lede{color:var(--muted);max-width:74ch;margin:2px 0 18px}
+  code{font-family:ui-monospace,monospace;font-size:.88em;background:var(--chip);
+    border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+  input{background:#060b07;color:var(--ink);border:1px solid var(--line);
+    border-radius:7px;padding:9px 11px;font:inherit}
+  button{background:var(--sage);color:#06210f;border:0;border-radius:999px;
+    padding:9px 17px;font:inherit;font-weight:700;cursor:pointer}
+  button.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+  button.ghost.on{border-color:var(--sage);color:var(--sage)}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+  .ceiling{border:1px dashed var(--line);background:rgba(74,222,128,.05);
+    border-radius:12px;padding:13px 16px;margin:16px 0 20px;color:var(--muted);
+    max-width:78ch;font-size:13.5px;line-height:1.7}
+  .ceiling b{color:var(--ink)}
+
+  .tiles{display:grid;gap:12px;margin:18px 0;
+    grid-template-columns:repeat(auto-fit,minmax(158px,1fr))}
+  .tile{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:13px 15px}
+  .tile .k{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+  .tile .v{font-size:27px;font-weight:700;line-height:1.25}
+  .tile .s{font-size:12px;color:var(--muted)}
+
+  .panels{display:grid;gap:14px;grid-template-columns:1fr}
+  @media(min-width:900px){.panels.two{grid-template-columns:1fr 1fr}}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:15px 17px}
+  .panel .blurb{font-size:12.5px;color:var(--muted);margin:3px 0 9px;line-height:1.6}
+  .empty{color:var(--dim);font-size:13.5px;padding:6px 0}
+
+  .bar{display:flex;align-items:center;gap:11px;padding:4px 0}
+  .bar .lab{width:44%;min-width:0;font-size:13px;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  .bar .track{flex:1;height:9px;border-radius:999px;background:var(--forest,#1a271f);overflow:hidden}
+  .bar .fill{height:100%;border-radius:999px;background:var(--sage)}
+  .bar .num{width:96px;text-align:right;font-size:12.5px;font-weight:700;
+    font-variant-numeric:tabular-nums}
+  .bar .num em{font-style:normal;font-weight:600;color:var(--dim);margin-left:6px}
+
+  /* The gap between two steps, printed ABOVE the bar it precedes. Printed
+     underneath, it reads as a property of the step it sits under. */
+  .gap{font-size:11.5px;font-weight:600;color:var(--dim);padding-left:44%;margin-left:11px}
+  .win{font-size:11.5px;font-weight:600;color:var(--win);padding-left:44%;
+    margin-left:11px;margin-top:-2px}
+
+  .spark{display:flex;align-items:flex-end;gap:3px;height:62px;margin-top:6px}
+  .spark i{flex:1;background:var(--sage);border-radius:2px 2px 0 0;min-height:2px;display:block}
+  .spark-x{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-top:5px}
+
+  .terms{display:flex;flex-wrap:wrap;gap:6px}
+  .term{background:var(--chip);border:1px solid var(--line);border-radius:999px;
+    padding:4px 10px;font-size:12.5px}
+  .term b{color:var(--dim);font-weight:600;margin-left:5px}
+  .term.zero{border-color:var(--gold);color:var(--gold)}
+
+  .err{border:1px solid var(--gold);background:rgba(240,185,60,.07);border-radius:10px;
+    padding:13px 15px;color:var(--gold);margin:14px 0;line-height:1.6}
+  .hide{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>What the site is doing</h1>
+  <p class="lede">
+    Which botanicals people click, which makers they reach, and where a visit stops.
+    <a href="/">Back to the shop</a>.
+  </p>
+
+  <!-- The PAGE is not gated, the DATA is: /api/admin-stats checks ADMIN_PW and
+       returns 401 without it. Gating the route as well would be a second auth
+       mechanism protecting a shell that contains nothing. -->
+  <section id="gate" class="panel" style="max-width:60ch">
+    <h2>Admin password</h2>
+    <p class="blurb">
+      The <code>ADMIN_PW</code> set on the Vercel project. Held in this tab only and gone when
+      you close it.
+    </p>
+    <div class="row">
+      <input id="pass" type="password" placeholder="ADMIN_PW" autocomplete="off" size="26"/>
+      <button id="go">Open</button>
+    </div>
+  </section>
+
+  <div id="err" class="err hide"></div>
+
+  <div id="body" class="hide">
+    <div class="row" style="margin-bottom:4px">
+      <button class="ghost" data-days="1">24h</button>
+      <button class="ghost on" data-days="7">7 days</button>
+      <button class="ghost" data-days="30">30 days</button>
+      <button class="ghost" data-days="90">90 days</button>
+      <button id="refresh" class="ghost">refresh</button>
+      <span id="loading" class="hide" style="color:var(--dim);font-size:12.5px">loading...</span>
+    </div>
+
+    <p class="ceiling">
+      These are <b>our clicks, not makers' sales.</b> This site never takes payment, so the
+      furthest thing measurable is the moment somebody reaches a maker. That moment is the goal
+      rather than a leak: it is the only thing here that can earn. Whether any of them then
+      bought is in the maker's own dashboard and never in this one, so read every ranking as
+      most clicked rather than most bought. A session is one browser tab, so one person over two
+      visits counts twice.
+    </p>
+
+    <div id="tiles" class="tiles"></div>
+    <div id="funnels" class="panels two" style="margin-bottom:14px"></div>
+    <div id="rest" class="panels"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var KEY = 'hlm_admin_pw', days = 7;
+  var $ = function (s) { return document.querySelector(s); };
+
+  function esc(v) {
+    return String(v == null ? '' : v).replace(/[&<>"]/g, function (c) {
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c];
+    });
+  }
+  function n(v) { return Number(v || 0).toLocaleString(); }
+  function pct(a, b) { if (!b) return '0%'; var r = a/b; return (r*100).toFixed(r<0.1?1:0)+'%'; }
+  function pw() { try { return sessionStorage.getItem(KEY) || ''; } catch (e) { return ''; } }
+
+  function bar(label, value, max, note) {
+    var w = max > 0 ? Math.max(2, (value/max)*100) : 0;
+    return '<div class="bar" title="'+esc(label)+'">'+
+      '<span class="lab">'+esc(label)+'</span>'+
+      '<span class="track"><span class="fill" style="width:'+w.toFixed(2)+'%"></span></span>'+
+      '<span class="num">'+n(value)+(note?'<em>'+esc(note)+'</em>':'')+'</span></div>';
+  }
+  function panel(title, blurb, inner, empty) {
+    return '<section class="panel"><h2>'+esc(title)+'</h2>'+
+      (blurb?'<p class="blurb">'+esc(blurb)+'</p>':'')+
+      (inner || '<p class="empty">No '+esc(empty||'activity')+' recorded yet.</p>')+'</section>';
+  }
+  function ranked(rows, label, value, note) {
+    if (!rows.length) return '';
+    var max = value(rows[0]);
+    return rows.map(function (r) { return bar(label(r), value(r), max, note?note(r):''); }).join('');
+  }
+  function terms(rows, cls) {
+    if (!rows.length) return '';
+    return '<div class="terms">'+rows.map(function (r) {
+      return '<span class="term'+(cls?' '+cls:'')+'">'+esc(r.term)+'<b>'+n(r.count)+'</b></span>';
+    }).join('')+'</div>';
+  }
+  function daily(rows) {
+    if (!rows.length) return '';
+    var max = 0; rows.forEach(function (r) { if (r.sessions > max) max = r.sessions; });
+    return '<div class="spark">'+rows.map(function (r) {
+      var h = max > 0 ? Math.max(2, (r.sessions/max)*100) : 2;
+      return '<i style="height:'+h.toFixed(1)+'%" title="'+esc(r.day)+': '+n(r.sessions)+
+        ' sessions, '+n(r.clicks)+' clicks out"></i>';
+    }).join('')+'</div><div class="spark-x"><span>'+esc(rows[0].day)+'</span><span>'+
+      esc(rows[rows.length-1].day)+'</span></div>';
+  }
+
+  function tiles(t) {
+    return [
+      ['Sessions', n(t.sessions), ''],
+      ['Page views', n(t.views), ''],
+      ['Clicks out', n(t.outbound), 'handed to a maker'],
+      ['Click rate', pct(t.outboundSessions, t.sessions), 'sessions that reached one'],
+      ['Added to cart', n(t.carted), ''],
+      ['Sign-ups', n(t.subs), '']
+    ].map(function (r) {
+      return '<div class="tile"><div class="k">'+esc(r[0])+'</div><div class="v">'+esc(r[1])+
+        '</div>'+(r[2]?'<div class="s">'+esc(r[2])+'</div>':'')+'</div>';
+    }).join('');
+  }
+
+  function funnels(list) {
+    return list.map(function (f) {
+      var top = (f.steps[0] && f.steps[0].sessions) || 0, inner = '';
+      if (!top) { inner = '<p class="empty">No steps recorded yet.</p>'; }
+      else {
+        f.steps.forEach(function (s, i) {
+          var prev = i > 0 ? f.steps[i-1].sessions : null;
+          var drop = prev && prev > 0 ? prev - s.sessions : 0;
+          if (prev !== null && drop > 0) inner += '<div class="gap">'+n(drop)+' did not get this far</div>';
+          inner += bar(s.label, s.sessions, top, i > 0 ? pct(s.sessions, top) : '');
+          if (s.goal && s.sessions > 0) {
+            inner += '<div class="win">handed to a maker, so every one of these can earn</div>';
+          }
+        });
+      }
+      return '<section class="panel"><h2>'+esc(f.title)+'</h2><p class="blurb">'+
+        esc(f.note)+'</p>'+inner+'</section>';
+    }).join('');
+  }
+
+  function render(d) {
+    $('#tiles').innerHTML = tiles(d.totals);
+    $('#funnels').innerHTML = funnels(d.funnels || []);
+    var out = '';
+    out += panel('Products', 'Ranked by clicks out to the maker. Views and cart adds are context; the bar is always clicks.',
+      ranked(d.topProducts, function (r) {
+        return (r.productId || '(unknown)') + (r.vendor ? '  ' + r.vendor : '');
+      }, function (r) { return r.clicks; },
+      function (r) { return r.views ? n(r.views)+' views' : ''; }), 'product activity');
+    out += panel('Makers', 'Which shops we actually send people to.',
+      ranked(d.topVendors, function (r) { return r.vendor; }, function (r) { return r.clicks; },
+        function (r) { return r.carted ? n(r.carted)+' carted' : ''; }), 'maker activity');
+    out += panel('Categories', 'The bar is clicks out, not views.',
+      ranked(d.topCats, function (r) { return r.cat; }, function (r) { return r.clicks; },
+        function (r) { return r.views ? n(r.views)+' views' : ''; }), 'category activity');
+    out += panel('Searches', 'What people type in.', terms(d.searches), 'searches');
+    out += panel('Searched and got nothing back',
+      'The most actionable list here. Every one is a thing somebody expected to find.',
+      terms(d.zeroSearches, 'zero'), 'empty searches');
+    out += panel('By day', 'Bars are sessions. Hover for that day’s clicks out.', daily(d.daily), 'days');
+    out += panel('Every event', 'What is being recorded at all. A name missing here is a hook that is not firing.',
+      ranked(d.byName, function (r) { return r.name; }, function (r) { return r.count; },
+        function (r) { return n(r.sessions)+' sess'; }), 'events');
+    $('#rest').innerHTML = out;
+  }
+
+  function load() {
+    var p = pw(); if (!p) return;
+    $('#loading').classList.remove('hide');
+    $('#err').classList.add('hide');
+    fetch('/api/admin-stats', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pw: p, days: days })
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok:r.ok, status:r.status, j:j }; }); })
+      .then(function (res) {
+        $('#loading').classList.add('hide');
+        if (!res.ok) {
+          if (res.status === 401) {
+            try { sessionStorage.removeItem(KEY); } catch (e) {}
+            $('#gate').classList.remove('hide'); $('#body').classList.add('hide');
+          }
+          $('#err').textContent = res.j.error || ('could not load ('+res.status+')');
+          $('#err').classList.remove('hide');
+          return;
+        }
+        $('#gate').classList.add('hide');
+        $('#body').classList.remove('hide');
+        render(res.j);
+      })
+      ['catch'](function () {
+        $('#loading').classList.add('hide');
+        $('#err').textContent = 'network error';
+        $('#err').classList.remove('hide');
+      });
+  }
+
+  $('#go').addEventListener('click', function () {
+    var v = String($('#pass').value || '').trim(); if (!v) return;
+    try { sessionStorage.setItem(KEY, v); } catch (e) {}
+    load();
+  });
+  $('#pass').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('#go').click(); });
+  $('#refresh').addEventListener('click', load);
+  Array.prototype.forEach.call(document.querySelectorAll('[data-days]'), function (b) {
+    b.addEventListener('click', function () {
+      Array.prototype.forEach.call(document.querySelectorAll('[data-days]'), function (o) { o.classList.remove('on'); });
+      b.classList.add('on'); days = Number(b.getAttribute('data-days')); load();
+    });
+  });
+  if (pw()) { $('#gate').classList.add('hide'); load(); }
+})();
+</script>
+</body>
+</html>
