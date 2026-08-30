@@ -258,6 +258,11 @@ const SHOPIFY_STORES: ShopifyStore[] = [
     prefix: "lmhs",
     deck: true,
     include: ["Elixirs, Remedies and Potions", "Self Care"],
+    /* Their gift card is filed under Self Care. A gift card on a price
+     * comparison shelf is the canonical junk row: it has no price to compare,
+     * no ingredients to read and nothing to be shipped. Long enough not to
+     * catch a real product; nothing else in the 29 contains the phrase. */
+    titleExclude: ["gift card"],
   },
   {
     vendor: "Snakeroot Botanicals",
