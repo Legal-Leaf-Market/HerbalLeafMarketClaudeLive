@@ -25,6 +25,12 @@
   --d-sans:"Jost",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
 
+/* ---- maker facts strip ---- */
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1px;background:var(--d-line,#1e3024);border:1px solid #1e3024;border-radius:12px;overflow:hidden;margin:18px 0 0}
+.facts div{background:#111d14;padding:14px 18px}
+.facts dt{font-family:var(--d-sans);font-size:.62rem;letter-spacing:1.5px;text-transform:uppercase;color:#9fb6a6;margin:0 0 4px}
+.facts dd{margin:0;font-size:.95rem;font-weight:500;color:#eaf3ec;line-height:1.4}
+
 /* ---- grid + category rules ---- */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:28px;padding:14px 0 10px}
 h3.cat-header{grid-column:1/-1;display:flex;align-items:center;gap:16px;margin:34px 0 4px;font-family:var(--d-display);font-size:1.5rem;font-weight:900;letter-spacing:-.5px;color:#eaf3ec}
