@@ -162,4 +162,8 @@ h3.cat-header b{font-family:var(--d-sans);font-size:.7rem;font-weight:600;letter
 .cart-go{display:block;text-align:center;margin-top:14px;background:var(--d-sage);color:#0b120d;text-decoration:none;padding:13px;border-radius:8px;font-weight:700;font-family:var(--d-sans)}
 .cart-go:hover{background:var(--d-sage-dk);color:#fff}
 .cart-note{color:#9fb6a6;font-size:.76rem;line-height:1.5;margin:12px 0 0}
+.cart-pickup{background:rgba(240,185,60,.09);border:1px solid rgba(240,185,60,.28);border-radius:8px;color:#d8bd77;font-size:.78rem;line-height:1.55;margin:12px 0 0;padding:10px 12px}
+.cart-pickup b{color:var(--d-gold)}
+.cart-warn{background:rgba(224,107,66,.1);border:1px solid rgba(224,107,66,.3);border-radius:8px;color:#e8b39c;font-size:.78rem;line-height:1.55;margin:10px 0 0;padding:10px 12px}
+.cart-warn b{color:var(--d-terracotta)}
 .cart-empty{color:#9fb6a6;text-align:center;padding:40px 10px;font-size:.9rem}

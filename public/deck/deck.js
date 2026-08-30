@@ -26,6 +26,13 @@
 
   var CFG = window.HLM_DECK || {};
   var VENDOR = CFG.vendor || "";
+  /* Two feeds, one engine. A maker on deck is held out of the public payload
+   * entirely and has to be read through /api/deck; a maker who has agreed is
+   * an ordinary row in /api/inventory. Brown Bear Herbs is the second kind, so
+   * their page passes source:"inventory" and everything downstream is
+   * identical. Keeping one renderer means the page we show a maker before they
+   * say yes and the page they get afterwards cannot drift apart. */
+  var SOURCE = CFG.source === "inventory" ? "inventory" : "deck";
   var ROWS = [];
   var SELV = {};        // product id -> chosen variant index
   var CART = {};        // product id -> {p, vi, qty}
@@ -150,6 +157,41 @@
     try { if (zLast && zLast.focus) zLast.focus(); } catch (e) {}
   }
 
+  /* ---------------- checkout ---------------- */
+
+  /* A Shopify cart permalink: /cart/<variantId>:<qty>,<variantId>:<qty>. It
+   * builds the cart inside the maker's own shop and drops the shopper at their
+   * checkout with the lines already in it. We still never take the order; this
+   * is the same handoff as before with the shopper's picks carried across
+   * instead of thrown away at the door.
+   *
+   * SOLD-OUT LINES ARE DROPPED, and this is not tidying. Shopify rejects the
+   * ENTIRE permalink if any one variant in it is unavailable, so a single
+   * stale line does not lose itself, it loses the whole cart and the shopper
+   * lands on an error instead of a checkout. Same rule as
+   * buildShopifyCheckoutUrl in app.js, and it is the reason that function has
+   * the same comment.
+   *
+   * The origin comes from a product URL in the feed rather than from config,
+   * so it is whatever host actually serves their catalogue. A hand-typed
+   * origin that disagrees with the feed by a www is a permalink that 404s. */
+  function checkoutUrl() {
+    var keys = Object.keys(CART);
+    if (!keys.length) return { url: "", dropped: [], ok: false };
+    var origin = "";
+    var parts = [], dropped = [];
+    keys.forEach(function (k) {
+      var it = CART[k], v = (it.p.variants || [])[it.vi];
+      if (!origin && it.p.url) { try { origin = new URL(it.p.url).origin; } catch (e) {} }
+      if (!v || !v.id) { dropped.push(it.p.name); return; }
+      if (v.available === false || it.p.inStock === false) { dropped.push(it.p.name); return; }
+      parts.push(encodeURIComponent(v.id) + ":" + it.qty);
+    });
+    if (!origin) origin = CFG.shopUrl || "";
+    if (!parts.length) return { url: origin ? (origin + "/cart") : "", dropped: dropped, ok: false };
+    return { url: origin + "/cart/" + parts.join(","), dropped: dropped, ok: true };
+  }
+
   /* ---------------- cart ---------------- */
   function cartCount() {
     return Object.keys(CART).reduce(function (n, k) { return n + CART[k].qty; }, 0);
@@ -197,12 +239,28 @@
         '<div class="cr-p">' + money(price * it.qty) + '</div></div>';
     }).join("");
     if (foot) {
+      var co = checkoutUrl();
+      var pickup = CFG.pickupLabel
+        ? '<p class="cart-pickup"><b>Collecting in person?</b> Choose <b>Local pickup</b> as the delivery method at ' +
+          esc(CFG.domain || "the checkout") + ', and pick it up at ' + esc(CFG.pickupLabel) + '. ' +
+          'The order is placed and paid the ordinary way, it just does not get posted.</p>'
+        : "";
+      var warn = co.dropped.length
+        ? '<p class="cart-warn">Left out of the checkout: <b>' + co.dropped.map(esc).join(", ") + '</b>. ' +
+          'Sold out at the maker right now, and Shopify rejects a whole cart link if one line in it is unavailable.</p>'
+        : "";
       foot.innerHTML =
         '<div class="ln"><span>Subtotal</span><b>' + money(sub) + '</b></div>' +
         '<div class="ln"><span>Shipping</span><b>' + esc(CFG.shippingLabel || "Shown at your checkout") + '</b></div>' +
         '<div class="ln tot"><span>Estimate</span><b>' + money(sub) + '</b></div>' +
-        '<a class="cart-go" href="' + esc(CFG.shopUrl || "#") + '" target="_blank" rel="noopener nofollow">Continue to ' + esc(CFG.domain || "your shop") + ' ↗</a>' +
-        '<p class="cart-note">This is the whole of it. We never take the order: the cart is an estimate and the button above hands the shopper to your own checkout, with your prices and your shipping. Nothing on our side sees their card.</p>';
+        warn +
+        (co.ok
+          ? '<a class="cart-go" href="' + esc(co.url) + '" target="_blank" rel="noopener nofollow">Check out at ' + esc(CFG.domain || "the maker") + ' ↗</a>'
+          : '<a class="cart-go" href="' + esc(co.url || CFG.shopUrl || "#") + '" target="_blank" rel="noopener nofollow">Open ' + esc(CFG.domain || "the shop") + ' ↗</a>') +
+        pickup +
+        '<p class="cart-note">This is the whole of it. The button above builds this exact cart inside ' +
+        esc(CFG.domain || "your own shop") + ' and drops the shopper at your checkout, with your prices, your shipping and your payment. ' +
+        'We never take the order and nothing on our side ever sees their card.</p>';
     }
   }
 
@@ -378,9 +436,13 @@
       if (d) cartDrop(d.getAttribute("data-drop"));
     });
 
-    fetch("/api/deck?vendor=" + encodeURIComponent(VENDOR), { headers: { Accept: "application/json" } })
+    var url = SOURCE === "inventory" ? "/api/inventory" : ("/api/deck?vendor=" + encodeURIComponent(VENDOR));
+    fetch(url, { headers: { Accept: "application/json" } })
       .then(function (r) { return r.ok ? r.json() : []; })
-      .then(function (rows) {
+      .then(function (all) {
+        var rows = SOURCE === "inventory"
+          ? (all || []).filter(function (x) { return x && x.vendor === VENDOR; })
+          : all;
         if (!rows || !rows.length) {
           return sorry("We could not read your shop just now. That is our end, not yours. Reload in a moment, or tell us and we will look.");
         }

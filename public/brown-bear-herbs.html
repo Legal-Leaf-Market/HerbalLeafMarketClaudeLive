@@ -15,6 +15,7 @@
 <link rel="icon" href="/icon.svg" type="image/svg+xml" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="/deck/deck.css" />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,600&family=Jost:wght@300;400;500;600;700&display=swap" />
 <style>
   :root{--bg:#0b120d;--bg2:#0f1a10;--ink:#eaf3ec;--muted:#9fb6a6;--line:#1e3024;--card:rgba(15,24,17,.85);--card-solid:#111d14;--terracotta:#e06b42;--terracotta-dk:#c8512a;--sage:#4ade80;--sage-dk:#22c55e;--gold:#f0b93c;--gold-dk:#c8922a;--display:"Fraunces",Georgia,serif;--sans:"Jost",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--radius:14px;}
@@ -69,16 +70,6 @@
   .tally{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
   .pill{background:rgba(15,24,17,.9);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.8rem;font-weight:500;color:var(--muted)}
   .pill b{color:var(--ink)}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(13.5rem,1fr));gap:14px;margin-top:18px}
-  .card{background:var(--card-solid);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;text-decoration:none;color:inherit;transition:border-color .2s}
-  .card:hover{border-color:var(--terracotta)}
-  .card .pic{aspect-ratio:1;background:#0d1710;overflow:hidden}
-  .card .pic img{width:100%;height:100%;object-fit:cover;display:block}
-  .card .meat{padding:13px 15px 15px;display:flex;flex-direction:column;gap:5px;flex:1}
-  .card .cat{font-size:.62rem;letter-spacing:1.6px;text-transform:uppercase;color:var(--terracotta);font-weight:600}
-  .card .nm{font-size:.94rem;font-weight:500;line-height:1.35}
-  .card .pr{margin-top:auto;padding-top:8px;font-family:var(--display);font-weight:600;font-size:1.08rem;color:var(--ink)}
-  .card .oos{font-size:.72rem;color:var(--muted);font-weight:500}
   footer{border-top:1px solid var(--line);margin-top:58px;padding:28px 0 44px;color:var(--muted);font-size:.86rem;background:rgba(8,14,10,.6)}
   footer p{margin:0 0 10px}
 </style>
@@ -197,65 +188,17 @@
   <p><a href="/">Back to the shop</a> &middot; <a href="/makers">For makers</a> &middot; <a href="/terms.html">Terms</a> &middot; <a href="/privacy.html">Privacy</a></p>
 </div></footer>
 
-<script>
-/* The shelf is fetched, not baked in. A maker page with month-old prices on it
-   is worse than one with no prices: the whole promise of this site is that the
-   number on the card is the number at the maker's checkout.
 
-   Brown Bear Herbs is a live store, so their rows are in the ordinary
-   /api/inventory payload and this just filters to them. That is deliberately
-   NOT the same path as a /deck/ page, which reads /api/deck because its maker
-   is held out of the public payload entirely. */
-(function(){
-  var VENDOR = "Brown Bear Herbs";
-  var statusEl = document.getElementById("status");
-  var gridEl = document.getElementById("grid");
-  var tallyEl = document.getElementById("tally");
-
-  function money(n){ return "$" + (Math.round(n*100)/100).toFixed(2); }
-  function esc(s){
-    return String(s == null ? "" : s)
-      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-  }
-  function sorry(){
-    /* Never leave an empty grid sitting there. On a page whose whole job is to
-       show a maker their own shop, a blank shelf reads as "you have nothing",
-       which is the one thing it must never say. */
-    statusEl.innerHTML = "<b>Their catalogue is not loading just now.</b> That is our end rather than theirs. Reload in a moment.";
-  }
-
-  fetch("/api/inventory", { headers:{ Accept:"application/json" } })
-    .then(function(r){ return r.ok ? r.json() : []; })
-    .then(function(all){
-      var rows = (all || []).filter(function(p){ return p && p.vendor === VENDOR; });
-      if (!rows.length) return sorry();
-      rows.sort(function(a,b){
-        return (a.category||"").localeCompare(b.category||"") || (a.name||"").localeCompare(b.name||"");
-      });
-      var inStock = 0, cats = {};
-      gridEl.innerHTML = rows.map(function(p){
-        if (p.inStock !== false) inStock++;
-        if (p.category) cats[p.category] = (cats[p.category]||0) + 1;
-        return '<a class="card" href="' + esc(p.url) + '" target="_blank" rel="noopener nofollow">'
-          + '<div class="pic">' + (p.image ? '<img src="' + esc(p.image) + '" alt="" loading="lazy" />' : '') + '</div>'
-          + '<div class="meat">'
-          + (p.category ? '<div class="cat">' + esc(p.category) + '</div>' : '')
-          + '<div class="nm">' + esc(p.name) + '</div>'
-          + '<div class="pr">' + (p.price > 0 ? money(p.price) : "&mdash;")
-          + (p.inStock === false ? ' <span class="oos">out of stock</span>' : '')
-          + '</div></div></a>';
-      }).join("");
-      statusEl.innerHTML = "<b>" + rows.length + " products</b>, read from brownbearherbs.com just now.";
-      var pills = ['<span class="pill"><b>' + inStock + '</b> in stock</span>'];
-      Object.keys(cats).sort().forEach(function(c){
-        pills.push('<span class="pill">' + esc(c) + ' <b>' + cats[c] + '</b></span>');
-      });
-      tallyEl.innerHTML = pills.join("");
-      tallyEl.hidden = false;
-    })
-    .catch(sorry);
-})();
-</script>
+<button id="deckCartBtn" type="button" aria-label="Open cart">Cart <b>0</b></button>
+<div id="deckCart" role="dialog" aria-modal="true" aria-label="Cart">
+  <div class="cart-panel">
+    <div class="cart-head"><h4>Cart</h4><button class="cart-x" type="button" aria-label="Close cart">&times;</button></div>
+    <div class="cart-body" id="deckCartBody"></div>
+    <div class="cart-foot" id="deckCartFoot"></div>
+  </div>
+</div>
+<script>window.HLM_DECK={source:"inventory",vendor:"Brown Bear Herbs",domain:"brownbearherbs.com",shopUrl:"https://brownbearherbs.com",localLabel:"Portland, OR \u00b7 pickup",shipsLabel:"Ships",shippingLabel:"Shown at their checkout",pickupLabel:"their Portland shop"};</script>
+<script src="/deck/deck.js" defer></script>
 
 </body>
 </html>
