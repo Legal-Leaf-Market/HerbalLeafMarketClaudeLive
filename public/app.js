@@ -575,13 +575,15 @@ function addToCart(id){ var p=productById(id); var key=id;
     if(idx!==(SELV[id]||0)){ SELV[id]=idx; saveSelv(); var selEl=document.querySelector('#'+(CSS&&CSS.escape?CSS.escape(id):id)+' .size-sel'); if(selEl)selEl.value=idx; }
     var v=p.variants[idx]; if(v&&v.id) key=id+"::"+v.id; }
   else if(p&&p.inStock===false){ hlmToast(p.name+" is sold out at "+p.vendor+" right now"); return; }
-  CART[key]=(CART[key]||0)+1; saveCart(); updateCartBadge(); renderCart(); hlmToast((p?p.name:"Item")+" added to your cart"); pulseCart(); }
+  CART[key]=(CART[key]||0)+1; saveCart(); updateCartBadge(); renderCart(); hlmToast((p?p.name:"Item")+" added to your cart"); pulseCart();
+  try{ if(window.HLMTrack) window.HLMTrack("cart_add",{product:(p&&p.name)||id,vendor:(p&&p.vendor)||"",cat:(p&&p.category)||""}); }catch(e){} }
 function setQty(id,q){ q=parseInt(q,10); if(isNaN(q)||q<=0)delete CART[id]; else CART[id]=q; saveCart(); updateCartBadge(); renderCart(); }
 function bumpQty(id,d){ setQty(id,(CART[id]||0)+d); }
 function removeItem(id){ delete CART[id]; saveCart(); updateCartBadge(); renderCart(); }
 function clearCart(){ CART={}; saveCart(); updateCartBadge(); renderCart(); }
 function updateCartBadge(){ var b=document.getElementById("cartCount"); if(!b)return; var n=cartCount(); b.textContent=n; b.style.display=n>0?"flex":"none"; }
-function openCart(){ var d=document.getElementById("cartDrawer"),o=document.getElementById("cartOverlay"); if(d)d.classList.add("open"); if(o)o.classList.add("open"); }
+function openCart(){ var d=document.getElementById("cartDrawer"),o=document.getElementById("cartOverlay"); if(d)d.classList.add("open"); if(o)o.classList.add("open");
+  try{ if(window.HLMTrack) window.HLMTrack("cart_open",{meta:String(cartCount())}); }catch(e){} }
 function closeCart(){ var d=document.getElementById("cartDrawer"),o=document.getElementById("cartOverlay"); if(d)d.classList.remove("open"); if(o)o.classList.remove("open"); }
 let _tt=null;
 function hlmToast(m){ var t=document.getElementById("hlmToast"),s=document.getElementById("hlmToastMsg"); if(!t)return; if(s)s.textContent=m; t.classList.add("show"); clearTimeout(_tt); _tt=setTimeout(function(){t.classList.remove("show");},3200); }
@@ -661,7 +663,39 @@ function buildShopifyCheckoutUrl(vendor){ var origin=vendorOrigin(vendor)||HLM_S
   var parts=items.filter(function(x){return x.avail!==false;}).map(function(x){ var vid=x.variantId||x.p.variantId; return vid?(encodeURIComponent(vid)+":"+x.qty):null; }).filter(function(x){return x;});
   if(parts.length) return origin+"/cart/"+parts.join(",")+(code?("?discount="+encodeURIComponent(code)):"");
   return code?(origin+"/discount/"+encodeURIComponent(code)+"?redirect=/cart"):(origin+"/cart"); }
-function hlmTrack(type,extra){ try{ if(typeof google==="undefined"||!google.script||!google.script.run) return;
+/* TWO LOGS, ONE CALL SITE.
+ *
+ * hlmLogClick writes the money row (price, email, ref) that the weekly click
+ * report is built from. HLMTrack writes the session row that the admin
+ * page's funnels are built from, and is forbidden from carrying either the
+ * price or the email (see public/events.js).
+ *
+ * They are fanned out from here rather than from a dozen callers on purpose.
+ * Every place in this file that already logs a click is, by definition, a
+ * moment worth having in a funnel, and asking each of them to remember two
+ * calls is asking for the two logs to drift apart. The events the click log
+ * has no opinion about (a cart opening, a search finding nothing) are
+ * emitted at their own call sites.
+ *
+ * Note the ORDER: the session event goes first. hlmLogClick returns early
+ * when the RPC shim is missing, and putting it first meant a page without
+ * the shim silently lost the funnel too. */
+function hlmTrack(type,extra){
+  try{ if(window.HLMTrack){ var e=extra||{};
+    /* The click log's `type` is already the right vocabulary; it just uses
+       different words. Mapped rather than collapsed, or every ritual step
+       would arrive at the admin page labelled "outbound_click" and the
+       ritual funnel would have one bar in it. Anything unmapped is a real
+       hand-off, which is the default. */
+    var NAME={ checkout:"checkout_click", "ritual-open":"ritual_open",
+      "ritual-goal":"ritual_goal", "ritual-add":"ritual_click",
+      "ritual-x":"ritual_result", "garden-add":"garden_add",
+      "garden-out":"outbound_click", coa:"card_open" };
+    window.HLMTrack(NAME[type]||"outbound_click",{
+      vendor:e.vendor||"", product:e.product||"", cat:e.category||activeCatLabel()||"",
+      meta:type||"outbound" });
+  } }catch(e){}
+  try{ if(typeof google==="undefined"||!google.script||!google.script.run) return;
   var u=getUser()||{}; var pg=""; try{ pg=(window.location.search||"").replace(/^\?/,"")||"home"; }catch(e){}
   var payload={ type:type||"outbound", device:(isMobileDevice()?"mobile":"desktop"), page:pg, email:(u.email||""), ref:activeStore+"/"+activeCatLabel() };
   if(extra){ for(var k in extra){ payload[k]=extra[k]; } }
@@ -1098,6 +1132,7 @@ document.addEventListener("keydown",function(e){ if(!hlmZoomOpen) return; if(e.k
    the phone's back button is what a shopper reaches for first. */
 window.addEventListener("popstate",function(){ if(hlmZoomOpen) hlmZoomClose(); });
 
+var _qT=null, _lastLoggedQ="";
 function render(){
   var grid=document.getElementById("grid"); if(!grid)return;
   var q=searchQuery();
@@ -1106,6 +1141,21 @@ function render(){
     if(!matchesStore(p,activeStore))return false;
     if(!matchesCat(p,activeCat))return false;
     return !q||((p.name||"")+(p.blurb||"")+(p.vendor||"")+(p.category||"")).toLowerCase().indexOf(q)!==-1; });
+  /* SEARCH IS LOGGED WHEN IT SETTLES, NOT ON EVERY KEYSTROKE. render() runs
+     per character, so emitting here unfiltered would file "l", "la", "lav"
+     and "lave" as four searches and make the zero-result list read as
+     mostly typos. The debounce below waits for the typing to stop, and the
+     dedupe stops a re-render on the same query counting twice.
+
+     The empty-handed search is the most actionable thing on the admin page:
+     it is a list of things people came here wanting that the shelf does not
+     carry, in their own words. */
+  try{ if(window.HLMTrack && q && q.length>1 && q!==_lastLoggedQ){
+    clearTimeout(_qT); var _q=q, _n=items.length;
+    _qT=setTimeout(function(){ _lastLoggedQ=_q;
+      window.HLMTrack(_n?"search":"search_zero",{meta:_q,cat:String(_n)});
+    },700);
+  } }catch(e){}
   var num=function(p){ return Number(p.price)||0; }; var hwRank=function(p){ return isDiffuserHardware(p)?0:1; };
   if(activeSort==="shuffle"){
     /* Deliberately no nssRank here. Every other branch pins Natural Smoke Shop

@@ -51,6 +51,12 @@ const nextConfig = {
           has: [{ type: "query", key: "page", value: "admin" }],
           destination: "/admin.html",
         },
+        /* /admin, without the extension. The console has only ever answered
+         * at /admin.html and /?page=admin, and the owner runs several sites:
+         * every one of them should open its own console at the same address
+         * rather than each needing its own remembered URL. The two above stay
+         * working, because links to them exist. */
+        { source: "/admin", destination: "/admin.html" },
         {
           source: "/",
           has: [{ type: "query", key: "page", value: "home" }],
