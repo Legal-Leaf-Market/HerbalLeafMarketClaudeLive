@@ -70,6 +70,27 @@ type ShopifyStore = {
    * is actually there, read the shipping rate off the maker's own checkout into
    * SHIPPING in app.js, then delete this flag. */
   pending?: boolean
+  /* ON DECK: scraped, mapped and rendered, but ONLY onto that maker's own
+   * private page, never onto the public shelf.
+   *
+   * This is the state for a maker who has not said yes yet. Their page is
+   * built in full, at an unguessable /deck/<token> address that is noindex,
+   * robots-disallowed, absent from sitemap.xml and linked from nowhere, and
+   * the address is sent to them and to nobody else. The pitch is the finished
+   * thing rather than a description of one: here is your shelf, we will point
+   * it at the world if you want it, and we will delete it today if you do not.
+   *
+   * THE EXCLUSION IS BY CONSTRUCTION, NOT BY FILTER, and that is the whole
+   * point of doing it this way. A deck store is dropped in buildInventory, so
+   * their products are not in the payload /api/inventory serves, not in the KV
+   * cache, and not in anything app.js can see. A display-side filter would put
+   * an unapproved maker one bug away from the public grid; there is no bug that
+   * can leak a product that was never in the array. `deckInventory` is a
+   * separate call that reads one named deck store on demand.
+   *
+   * Clearing it is the same act as publishing: delete the flag, and they join
+   * the shelf on the next refresh. */
+  deck?: boolean
 }
 
 const SHOPIFY_STORES: ShopifyStore[] = [
@@ -170,6 +191,37 @@ const SHOPIFY_STORES: ShopifyStore[] = [
       "Tincture": "Tinctures",
     },
   },
+  /* ---- ON DECK: Indiana, approached 2026-08-30, none has replied yet ----
+   *
+   * Four independent Indiana shops, none of which runs an affiliate programme
+   * of any kind (searched by name and by domain), so each is the same
+   * fifteen-minute GoAffPro conversation Brown Bear had rather than a network
+   * application. All four both ship and have a door you can walk through.
+   *
+   * They are `deck`, not `pending`, and the difference is the whole approach:
+   * pending means nobody has read the feed, deck means the feed IS read and
+   * their shelf IS built, on a private page at an unguessable /deck/ address
+   * sent to that shop and nobody else. They are asked about a finished thing
+   * they can look at, and a "no" costs them one reply and deletes a file.
+   * buildInventory drops them, so none of this reaches the public shelf.
+   *
+   * NO INCLUDE LIST ON ANY OF THEM, AND THAT IS CORRECT HERE. On the public
+   * shelf an absent include list is a bug: it fills the grid with teaware and
+   * gift cards. On a maker's own draft page it is the honest position, because
+   * deciding which of somebody's products belong on a herbal shelf before they
+   * have said a word is a judgment we have no standing to make. The page shows
+   * everything their shop publishes and asks them what to cut, which is a
+   * better question than a guess. The include list gets written from their
+   * answer, and the flag comes off in the same commit.
+   *
+   * Health & Wellness of Carmel was on the original list and is deliberately
+   * absent: it is a medical practice whose dispensary resells practitioner-
+   * grade brands, several of which restrict third-party listing by contract,
+   * so listing them could put THEM in breach. Not pursued. */
+  { vendor: "Wood Fairy Apothecary", domain: "https://woodfairyapothecary.com", prefix: "wfa", deck: true },
+  { vendor: "the little magic herbal shop", domain: "https://www.alittlemagicshop.com", prefix: "lmhs", deck: true },
+  { vendor: "Snakeroot Botanicals", domain: "https://snakerootbotanicals.com", prefix: "snak", deck: true },
+  { vendor: "The Well Market + Refillery", domain: "https://thewellevv.com", prefix: "well", deck: true },
 ]
 /* =========================================================================
  * impact.com programmes
@@ -318,10 +370,19 @@ export async function buildInventory(): Promise<any[]> {
      * batches[i] is matched back to its store by position, so filtering inside
      * the loop instead would slide every store one place along and file one
      * maker's products under another maker's name. */
-    const live = SHOPIFY_STORES.filter((s) => !s.pending)
+    const live = SHOPIFY_STORES.filter((s) => !s.pending && !s.deck)
     const held = SHOPIFY_STORES.filter((s) => s.pending).map((s) => s.vendor)
     if (held.length) {
       console.log(`[inventory] pending, not scraped: ${held.join(", ")} (see ShopifyStore.pending)`)
+    }
+    /* Deck stores are scraped, just never here. Logged separately from pending
+     * because the two mean opposite things: pending is "we have not looked at
+     * this feed", deck is "we have, and their page is built and waiting on
+     * them". Confusing the two would either publish a maker who has not agreed
+     * or hide one who has. */
+    const onDeck = SHOPIFY_STORES.filter((s) => s.deck).map((s) => s.vendor)
+    if (onDeck.length) {
+      console.log(`[inventory] on deck, private pages only: ${onDeck.join(", ")} (see ShopifyStore.deck)`)
     }
     const [batches, snCoas] = await Promise.all([
       Promise.all(live.map((s) => fetchStoreProducts(s))),
@@ -336,6 +397,39 @@ export async function buildInventory(): Promise<any[]> {
     await kvPut(INVENTORY_KEY, JSON.stringify(out), INVENTORY_TTL)
   }
   return out
+}
+
+/* One deck store, scraped on demand for that maker's private page.
+ *
+ * Deliberately NOT cached in INVENTORY_KEY: that key is the public shelf and a
+ * deck maker's products must never be in it, not even briefly, or a cache read
+ * during the window puts them on the grid. Their own short-lived key instead,
+ * so a maker refreshing their page while reading it does not re-scrape their
+ * store on every load.
+ *
+ * Returns [] for an unknown vendor and for any vendor not marked `deck`, which
+ * is what stops this endpoint from being a second way to read the live
+ * catalogue: it can only ever answer for a store that is deliberately off the
+ * shelf. */
+export async function deckInventory(vendor: string): Promise<any[]> {
+  const store = SHOPIFY_STORES.find((s) => s.deck && s.vendor === vendor)
+  if (!store) return []
+  const key = "hlm_deck_v1_" + store.prefix
+  const cached = await kvGet(key)
+  if (cached) {
+    try { return JSON.parse(cached) } catch {}
+  }
+  let out: any[] = []
+  try {
+    out = mapShopify(store, await fetchStoreProducts(store))
+  } catch {}
+  if (out.length) await kvPut(key, JSON.stringify(out), 3600)
+  return out
+}
+
+/* The vendors currently on deck, for the page to name itself against. */
+export function deckVendors(): string[] {
+  return SHOPIFY_STORES.filter((s) => s.deck).map((s) => s.vendor)
 }
 
 export async function getInventory(): Promise<any[]> {

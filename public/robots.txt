@@ -11,9 +11,18 @@
 #
 # /facts.html and /stories.html are bare redirect stubs kept so old
 # ?page= links resolve; the real pages are in the sitemap.
+#
+# /deck/ holds maker pages built BEFORE that maker has agreed to be listed.
+# Each one is a finished shelf sent to its own maker at an unguessable address
+# so they can say yes to a real thing instead of a description, or have it
+# deleted the same day. They carry noindex, they are absent from sitemap.xml
+# and nothing on the site links to them; this is the fourth lock, and the one
+# that matters most, because indexing a page about a shop that never agreed to
+# it is the single worst thing this directory could do to a maker.
 
 User-agent: *
 Disallow: /api/
+Disallow: /deck/
 Disallow: /admin.html
 Disallow: /facts.html
 Disallow: /stories.html
