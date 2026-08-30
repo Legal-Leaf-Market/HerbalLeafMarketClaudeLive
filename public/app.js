@@ -78,6 +78,17 @@ const BRAND_AFFILIATES = {
    * to its affiliates, but the code is issued on acceptance and has never been
    * tested at their till, so advertising it now would be exactly the
    * struck-through price this storefront must never ship. */
+  /* Brown Bear Herbs came in through /makers.html, so their attribution will be
+   * a GoAffPro referral code and NOT a network: when it arrives this becomes
+   * trackParam:{key:"ref",val:"<their code>"}, the same shape Natural Smoke
+   * Shop's ?tr=138 already uses.
+   *
+   * THE HALF-FILLED trackParam IS DELIBERATELY ABSENT rather than stubbed with
+   * an empty val. withAffiliate() below now refuses one either way, but the
+   * entry should not carry a key it has no value for: with no trackParam at all
+   * the link falls through to the maker's own url, which is the honest state
+   * for a maker whose code we have not been given yet. */
+  "Brown Bear Herbs":{couponCode:"",percent:0},
   "Tea For Guys":{impact:{host:"",campaign:"",ad:""},couponCode:"",percent:0},
   "Purest Mushrooms":{impact:{host:"",campaign:"",ad:""},couponCode:"",percent:0},
   "Wooden Spoon Herbs":{impact:{host:"",campaign:"",ad:""},couponCode:"",percent:0},
@@ -125,7 +136,7 @@ function vendorCode(vendor){ var c=BRAND_AFFILIATES[vendor]; return (c&&c.coupon
  * or more items, a rule this map has no way to say. */
 var SHIPPING={ "Bear Blend":{flat:6.95,freeOver:69},"Puff Herbals":{flat:5.99,freeOver:50},"Secret Nature":{flat:6.00,freeOver:50},"Soul CBD":{flat:5.95,freeOver:60},"Natural Smoke Shop":{flat:5.95,freeOver:35},"Charlotte's Web":{flat:5.99,freeOver:50},
   "Tea For Guys":{unknown:true},"Purest Mushrooms":{unknown:true},"Wooden Spoon Herbs":{unknown:true},"Balls Deep Tea Company":{unknown:true},"St. Francis Herb Farm":{unknown:true},"Republic of Tea":{unknown:true},"Tea Sparrow":{unknown:true},
-  "Encha Matcha":{unknown:true},"RE Botanicals":{unknown:true} };
+  "Encha Matcha":{unknown:true},"RE Botanicals":{unknown:true},"Brown Bear Herbs":{unknown:true} };
 function shipInfo(vendor,after){ var s=SHIPPING[vendor];
   if(!s||s.unknown) return {cost:0,free:false,freeOver:0,unknown:true};
   var free=(s.freeOver>0&&after>=s.freeOver)||!(s.flat>0);
@@ -147,7 +158,14 @@ function withAffiliate(product){ var base=(product&&product.url)?product.url:"#"
   if(cfg && cfg.impact){ var imp=impactUrl(cfg,base); if(imp) return imp; }
   if(cfg && AWIN_PUBLISHER_ID && cfg.awinmid){ return "https://www.awin1.com/cread.php?awinmid="+encodeURIComponent(cfg.awinmid)+"&awinaffid="+encodeURIComponent(AWIN_PUBLISHER_ID)+"&ued="+encodeURIComponent(base); }
   if(cfg && cfg.ref){ return appendParam(base,"ref",cfg.ref); }
-  if(cfg && cfg.trackParam && cfg.trackParam.key){ return appendParam(base,cfg.trackParam.key,cfg.trackParam.val); }
+  /* BOTH HALVES, for the reason impactUrl() demands all four of its own. This
+     tested only .key, so a trackParam stubbed with an empty val appended a bare
+     "?ref=" to every outbound link for that maker: a link that works, a
+     commission of zero, and nothing anywhere showing it went wrong. That is the
+     exact failure this file warns about for an unset refParam, and onboarding
+     makers through GoAffPro means entries will now routinely exist before their
+     code does. A half-filled pair falls through to the direct link instead. */
+  if(cfg && cfg.trackParam && cfg.trackParam.key && cfg.trackParam.val){ return appendParam(base,cfg.trackParam.key,cfg.trackParam.val); }
   return base; }
 function hlmSiteOrigin(){ try{ return new URL(HLM_SHOP_URL).origin; }catch(e){ return "https://herballeafmarket.com"; } }
 function hlmOutUrl(vendor,endUrl){ var dest=withAffiliate({vendor:vendor,url:endUrl}); if(!dest||dest==="#") dest=endUrl||HLM_SHOP_URL; return hlmSiteOrigin()+"/?go="+encodeURIComponent(dest)+"&ref=herballeafmarket"; }
@@ -644,7 +662,7 @@ function submitAuth(){ var email=(document.getElementById("authEmail").value||""
  * and /products/), so a /cart/ permalink would 404 rather than fill. */
 var SHOPIFY_VENDORS=["Puff Herbals","Secret Nature","Soul CBD","Charlotte's Web",
   "Tea For Guys","Purest Mushrooms","Wooden Spoon Herbs","Balls Deep Tea Company","Republic of Tea","Tea Sparrow",
-  "Encha Matcha"];
+  "Encha Matcha","Brown Bear Herbs"];
 var HOUSE_CODE="JACOBKENNEDY";
 /* writeText rejects (not throws) when the document lacks focus or permission,
  * so the promise needs its own catch or the console fills with unhandled
