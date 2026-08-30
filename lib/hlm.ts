@@ -87,6 +87,28 @@ const SHOPIFY_STORES: ShopifyStore[] = [
    * product_types are known the powders keep their own category and isTea()
    * picks them up as well, the way a matcha should appear in both places. */
   { vendor: "Encha Matcha", domain: "https://encha.com", prefix: "encha", pending: true },
+  /* Brown Bear Herbs, Portland OR, said yes on Instagram 2026-08-29 and is the
+   * first maker to come in through /makers.html rather than through a network.
+   * That changes what "pending" is waiting for: the impact.com seven are
+   * waiting on an approval we do not control, this one is waiting on a
+   * referral link the maker generates themselves in GoAffPro.
+   *
+   * NOT CBD. Herbal cigarettes, smoking blends, teas, tinctures and flower
+   * essences, with no THC, no CBD and no nicotine, so they sit in the Natural
+   * Smoke Shop and Bear Blend lane rather than the cannabinoid one.
+   *
+   * THE ORGANIC COLLISION IS SETTLED (2026-08-30, section 11) and no longer
+   * blocks them: their titles carry "organic" because that is what they call
+   * their own products, and a title is carried verbatim beside their name and a
+   * link to their page. What this site writes about them still never repeats
+   * it. The same answer was applied to RE Botanicals, where the question was
+   * first logged.
+   *
+   * WHAT PENDING IS STILL WAITING ON is the ordinary sequence and one extra:
+   * a probe run to write the include list, a shipping rate read at their own
+   * checkout, and the GoAffPro referral code, without which every click we send
+   * them is unattributed. */
+  { vendor: "Brown Bear Herbs", domain: "https://brownbearherbs.com", prefix: "bbh", pending: true },
 ]
 /* =========================================================================
  * impact.com programmes
@@ -147,7 +169,7 @@ export const IMPACT_PROGRAMS: Record<string, ImpactProgram> = {
     id: "",
     label: "Online Sale",
     rate: "25%",
-    note: "Their brand leads with a USDA certified-organic claim, which this site removed from its own copy on 2026-08-08. Settle whether an ingested product title counts as the maker's words before their feed goes live.",
+    note: "Their brand leads with a USDA certified-organic claim, which this site removed from its own copy on 2026-08-08. SETTLED 2026-08-30 (section 11): an ingested product title IS the maker's words and is carried verbatim, next to their name and a link. The carve-out stops at the title, so nothing this site writes about them repeats the word.",
   },
   /* Not a new maker: already in SHOPIFY_STORES above, and every click we have
    * sent them so far has gone unattributed while their Awin application sits
@@ -183,6 +205,7 @@ const HLM_DEFAULT_RULES = {
      * programs issue arrives with the acceptance, and an issued code is still
      * not a verified one until it has been applied at that maker's own
      * checkout. */
+    "Brown Bear Herbs": 0,
     "Tea For Guys": 0,
     "Purest Mushrooms": 0,
     "Wooden Spoon Herbs": 0,
