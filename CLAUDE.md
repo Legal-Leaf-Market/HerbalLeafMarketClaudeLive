@@ -358,6 +358,24 @@ join is caught by eye before it reaches a card.
   come back.** The only survivors are NSS product-URL slugs in `products.js`,
   which are their URLs, not our words. `branding.py` enforces the same rule on
   card text.
+- **A maker's own product TITLE is carried verbatim, and that is settled
+  (2026-08-30).** The open question logged against RE Botanicals and Brown Bear
+  Herbs, whether an ingested title counts as the maker's words, is answered the
+  same way the URL-slug carve-out was: it does. The rule this section exists to
+  enforce is that THIS SITE does not assert a claim it has not verified.
+  Repeating what a maker calls their own product, next to their name and a link
+  to their page, is a quotation and not an assertion, which is the position the
+  maker-page footer already publishes ("Product names, article titles and any
+  quoted text belong to them and appear here with attribution and a link").
+  Rewriting a title is also the worse failure of the two: a card reading
+  "Herbal Cigarettes" against a storefront selling "Organic Herbal Cigarettes"
+  breaks the one thing a comparison page owes a shopper, which is being able to
+  match the product in front of them to the product they are sent to buy.
+  THE CARVE-OUT IS THE TITLE AND NOTHING ELSE. Our own blurbs, category names,
+  chips, badges, page copy and marketing never carry the word, whatever the
+  maker's catalogue calls things. `seriesKey()` and the COA stop-list already
+  strip it from derived keys and neither touches display, which is the right
+  split and should stay that way.
 - **No em dashes anywhere in copy.** House rule across all four sites; use a
   comma, colon, or parentheses instead.
 
@@ -399,7 +417,8 @@ join is caught by eye before it reaches a card.
 - Do NOT cache `/api/*` in the service worker, ever.
 - Do NOT broaden `isExcluded`/`EXCLUDE_PATTERN`-style filters without checking
   live product names first; a broad regex silently hides real inventory.
-- Do NOT reintroduce "certified-organic" or any organic claim in copy.
+- Do NOT reintroduce "certified-organic" or any organic claim in OUR copy. A
+  maker's own product title is theirs and is carried verbatim (section 11).
 - Do NOT GET-request an awin1.com or *.pxf.io tracking link in testing
   (section 8).
 - Do NOT let `sn_coa_audit.py` and the `hlm.ts` matcher drift apart.

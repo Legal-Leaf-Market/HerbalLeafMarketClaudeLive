@@ -97,12 +97,17 @@ const SHOPIFY_STORES: ShopifyStore[] = [
    * essences, with no THC, no CBD and no nicotine, so they sit in the Natural
    * Smoke Shop and Bear Blend lane rather than the cannabinoid one.
    *
-   * BEFORE THE FLAG COMES OFF, and this one is not the usual probe run: their
-   * own storefront sells "organic" as the whole pitch, so their product TITLES
-   * carry the word and those titles land on cards. Section 11 removed organic
-   * claims from this site's copy and its only carve-out is for a maker's own
-   * URLs, not their product names. Same collision already logged against RE
-   * Botanicals; it needs a decision rather than a probe. */
+   * THE ORGANIC COLLISION IS SETTLED (2026-08-30, section 11) and no longer
+   * blocks them: their titles carry "organic" because that is what they call
+   * their own products, and a title is carried verbatim beside their name and a
+   * link to their page. What this site writes about them still never repeats
+   * it. The same answer was applied to RE Botanicals, where the question was
+   * first logged.
+   *
+   * WHAT PENDING IS STILL WAITING ON is the ordinary sequence and one extra:
+   * a probe run to write the include list, a shipping rate read at their own
+   * checkout, and the GoAffPro referral code, without which every click we send
+   * them is unattributed. */
   { vendor: "Brown Bear Herbs", domain: "https://brownbearherbs.com", prefix: "bbh", pending: true },
 ]
 /* =========================================================================
@@ -164,7 +169,7 @@ export const IMPACT_PROGRAMS: Record<string, ImpactProgram> = {
     id: "",
     label: "Online Sale",
     rate: "25%",
-    note: "Their brand leads with a USDA certified-organic claim, which this site removed from its own copy on 2026-08-08. Settle whether an ingested product title counts as the maker's words before their feed goes live.",
+    note: "Their brand leads with a USDA certified-organic claim, which this site removed from its own copy on 2026-08-08. SETTLED 2026-08-30 (section 11): an ingested product title IS the maker's words and is carried verbatim, next to their name and a link. The carve-out stops at the title, so nothing this site writes about them repeats the word.",
   },
   /* Not a new maker: already in SHOPIFY_STORES above, and every click we have
    * sent them so far has gone unattributed while their Awin application sits
