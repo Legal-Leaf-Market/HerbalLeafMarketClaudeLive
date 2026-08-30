@@ -88,6 +88,12 @@ type ShopifyStore = {
    * can leak a product that was never in the array. `deckInventory` is a
    * separate call that reads one named deck store on demand.
    *
+   * A deck store may carry an `include` list and usually should: the page is
+   * meant to propose the shelf we would actually build, state how much of
+   * their catalogue it leaves out, and ask to be corrected. Showing a herbal
+   * comparison page 253 house plants because nobody had asked yet is not
+   * deference, it is a machine that did not look.
+   *
    * Clearing it is the same act as publishing: delete the flag, and they join
    * the shelf on the next refresh. */
   deck?: boolean
@@ -205,23 +211,71 @@ const SHOPIFY_STORES: ShopifyStore[] = [
    * they can look at, and a "no" costs them one reply and deletes a file.
    * buildInventory drops them, so none of this reaches the public shelf.
    *
-   * NO INCLUDE LIST ON ANY OF THEM, AND THAT IS CORRECT HERE. On the public
-   * shelf an absent include list is a bug: it fills the grid with teaware and
-   * gift cards. On a maker's own draft page it is the honest position, because
-   * deciding which of somebody's products belong on a herbal shelf before they
-   * have said a word is a judgment we have no standing to make. The page shows
-   * everything their shop publishes and asks them what to cut, which is a
-   * better question than a guess. The include list gets written from their
-   * answer, and the flag comes off in the same commit.
+   * THESE INCLUDE LISTS ARE WRITTEN FROM THE REAL FEEDS, read 2026-08-30
+   * through /api/deck once these rows existed. That read reordered the four,
+   * and the reorder is the argument for reading a feed before ranking a
+   * prospect rather than after:
+   *
+   *   The Well Market + Refillery was ranked LAST of the four on the theory
+   *     that a refillery's proposition does not ship. Their `Bulk` category is
+   *     149 products of loose herbal tea and single herbs -- nettle, skullcap,
+   *     St John's Wort, holy basil, chamomile, elderberry, dandelion,
+   *     marshmallow, hawthorn, chaga -- which is the closest catalogue match to
+   *     this shelf of any maker approached, Brown Bear included. Everything
+   *     else they sell is a zero-waste household shop and is not our business.
+   *   the little magic herbal shop is second and small: 27 tinctures, elixirs
+   *     and teas the owner makes themselves. 365 of their 418 listings are
+   *     crystals, so the include list is most of the argument here.
+   *   Snakeroot Botanicals reads as a strong fit and is not. Their "Herbal
+   *     Products" is essential oils, incense, perfume and soap almost end to
+   *     end, with a jar of local honey and a lip balm in it. Included anyway,
+   *     because it is theirs to argue with, but nobody should expect much.
+   *   Wood Fairy Apothecary sets NO product_type on any of its 91 listings, so
+   *     an include list is not available at any price and their page shows the
+   *     whole shop. They are also a skincare maker rather than a herbal one:
+   *     salves, balms, soaps, essential oils, perfume and cleaning spray, with
+   *     no herbs, no tea and no tinctures anywhere in it.
+   *
+   * WHY A DECK STORE GETS AN INCLUDE LIST AT ALL, having first shipped without
+   * one: the reasoning was that choosing among somebody's products before they
+   * have spoken is a judgment we lack standing for. The feeds showed the
+   * opposite failure is worse. Snakeroot's 887 listings are 253 house plants,
+   * 139 seed packets, 122 planters and 114 books, and putting all of that on a
+   * herbal comparison page does not read as deference, it reads as a machine
+   * that did not look. So the page proposes a slice, says how many listings it
+   * left out and why, and asks to be corrected. That is a better question than
+   * either a guess or a firehose.
    *
    * Health & Wellness of Carmel was on the original list and is deliberately
    * absent: it is a medical practice whose dispensary resells practitioner-
    * grade brands, several of which restrict third-party listing by contract,
    * so listing them could put THEM in breach. Not pursued. */
+  /* No include list is possible: all 91 listings carry an empty product_type. */
   { vendor: "Wood Fairy Apothecary", domain: "https://woodfairyapothecary.com", prefix: "wfa", deck: true },
-  { vendor: "the little magic herbal shop", domain: "https://www.alittlemagicshop.com", prefix: "lmhs", deck: true },
-  { vendor: "Snakeroot Botanicals", domain: "https://snakerootbotanicals.com", prefix: "snak", deck: true },
-  { vendor: "The Well Market + Refillery", domain: "https://thewellevv.com", prefix: "well", deck: true },
+  {
+    vendor: "the little magic herbal shop",
+    domain: "https://www.alittlemagicshop.com",
+    prefix: "lmhs",
+    deck: true,
+    include: ["Elixirs, Remedies and Potions", "Self Care"],
+  },
+  {
+    vendor: "Snakeroot Botanicals",
+    domain: "https://snakerootbotanicals.com",
+    prefix: "snak",
+    deck: true,
+    include: ["Herbal Products", "Herbal Accessories", "Tea Accessories"],
+  },
+  {
+    vendor: "The Well Market + Refillery",
+    domain: "https://thewellevv.com",
+    prefix: "well",
+    deck: true,
+    /* Bulk only. "Morning Cuppa" sounds like the tea aisle and is strainers,
+     * infusers, matcha whisks and keep cups, which is the exact teaware the
+     * include mechanism exists to keep off a shelf. */
+    include: ["Bulk"],
+  },
 ]
 /* =========================================================================
  * impact.com programmes
