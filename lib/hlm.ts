@@ -453,6 +453,32 @@ export async function buildInventory(): Promise<any[]> {
   return out
 }
 
+/* A short hash of everything about a store that changes WHICH products come
+ * out of mapShopify. The deck cache key carries it, so editing an include
+ * list, a titleExclude or a categoryMap lands on a different key and the old
+ * answer is abandoned rather than served.
+ *
+ * This exists because the alternative failed in production within the hour.
+ * The deck stores were first cached with no include lists at all; the lists
+ * were added in the next deploy and the warm keys went on serving the
+ * unfiltered catalogues, so a maker's page would have said "we are proposing
+ * 29 of your 418 listings" directly above a grid of all 418. On a page whose
+ * entire job is to be trusted by somebody who did not ask for it, a caption
+ * that contradicts the thing underneath it is worse than no page.
+ *
+ * A version constant to bump by hand would have worked too, and would have
+ * been forgotten. The domain and prefix are in here as well: they change the
+ * ids and URLs of every row.
+ *
+ * djb2, because this is a cache key and not a security boundary; it only has
+ * to differ when the config differs. */
+function storeShape(s: ShopifyStore): string {
+  const sig = JSON.stringify([s.domain, s.prefix, s.include, s.exclude, s.titleExclude, s.categoryMap])
+  let h = 5381
+  for (let i = 0; i < sig.length; i++) h = ((h << 5) + h + sig.charCodeAt(i)) | 0
+  return (h >>> 0).toString(36)
+}
+
 /* One deck store, scraped on demand for that maker's private page.
  *
  * Deliberately NOT cached in INVENTORY_KEY: that key is the public shelf and a
@@ -468,7 +494,7 @@ export async function buildInventory(): Promise<any[]> {
 export async function deckInventory(vendor: string): Promise<any[]> {
   const store = SHOPIFY_STORES.find((s) => s.deck && s.vendor === vendor)
   if (!store) return []
-  const key = "hlm_deck_v1_" + store.prefix
+  const key = "hlm_deck_v1_" + store.prefix + "_" + storeShape(store)
   const cached = await kvGet(key)
   if (cached) {
     try { return JSON.parse(cached) } catch {}
