@@ -30,6 +30,24 @@ type ShopifyStore = {
   /* Optional product_type deny-list, for stores where taking everything-but is
    * the more natural expression. Applied after `include`. */
   exclude?: string[]
+  /* Optional TITLE deny-list: case-insensitive substrings, matched against the
+   * product title, applied last. product_type is the right filter and this is
+   * not a replacement for it; it exists because product_type is whatever the
+   * maker typed, and a maker who files most trade listings under a "Wholesale"
+   * type will still leave a few under the retail one. Brown Bear Herbs is the
+   * case: "Gentle & Protective Filtered Pack Wholesale" at $13.95 carries
+   * product_type "Herbal Cigarettes", the same type as the $27.95 retail pack
+   * it is the trade copy of. Ingesting on type alone puts both on the shelf,
+   * and the cheaper card wins the click, which misprices the maker against
+   * their own store.
+   *
+   * KEEP EVERY ENTRY AS LONG AS IT NEEDS TO BE. A substring is a blunt
+   * instrument and a short one silently eats real inventory: "club" was the
+   * first draft of the entry that now reads "animal meditation club", and it
+   * also removed "Devil's Club Tincture-for Strong Boundaries", a product they
+   * very much do sell. Check every entry against the real titles before adding
+   * it, the same rule EXCLUDE_PATTERN-style filters live under. */
+  titleExclude?: string[]
   /* Optional product_type -> site category rename, applied at ingest so the
    * storefront taxonomy stays consistent. Shopify product_type is whatever the
    * vendor typed, and plenty of them SHOUT ("LOOSE LEAF"), which would render
@@ -104,11 +122,54 @@ const SHOPIFY_STORES: ShopifyStore[] = [
    * it. The same answer was applied to RE Botanicals, where the question was
    * first logged.
    *
-   * WHAT PENDING IS STILL WAITING ON is the ordinary sequence and one extra:
-   * a probe run to write the include list, a shipping rate read at their own
-   * checkout, and the GoAffPro referral code, without which every click we send
-   * them is unattributed. */
-  { vendor: "Brown Bear Herbs", domain: "https://brownbearherbs.com", prefix: "bbh", pending: true },
+   * FEED READ 2026-08-30, 160 products, and the flag is off: the include list
+   * below is written from the real product_type histogram, so 30 of those 160
+   * are on the shelf. What is still missing is NOT the feed. Their shipping is
+   * {unknown:true} in app.js until a rate is read at their own checkout, and
+   * BRAND_AFFILIATES carries no trackParam until they generate a GoAffPro
+   * referral code, so every click we send them today is honest and
+   * unattributed. Both are one-line fixes once they reply.
+   *
+   * WHAT THE INCLUDE LIST LEAVES OUT, and why, since all four are judgment
+   * rather than plumbing:
+   *   "Energetic Medicine", 75 of the 160 and their single biggest line, is
+   *     flower, gem and animal essences. Ingesting it would make Brown Bear
+   *     essences the largest block on this storefront and would file a
+   *     vibrational remedy next to a cannabinoid on an evidence-graded shelf,
+   *     which knowledge.js has no way to grade honestly. Left out on purpose,
+   *     not overlooked; it is one string away if that call changes.
+   *   "Wholesale" is trade pricing against their own retail listings.
+   *   "" (empty product_type), 20 products, is the mixed drawer: two real
+   *     tinctures and the Calea dream herb sit in it alongside rolling trays,
+   *     zines, a tea strainer and ten download-only essence cards. An
+   *     allow-list cannot pick from an untyped group, so all 20 stay out until
+   *     the maker types them. Worth asking them to.
+   *   Books, Zines, Classes, Consultations, Gemstones, Enamel Pins and Pipes
+   *     are theirs to sell and not what this shelf is.
+   *
+   * Their catalogue spells one product "Herbal CIgarettes", capital I, and it
+   * needs no entry of its own: include and categoryMap are both matched on the
+   * uppercased type, so the typo and the correct spelling are the same key and
+   * Astral in Body comes through with the other six. Listing both spellings
+   * would only look like the filter is case-sensitive when it is not.
+   *
+   * "Herbal Smokes" currently holds two products and both are trade listings,
+   * so the type is in the list and contributes nothing today. That is
+   * deliberate: it is the same product family under a second name the maker
+   * uses, and leaving it out would mean a retail smoke filed there later goes
+   * silently missing. */
+  {
+    vendor: "Brown Bear Herbs",
+    domain: "https://brownbearherbs.com",
+    prefix: "bbh",
+    include: ["Herbal Cigarettes", "Herbal Smoking Blend", "Herbal Smokes", "Tea", "Tincture"],
+    titleExclude: ["wholesale", "animal meditation club"],
+    categoryMap: {
+      "Herbal Cigarettes": "Herbal Smokes",
+      "Herbal Smoking Blend": "Herbal Blends",
+      "Tincture": "Tinctures",
+    },
+  },
 ]
 /* =========================================================================
  * impact.com programmes
@@ -468,6 +529,7 @@ function mapShopify(store: ShopifyStore, products: any[]): any[] {
   const out: any[] = []
   const inc = store.include?.map((t) => t.trim().toUpperCase())
   const exc = store.exclude?.map((t) => t.trim().toUpperCase())
+  const badTitle = store.titleExclude?.map((t) => t.trim().toLowerCase()).filter(Boolean)
   const cmap: Record<string, string> = {}
   if (store.categoryMap) {
     for (const k of Object.keys(store.categoryMap)) cmap[k.trim().toUpperCase()] = store.categoryMap[k]
@@ -478,6 +540,10 @@ function mapShopify(store: ShopifyStore, products: any[]): any[] {
     const typeKey = rawType.toUpperCase()
     if (inc && !inc.includes(typeKey)) return
     if (exc && exc.includes(typeKey)) return
+    if (badTitle && badTitle.length) {
+      const title = String(p.title || "").toLowerCase()
+      if (badTitle.some((t) => title.includes(t))) return
+    }
     const category = cmap[typeKey] || rawType
     const img = p.images && p.images[0] && p.images[0].src ? p.images[0].src : ""
     const vars = (p.variants || []).map((v: any) => ({
