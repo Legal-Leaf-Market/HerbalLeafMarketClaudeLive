@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Wood Fairy Apothecary on Herbal Leaf Market</title>
+<!-- ON DECK. Wood Fairy Apothecary has not agreed to be listed and may never
+     agree. This page exists so that the question we put to them is about a real
+     thing they can look at rather than a description they have to imagine, and
+     so that "no" costs them one reply and deletes a file.
+
+     FOUR LOCKS, and all four are load-bearing:
+       1. noindex, nofollow, below.
+       2. Disallow: /deck/ in robots.txt.
+       3. Absent from sitemap.xml.
+       4. An unguessable filename. Nothing on this site links here; the address
+          went to Wood Fairy Apothecary and to nobody else.
+     Their products are likewise absent from /api/inventory and from the KV
+     cache the shop page reads: SHOPIFY_STORES marks them `deck`, which drops
+     them in buildInventory, so there is no filter to get wrong. See the `deck`
+     doc in lib/hlm.ts. -->
+<meta name="robots" content="noindex, nofollow" />
+<link rel="icon" href="/icon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900&family=Jost:wght@300;400;500;600;700&display=swap" />
+<style>
+  :root{--bg:#0b120d;--ink:#eaf3ec;--muted:#9fb6a6;--line:#1e3024;--card:rgba(15,24,17,.85);--card-solid:#111d14;--terracotta:#e06b42;--sage:#4ade80;--gold:#f0b93c;--display:"Fraunces",Georgia,serif;--sans:"Jost",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--radius:14px;}
+  *{box-sizing:border-box} html{background:#0b120d}
+  body{margin:0;font-family:var(--sans);color:var(--ink);line-height:1.65;letter-spacing:.2px;background:radial-gradient(circle at 12% 6%,rgba(224,107,66,.08),transparent 42%),radial-gradient(circle at 88% 12%,rgba(74,222,128,.05),transparent 44%),var(--bg)}
+  .wrap{max-width:960px;margin:0 auto;padding:0 22px}
+  a{color:var(--sage)}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+  header.top{background:rgba(8,14,10,.96);padding:14px 0;border-bottom:2px solid var(--terracotta)}
+  header.top .wrap{display:flex;align-items:center;gap:12px}
+  .brand{font-family:var(--display);font-weight:900;font-size:1.1rem;letter-spacing:.8px;text-transform:uppercase}
+  .brand small{display:block;font-family:var(--sans);font-weight:400;font-size:.6rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--terracotta);margin-top:-3px}
+
+  .draftbar{background:rgba(240,185,60,.10);border-bottom:1px solid rgba(240,185,60,.3);color:#d8bd77;font-size:.9rem;padding:14px 0}
+  .draftbar strong{color:var(--gold)}
+  .draftbar p{margin:0 0 8px} .draftbar p:last-child{margin:0}
+
+  .hero{padding:46px 0 18px}
+  .eyebrow{display:inline-block;font-weight:600;text-transform:uppercase;font-size:.72rem;letter-spacing:5px;color:var(--terracotta);margin-bottom:12px}
+  h1{font-family:var(--display);font-weight:900;font-size:clamp(2rem,6vw,3rem);line-height:1.06;margin:0 0 14px}
+  .lede{font-size:1.1rem;color:var(--muted);max-width:640px;margin:0}
+
+  section{margin:42px 0}
+  h2{font-family:var(--display);font-weight:900;font-size:1.5rem;margin:0 0 10px;text-wrap:balance}
+  p{margin:0 0 15px}
+  .muted{color:var(--muted)}
+
+  .answers{display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:14px;margin-top:20px}
+  .ans{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+  .ans h3{font-family:var(--display);font-weight:600;font-size:1.05rem;margin:0 0 6px}
+  .ans p{color:var(--muted);font-size:.94rem;margin:0}
+  .ans.yes{border-color:rgba(74,222,128,.45)} .ans.yes h3{color:var(--sage)}
+  .ans.no{border-color:rgba(224,107,66,.45)} .ans.no h3{color:var(--terracotta)}
+
+  .status{background:var(--card-solid);border:1px solid var(--line);border-radius:var(--radius);padding:18px 22px;margin-top:18px;font-size:.95rem;color:var(--muted)}
+  .status b{color:var(--ink)}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(13.5rem,1fr));gap:14px;margin-top:20px}
+  .card{background:var(--card-solid);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+  .card .pic{aspect-ratio:1;background:#0d1710;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .card .pic img{width:100%;height:100%;object-fit:cover}
+  .card .meat{padding:13px 15px 15px;display:flex;flex-direction:column;gap:5px;flex:1}
+  .card .cat{font-size:.62rem;letter-spacing:1.6px;text-transform:uppercase;color:var(--terracotta);font-weight:600}
+  .card .nm{font-size:.94rem;font-weight:500;line-height:1.35}
+  .card .pr{margin-top:auto;padding-top:8px;font-family:var(--display);font-weight:600;font-size:1.08rem}
+  .card .oos{font-size:.72rem;color:var(--muted);font-weight:500}
+
+  .tally{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .pill{background:rgba(15,24,17,.9);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.8rem;font-weight:500;color:var(--muted)}
+  .pill b{color:var(--ink)}
+
+  footer{border-top:1px solid var(--line);margin-top:54px;padding:26px 0 44px;color:var(--muted);font-size:.85rem;background:rgba(8,14,10,.6)}
+  footer p{margin:0 0 10px}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <div class="brand">Herbal Leaf Market<small>On deck &middot; not published</small></div>
+</div></header>
+
+<div class="draftbar"><div class="wrap">
+  <p><strong>This page is not on our website.</strong> It is hidden from Google, blocked in our robots file, absent from our sitemap, and linked from nowhere. The address is a random string that was sent to you and to nobody else. Nobody can find this by browsing, searching, or guessing.</p>
+  <p>We built it before asking because a finished page is a fairer thing to be asked about than a description of one. If you would rather it did not exist, say so and it is deleted the same day, along with everything on it.</p>
+</div></div>
+
+<div class="wrap">
+
+  <div class="hero">
+    <span class="eyebrow">Nashville, Indiana &middot; Brown County</span>
+    <h1>Wood Fairy Apothecary</h1>
+    <p class="lede">This is what your shelf would look like on Herbal Leaf Market: your products, your prices, your photographs, each card linking to your own page to buy from you.</p>
+  </div>
+
+  <section>
+    <h2>What we are asking</h2>
+    <p>Herbal Leaf Market lists independent makers and sends shoppers to the maker's own checkout. We never take your orders, never touch your inventory, and never handle your customers' money. Somebody browses, finds your salves, and clicks through to woodfairyapothecary.com to buy them from you exactly as they would today.</p>
+    <div class="answers">
+      <div class="ans yes">
+        <h3>If yes</h3>
+        <p>Install a free Shopify app, set a commission you are comfortable with, and send us the referral link. About fifteen minutes. We flip this page onto the public site and start sending people to it. You only ever pay on a sale you would not otherwise have made.</p>
+      </div>
+      <div class="ans no">
+        <h3>If no</h3>
+        <p>Reply with anything at all, even one word. We delete this page and stop. Nothing was ever public, so there is nothing to undo and nothing to correct anywhere else. We will not ask twice.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Your shelf</h2>
+    <p class="muted">Pulled live from your own shop, so these are your current prices and your current stock, not a snapshot we typed out. If a price changes on your site it changes here.</p>
+    <div class="status" id="status"><b>Loading your catalogue…</b></div>
+    <div class="tally" id="tally" hidden></div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section>
+    <h2>The one thing we need you to correct</h2>
+    <p>We have shown you <strong>everything your shop publishes</strong>, because guessing which of your products belong on a herbal shelf is not our call to make. Almost certainly some of what is above should not be listed: gift cards, anything you sell only in the shop, anything you are winding down, anything that is really a service rather than a product.</p>
+    <p>Tell us what to take out and we take it out. It is a list, not a negotiation. We would rather list twenty products you are happy with than sixty you are not.</p>
+  </section>
+
+  <section>
+    <h2>Two things we could not work out on our own</h2>
+    <p><strong>Your shipping.</strong> Your flat rate, and the order value where postage becomes free if you offer that. We show shoppers an estimated out-the-door price, and a maker whose rate we do not know is shown honestly as "shown at checkout" instead. We will not put a guessed number next to your name.</p>
+    <p><strong>A coupon, only if you want one.</strong> Entirely optional, and most makers on our shelf advertise nothing. If you do give us a code we test it at your own checkout before it goes on a card, because a struck-through price your checkout then refuses is the worst thing we could show anybody.</p>
+  </section>
+
+</div>
+
+<footer><div class="wrap">
+  <p><strong>Herbal Leaf Market is a price comparison service.</strong> We hold no stock and sell nothing. We earn a commission on some links, which never affects how anything is ranked and is never a reason a maker is listed or delisted.</p>
+  <p>Wood Fairy Apothecary, woodfairyapothecary.com, the product names above and the photographs above are theirs, not ours. They are shown here with attribution and a link to the page they came from, and they come down on request.</p>
+  <p>Questions, or anything above that is wrong: <a href="mailto:hello@herballeafmarket.com">hello@herballeafmarket.com</a> &middot; <a href="/makers">How listing works</a></p>
+</div></footer>
+
+<script>
+/* The shelf is fetched rather than baked in, so the maker reading this page
+   sees their real prices and their real stock at the moment they read it. A
+   page with month-old prices on it would undercut the one thing it is trying
+   to demonstrate. /api/deck answers only for stores marked `deck`. */
+(function(){
+  var VENDOR = "Wood Fairy Apothecary";
+  var statusEl = document.getElementById("status");
+  var gridEl = document.getElementById("grid");
+  var tallyEl = document.getElementById("tally");
+
+  function money(n){ return "$" + (Math.round(n*100)/100).toFixed(2); }
+
+  function esc(s){
+    return String(s == null ? "" : s)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;");
+  }
+
+  fetch("/api/deck?vendor=" + encodeURIComponent(VENDOR), { headers:{ Accept:"application/json" } })
+    .then(function(r){ return r.ok ? r.json() : []; })
+    .then(function(rows){
+      if (!rows || !rows.length) {
+        /* Say what actually happened rather than showing an empty shelf: an
+           empty grid on this page reads as "your shop has nothing in it",
+           which is the worst possible thing to show the person who runs it. */
+        statusEl.innerHTML = "<b>We could not read your shop just now.</b> That is our end, not yours. Reload in a moment, or tell us and we will look.";
+        return;
+      }
+      var inStock = 0, cats = {};
+      var html = rows.map(function(p){
+        if (p.inStock !== false) inStock++;
+        if (p.category) cats[p.category] = (cats[p.category]||0) + 1;
+        var pic = p.image
+          ? '<img src="' + esc(p.image) + '" alt="" loading="lazy" />'
+          : '';
+        return '<a class="card" href="' + esc(p.url) + '" target="_blank" rel="noopener nofollow">'
+          + '<div class="pic">' + pic + '</div>'
+          + '<div class="meat">'
+          + (p.category ? '<div class="cat">' + esc(p.category) + '</div>' : '')
+          + '<div class="nm">' + esc(p.name) + '</div>'
+          + '<div class="pr">' + (p.price > 0 ? money(p.price) : "&mdash;")
+          + (p.inStock === false ? ' <span class="oos">out of stock</span>' : '')
+          + '</div></div></a>';
+      }).join("");
+      gridEl.innerHTML = html;
+      statusEl.innerHTML = "<b>" + rows.length + " products</b>, read from your shop just now. Every card links to your own page.";
+      var pills = ['<span class="pill"><b>' + inStock + '</b> in stock</span>'];
+      Object.keys(cats).sort().forEach(function(c){
+        pills.push('<span class="pill">' + esc(c) + ' <b>' + cats[c] + '</b></span>');
+      });
+      tallyEl.innerHTML = pills.join("");
+      tallyEl.hidden = false;
+    })
+    .catch(function(){
+      statusEl.innerHTML = "<b>We could not read your shop just now.</b> That is our end, not yours. Reload in a moment, or tell us and we will look.";
+    });
+})();
+</script>
+
+</body>
+</html>

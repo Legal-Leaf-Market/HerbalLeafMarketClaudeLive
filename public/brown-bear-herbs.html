@@ -64,6 +64,21 @@
   .note{background:rgba(240,185,60,.07);border:1px solid rgba(240,185,60,.22);border-radius:10px;padding:16px 20px;font-size:.93rem;color:#c9b06a}
   .note strong{color:var(--gold)}
 
+  .status{background:var(--card-solid);border:1px solid var(--line);border-radius:var(--radius);padding:18px 22px;margin-top:16px;font-size:.95rem;color:var(--muted)}
+  .status b{color:var(--ink)}
+  .tally{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .pill{background:rgba(15,24,17,.9);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.8rem;font-weight:500;color:var(--muted)}
+  .pill b{color:var(--ink)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(13.5rem,1fr));gap:14px;margin-top:18px}
+  .card{background:var(--card-solid);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;text-decoration:none;color:inherit;transition:border-color .2s}
+  .card:hover{border-color:var(--terracotta)}
+  .card .pic{aspect-ratio:1;background:#0d1710;overflow:hidden}
+  .card .pic img{width:100%;height:100%;object-fit:cover;display:block}
+  .card .meat{padding:13px 15px 15px;display:flex;flex-direction:column;gap:5px;flex:1}
+  .card .cat{font-size:.62rem;letter-spacing:1.6px;text-transform:uppercase;color:var(--terracotta);font-weight:600}
+  .card .nm{font-size:.94rem;font-weight:500;line-height:1.35}
+  .card .pr{margin-top:auto;padding-top:8px;font-family:var(--display);font-weight:600;font-size:1.08rem;color:var(--ink)}
+  .card .oos{font-size:.72rem;color:var(--muted);font-weight:500}
   footer{border-top:1px solid var(--line);margin-top:58px;padding:28px 0 44px;color:var(--muted);font-size:.86rem;background:rgba(8,14,10,.6)}
   footer p{margin:0 0 10px}
 </style>
@@ -82,7 +97,7 @@
     </svg>
     <div class="brand">Herbal Leaf Market<small>Maker Profile</small></div>
   </a>
-  <nav><a href="#what">What they make</a><a href="#nothing">Nothing in it</a><a href="#shop">The shop</a><a href="#sources">Sources</a></nav>
+  <nav><a href="#shelf">Their shelf</a><a href="#what">What they make</a><a href="#nothing">Nothing in it</a><a href="#shop">The shop</a><a href="#sources">Sources</a></nav>
 </div></header>
 
 <div class="draftbar"><div class="wrap">
@@ -143,6 +158,15 @@
     </div>
   </section>
 
+  <section id="shelf">
+    <h2>Their shelf</h2>
+    <p class="muted">Read live from brownbearherbs.com, so these are their prices and their stock at the moment you loaded this page, not a list typed out once and left to rot. Every card opens their own product page.</p>
+    <div class="status" id="status"><b>Loading their catalogue&hellip;</b></div>
+    <div class="tally" id="tally" hidden></div>
+    <div class="grid" id="grid"></div>
+    <p class="muted" style="margin-top:20px">Their catalogue runs to 160 listings and this is 30 of them, which is a decision worth being open about. Left off: their flower, gem and animal essences, which are a bigger line than everything above put together and are further from what this shelf is for than we can honestly bridge; their trade pricing, which would undercut their own retail listings; and their books, zines, classes, consultations, pipes and pins, which are theirs to sell and not what a herbal comparison shelf is. If any of that is the wrong call it is ours to change, and their say beats ours.</p>
+  </section>
+
   <section id="shop">
     <h2>The shop</h2>
     <p>A bricks and mortar apothecary in Portland, not a brand that exists only as a storefront. They keep shop hours, answer a phone, and make the things they sell.</p>
@@ -160,7 +184,7 @@
     <h2>Sources, and honesty about them</h2>
     <p>Everything above was assembled from what Brown Bear Herbs publishes about itself: their own storefront, their own product categories and their own public listings. None of it came from a phone call, and none of it has been checked with them yet, which is the entire reason this page is a draft in front of them rather than a page in front of shoppers.</p>
     <p>Two things we deliberately left blank rather than guess: how long they have been trading, and anything about who founded it or why. Both belong to them to tell, and an invented origin story is worse than an absent one.</p>
-    <p>Their product listings are not on this page yet either. We have not read their catalogue, so there are no prices, no stock and no cards here. That comes after they finish connecting their shop, and they will see those before anyone else does too.</p>
+    <p>The shelf above is different in kind from the rest of this page. It is not written by us at all: the names, prices, photographs and stock come straight from their own shop and update when their shop does. What IS ours is the decision about which 30 of their 160 listings appear, and that decision is set out above the fold rather than buried, because it is the one editorial judgment on this page that could cost them money.</p>
   </section>
 
 </div>
@@ -172,6 +196,66 @@
   <p><strong>California Proposition 65:</strong> Combustion of plant material produces smoke with chemicals known to the State of California to cause cancer, birth defects, or reproductive harm.</p>
   <p><a href="/">Back to the shop</a> &middot; <a href="/makers">For makers</a> &middot; <a href="/terms.html">Terms</a> &middot; <a href="/privacy.html">Privacy</a></p>
 </div></footer>
+
+<script>
+/* The shelf is fetched, not baked in. A maker page with month-old prices on it
+   is worse than one with no prices: the whole promise of this site is that the
+   number on the card is the number at the maker's checkout.
+
+   Brown Bear Herbs is a live store, so their rows are in the ordinary
+   /api/inventory payload and this just filters to them. That is deliberately
+   NOT the same path as a /deck/ page, which reads /api/deck because its maker
+   is held out of the public payload entirely. */
+(function(){
+  var VENDOR = "Brown Bear Herbs";
+  var statusEl = document.getElementById("status");
+  var gridEl = document.getElementById("grid");
+  var tallyEl = document.getElementById("tally");
+
+  function money(n){ return "$" + (Math.round(n*100)/100).toFixed(2); }
+  function esc(s){
+    return String(s == null ? "" : s)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+  function sorry(){
+    /* Never leave an empty grid sitting there. On a page whose whole job is to
+       show a maker their own shop, a blank shelf reads as "you have nothing",
+       which is the one thing it must never say. */
+    statusEl.innerHTML = "<b>Their catalogue is not loading just now.</b> That is our end rather than theirs. Reload in a moment.";
+  }
+
+  fetch("/api/inventory", { headers:{ Accept:"application/json" } })
+    .then(function(r){ return r.ok ? r.json() : []; })
+    .then(function(all){
+      var rows = (all || []).filter(function(p){ return p && p.vendor === VENDOR; });
+      if (!rows.length) return sorry();
+      rows.sort(function(a,b){
+        return (a.category||"").localeCompare(b.category||"") || (a.name||"").localeCompare(b.name||"");
+      });
+      var inStock = 0, cats = {};
+      gridEl.innerHTML = rows.map(function(p){
+        if (p.inStock !== false) inStock++;
+        if (p.category) cats[p.category] = (cats[p.category]||0) + 1;
+        return '<a class="card" href="' + esc(p.url) + '" target="_blank" rel="noopener nofollow">'
+          + '<div class="pic">' + (p.image ? '<img src="' + esc(p.image) + '" alt="" loading="lazy" />' : '') + '</div>'
+          + '<div class="meat">'
+          + (p.category ? '<div class="cat">' + esc(p.category) + '</div>' : '')
+          + '<div class="nm">' + esc(p.name) + '</div>'
+          + '<div class="pr">' + (p.price > 0 ? money(p.price) : "&mdash;")
+          + (p.inStock === false ? ' <span class="oos">out of stock</span>' : '')
+          + '</div></div></a>';
+      }).join("");
+      statusEl.innerHTML = "<b>" + rows.length + " products</b>, read from brownbearherbs.com just now.";
+      var pills = ['<span class="pill"><b>' + inStock + '</b> in stock</span>'];
+      Object.keys(cats).sort().forEach(function(c){
+        pills.push('<span class="pill">' + esc(c) + ' <b>' + cats[c] + '</b></span>');
+      });
+      tallyEl.innerHTML = pills.join("");
+      tallyEl.hidden = false;
+    })
+    .catch(sorry);
+})();
+</script>
 
 </body>
 </html>
