@@ -61,6 +61,22 @@ const nextConfig = {
           source: "/",
           destination: "/index.html",
         },
+        // A CLEAN URL FOR THE ONE PAGE THAT GETS READ ALOUD. /makers.html is
+        // the file and stays reachable; this is the address that has to survive
+        // a phone call to a shop owner, an Instagram DM and a business card,
+        // where ".html" is four extra syllables and something for the listener
+        // to get wrong. A rewrite rather than a redirect, so both spellings
+        // serve the page and no link already sent to a maker ever breaks.
+        //
+        // Deliberately not `cleanUrls: true`, which would do this site-wide and
+        // 308 every existing .html address to a new one: the nav links carry
+        // ?v=2 cache-busters, sitemap.xml names the .html paths, and the
+        // service worker has its own opinions about what it cached. One page
+        // needs this; the other eight do not.
+        {
+          source: "/makers",
+          destination: "/makers.html",
+        },
       ],
     }
   },
