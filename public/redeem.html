@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Pickup</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="icon" href="/icon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Jost:wght@400;500;600;700&display=swap" />
+<style>
+  /* Deliberately plain and very large. This is read on a phone, one-handed,
+     across a counter, by somebody with a customer waiting. Nothing here is
+     decorative and every control is thumb-sized. */
+  :root{--bg:#0b120d;--ink:#eaf3ec;--muted:#9fb6a6;--line:#1e3024;--card:#111d14;
+    --sage:#4ade80;--sage-dk:#22c55e;--gold:#f0b93c;--terracotta:#e06b42;
+    --display:"Fraunces",Georgia,serif;--sans:"Jost",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  *{box-sizing:border-box} html{background:#0b120d}
+  body{margin:0;font-family:var(--sans);color:var(--ink);line-height:1.55;background:var(--bg);padding:0 18px 60px}
+  .wrap{max-width:520px;margin:0 auto}
+  .top{padding:26px 0 6px;font-size:.68rem;letter-spacing:3px;text-transform:uppercase;color:var(--terracotta);font-weight:700}
+  h1{font-family:var(--display);font-weight:900;font-size:1.9rem;line-height:1.1;margin:0 0 6px}
+  .shop{color:var(--muted);margin:0 0 20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 20px}
+  .who{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:.95rem;margin-bottom:16px}
+  .who dt{color:var(--muted)} .who dd{margin:0;font-weight:600}
+  .line{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid rgba(30,48,36,.7);font-size:1rem}
+  .line:last-of-type{border-bottom:0}
+  .line .q{flex:none;font-weight:700;color:var(--gold);min-width:2.2rem}
+  .line .n{flex:1} .line .n span{display:block;font-size:.82rem;color:var(--muted)}
+  .line .a{flex:none;font-variant-numeric:tabular-nums;color:var(--muted)}
+  .est{display:flex;justify-content:space-between;padding-top:13px;margin-top:6px;border-top:1px solid var(--line);color:var(--muted)}
+  .est b{color:var(--ink);font-family:var(--display);font-weight:900;font-size:1.15rem}
+
+  .ask{margin-top:22px}
+  .ask label{display:block;font-weight:700;font-size:1.05rem;margin-bottom:4px}
+  .ask .hint{color:var(--muted);font-size:.88rem;margin:0 0 12px;line-height:1.5}
+  .money{display:flex;align-items:center;gap:10px}
+  .money span{font-family:var(--display);font-weight:900;font-size:2rem;color:var(--muted)}
+  .money input{flex:1;font-family:var(--display);font-weight:900;font-size:2rem;color:var(--ink);
+    background:rgba(8,14,10,.7);border:2px solid var(--line);border-radius:12px;padding:12px 16px;width:100%;
+    -moz-appearance:textfield}
+  .money input::-webkit-outer-spin-button,.money input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .money input:focus{border-color:var(--sage);outline:0}
+  button.go{display:block;width:100%;margin-top:16px;background:var(--sage);color:#0b120d;border:0;
+    border-radius:12px;padding:19px;font-family:var(--sans);font-weight:700;font-size:1.1rem;cursor:pointer}
+  button.go:hover{background:var(--sage-dk);color:#fff}
+  button.go[disabled]{background:#2a3a2e;color:var(--muted);cursor:not-allowed}
+
+  .done{background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.35);border-radius:12px;padding:24px;text-align:center}
+  .done h2{font-family:var(--display);font-weight:900;font-size:1.5rem;margin:0 0 8px;color:var(--sage)}
+  .done .big{font-family:var(--display);font-weight:900;font-size:2.6rem;margin:10px 0 4px}
+  .done p{color:var(--muted);font-size:.92rem;margin:8px 0 0}
+  .warn{background:rgba(240,185,60,.1);border:1px solid rgba(240,185,60,.35);border-radius:12px;padding:20px;color:#d8bd77}
+  .warn h2{font-family:var(--display);font-weight:900;font-size:1.25rem;margin:0 0 6px;color:var(--gold)}
+  .note{color:var(--muted);font-size:.85rem;line-height:1.55;margin-top:20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="top">Herbal Leaf Market &middot; pickup</p>
+  <div id="app"><p class="shop">Loading&hellip;</p></div>
+</div>
+
+<script>
+(function(){
+  var app = document.getElementById("app");
+  function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  function money(n){ return "$" + (Math.round((Number(n)||0)*100)/100).toFixed(2); }
+
+  var t = new URLSearchParams(location.search).get("t") || "";
+  if (!/^[a-f0-9]{32}$/.test(t)) { return fail("That is not a pickup code.", "Check the address, or ask the customer to show the code again."); }
+
+  function fail(h, p){
+    app.innerHTML = '<div class="warn"><h2>'+esc(h)+'</h2><p>'+esc(p)+'</p></div>';
+  }
+
+  fetch("/api/local-order?t=" + encodeURIComponent(t))
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if (!j || !j.ok || !j.order) return fail("We cannot find that order.", "It may have expired, or the code may be mistyped. Serve them anyway and tell us later, we will take your word for it.");
+      render(j.order);
+    })
+    .catch(function(){ fail("Could not reach us just now.", "That is our end. Serve them anyway and tell us later."); });
+
+  function render(o){
+    if (o.redeemedAt) return alreadyDone(o);
+    app.innerHTML =
+      '<h1>' + esc(o.name || "A customer") + '</h1>'
+      + '<p class="shop">' + esc(o.shopName) + (o.town ? ", " + esc(o.town) : "") + '</p>'
+      + '<div class="card">'
+      + '<dl class="who">'
+      + (o.phone ? '<dt>Phone</dt><dd>' + esc(o.phone) + '</dd>' : '')
+      + (o.when ? '<dt>Coming</dt><dd>' + esc(o.when) + '</dd>' : '')
+      + '<dt>Code</dt><dd>' + esc(o.token.slice(0,6).toUpperCase()) + '</dd>'
+      + '</dl>'
+      + o.items.map(function(i){
+          return '<div class="line"><div class="q">' + i.qty + '&times;</div>'
+            + '<div class="n">' + esc(i.name) + (i.size ? '<span>' + esc(i.size) + '</span>' : '') + '</div>'
+            + '<div class="a">' + money(i.price * i.qty) + '</div></div>';
+        }).join("")
+      + '<div class="est"><span>What our list came to</span><b>' + money(o.listTotal) + '</b></div>'
+      + '</div>'
+      + '<div class="ask">'
+      + '<label for="tot">What did they actually spend?</label>'
+      + '<p class="hint">Your number, not ours. People add things at the counter and things go out of stock, so our estimate is only a starting point. This is what the commission is worked out from.</p>'
+      /* inputmode decimal rather than type=number: on a phone this wants the
+         numeric keypad without the spinner, and without number's habit of
+         silently discarding a half-typed value. */
+      + '<div class="money"><span>$</span><input id="tot" type="text" inputmode="decimal" placeholder="' + (Number(o.listTotal)||0).toFixed(2) + '" autocomplete="off"></div>'
+      + '<button class="go" id="go" type="button">Record it</button>'
+      + '</div>'
+      + '<p class="note">Recording this is what tells us the pickup happened. If you would rather not, close this page: we will take your word for it later and nothing breaks.</p>';
+
+    var go = document.getElementById("go"), inp = document.getElementById("tot");
+    inp.focus();
+    go.addEventListener("click", function(){
+      var v = parseFloat(String(inp.value).replace(/[^0-9.]/g, ""));
+      if (!(v >= 0)) { inp.focus(); go.textContent = "Type the total first"; setTimeout(function(){ go.textContent="Record it"; },1600); return; }
+      go.disabled = true; go.textContent = "Recording...";
+      fetch("/api/local-order", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "redeem", t: t, total: v })
+      }).then(function(r){ return r.json().then(function(j){ return { s: r.status, j: j }; }); })
+        .then(function(res){
+          if (res.s === 409 && res.j && res.j.order) return alreadyDone(res.j.order);
+          if (!res.j || !res.j.ok) throw new Error("failed");
+          done(res.j.order);
+        })
+        .catch(function(){ go.disabled = false; go.textContent = "Did not save. Try once more."; });
+    });
+  }
+
+  function done(o){
+    app.innerHTML = '<div class="done"><h2>Recorded</h2>'
+      + '<div class="big">' + money(o.finalTotal) + '</div>'
+      + '<p>' + esc(o.shopName) + '</p>'
+      + '<p>Commission at 5%: <strong>' + money(o.commission) + '</strong></p>'
+      + '<p>Nothing else to do. Thank you.</p></div>';
+  }
+
+  function alreadyDone(o){
+    app.innerHTML = '<div class="warn"><h2>Already recorded</h2>'
+      + '<p>This pickup was recorded at ' + esc(new Date(o.redeemedAt).toLocaleString()) + ' for ' + money(o.finalTotal) + '.</p>'
+      + '<p>Nothing has been double counted. If that total is wrong, tell us and we will fix it.</p></div>';
+  }
+})();
+</script>
+</body>
+</html>

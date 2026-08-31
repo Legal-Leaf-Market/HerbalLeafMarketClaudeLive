@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>My list</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="icon" href="/icon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Jost:wght@300;400;500;600;700&display=swap" />
+<style>
+  :root{--bg:#0b120d;--ink:#eaf3ec;--muted:#9fb6a6;--line:#1e3024;--card:#111d14;
+    --terracotta:#e06b42;--sage:#4ade80;--sage-dk:#22c55e;--gold:#f0b93c;
+    --display:"Fraunces",Georgia,serif;--sans:"Jost",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  *{box-sizing:border-box} html{background:#0b120d}
+  body{margin:0;font-family:var(--sans);color:var(--ink);line-height:1.62;background:var(--bg);padding-bottom:80px}
+  .wrap{max-width:760px;margin:0 auto;padding:0 22px}
+  a{color:var(--sage)} a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+  header.top{background:rgba(8,14,10,.96);padding:14px 0;border-bottom:2px solid var(--terracotta)}
+  header.top .wrap{display:flex;align-items:center;gap:14px}
+  .brand{font-family:var(--display);font-weight:900;font-size:1.1rem;letter-spacing:.8px;text-transform:uppercase;text-decoration:none;color:var(--ink)}
+  .brand small{display:block;font-family:var(--sans);font-weight:400;font-size:.6rem;letter-spacing:2.5px;color:var(--terracotta);margin-top:-3px}
+  header.top nav{margin-left:auto;font-size:.86rem;font-weight:600}
+  header.top nav a{color:var(--muted);text-decoration:none}
+
+  h1{font-family:var(--display);font-weight:900;font-size:clamp(1.8rem,5vw,2.5rem);margin:34px 0 8px}
+  .sub{color:var(--muted);margin:0 0 8px}
+
+  .trip{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-top:18px}
+  .trip h2{font-family:var(--display);font-weight:900;font-size:1.3rem;margin:0 0 3px}
+  .trip .where{color:var(--muted);font-size:.9rem;margin:0 0 14px}
+  .demo-flag{background:rgba(240,185,60,.1);border:1px solid rgba(240,185,60,.3);color:#d8bd77;
+    border-radius:8px;padding:9px 12px;font-size:.85rem;margin:0 0 14px}
+
+  .line{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(30,48,36,.7)}
+  .line:last-of-type{border-bottom:0}
+  .line .nm{flex:1;font-size:.97rem;line-height:1.35}
+  .line .nm span{display:block;font-size:.8rem;color:var(--muted)}
+  .qty{display:flex;align-items:center;gap:6px;flex:none}
+  .qty button{width:28px;height:28px;border-radius:6px;border:1px solid var(--line);background:rgba(8,14,10,.6);
+    color:var(--ink);font-size:1rem;line-height:1;cursor:pointer}
+  .qty button:hover{border-color:var(--sage);color:var(--sage)}
+  .qty b{min-width:1.6rem;text-align:center;font-variant-numeric:tabular-nums}
+  .line .amt{flex:none;font-weight:600;min-width:4.5rem;text-align:right;font-variant-numeric:tabular-nums}
+
+  .sum{display:flex;justify-content:space-between;padding-top:13px;margin-top:6px;border-top:1px solid var(--line);font-size:1.05rem}
+  .sum b{font-family:var(--display);font-weight:900}
+  .est{color:var(--muted);font-size:.84rem;margin:9px 0 0;line-height:1.5}
+
+  .acts{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}
+  .acts button,.acts a{font-family:var(--sans);font-weight:700;font-size:.87rem;border-radius:8px;
+    padding:11px 16px;cursor:pointer;border:1px solid var(--line);background:rgba(8,14,10,.6);color:var(--ink);text-decoration:none}
+  .acts button.go{background:var(--sage);color:#0b120d;border-color:var(--sage)}
+  .acts button.go:hover{background:var(--sage-dk);color:#fff}
+  .acts button:hover{border-color:var(--sage);color:var(--sage)}
+  .acts button.go:hover{color:#fff}
+
+  .send{margin-top:16px;border-top:1px solid var(--line);padding-top:16px;display:none}
+  .send.on{display:block}
+  .send .f{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:10px}
+  .send input{flex:1;min-width:9rem;font-family:var(--sans);font-size:.92rem;color:var(--ink);
+    background:rgba(8,14,10,.6);border:1px solid var(--line);border-radius:8px;padding:10px 13px}
+  .send input:focus{border-color:var(--sage);outline:0}
+  .send p.why{color:var(--muted);font-size:.84rem;margin:0 0 12px;line-height:1.5}
+
+  .ticket{background:#fdfbf3;color:#111;border-radius:12px;padding:22px;margin-top:16px;text-align:center;display:none}
+  .ticket.on{display:block}
+  .ticket h3{font-family:var(--display);font-weight:900;font-size:1.15rem;margin:0 0 4px;color:#111}
+  .ticket p{color:#555;font-size:.88rem;margin:0 0 14px}
+  .ticket #qr{display:inline-block;background:#fff;padding:12px;border-radius:9px;min-height:40px}
+  .ticket code{display:block;margin-top:12px;font-size:.76rem;color:#666;word-break:break-all}
+  .ticket .oid{font-family:var(--display);font-weight:900;font-size:1.6rem;color:#111;letter-spacing:2px;margin-top:8px}
+
+  .empty{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:44px 24px;text-align:center;color:var(--muted);margin-top:20px}
+  footer{border-top:1px solid var(--line);margin-top:50px;padding:24px 0 40px;color:var(--muted);font-size:.85rem}
+
+  @media print{
+    body{background:#fff;color:#000;padding:0}
+    header.top,.acts,.send,footer,#qr{display:none!important}
+    .trip{border:1px solid #ccc;background:#fff;color:#000;break-inside:avoid}
+    .trip h2,.sum b{color:#000}
+    .line .nm span,.est,.trip .where{color:#444}
+  }
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <a class="brand" href="/">Herbal Leaf Market<small>My list</small></a>
+  <nav><a href="/local">Back to local shops</a></nav>
+</div></header>
+
+<div class="wrap">
+  <h1>My list</h1>
+  <p class="sub">One list per town, because two towns are two trips.</p>
+  <div id="trips"></div>
+</div>
+
+<footer><div class="wrap">
+  <p>Prices are what each shop last confirmed to us. <strong>The shop's own total at the counter is the one that counts.</strong> We never take the order and nothing here touches your card.</p>
+</div></footer>
+
+<script src="/local-shops.js"></script>
+<script src="/js/local.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+(function(){
+  var L = window.HLMLocal;
+  L.localCheck();
+  var tripsEl = document.getElementById("trips");
+
+  function towns(){
+    var seen = {}, out = [];
+    L.shops().forEach(function(s){ if(!seen[s.town]){ seen[s.town]=1; out.push(s.town); } });
+    return out;
+  }
+
+  function paint(){
+    var html = "", any = false;
+    towns().forEach(function(town){
+      var groups = L.grouped(town);
+      if (!groups.length) return;
+      any = true;
+      groups.forEach(function(g){
+        var s = g.shop;
+        html += '<div class="trip" data-town="'+L.esc(town)+'" data-shop="'+L.esc(s.id)+'">'
+          + '<h2>'+L.esc(s.name)+'</h2>'
+          + '<p class="where">'+L.esc(s.address || s.town)+'</p>'
+          + (s.demo ? '<div class="demo-flag"><strong>This is the worked example.</strong> The shop is invented and so are the prices. Everything below is real machinery operating on made-up data.</div>' : '')
+          + g.items.map(function(it){
+              return '<div class="line">'
+                + '<div class="nm">'+L.esc(it.p.name)+(it.p.size?'<span>'+L.esc(it.p.size)+'</span>':'')+'</div>'
+                + '<div class="qty">'
+                + '<button type="button" data-act="dec" data-id="'+L.esc(it.p.id)+'" aria-label="One fewer">&minus;</button>'
+                + '<b>'+it.qty+'</b>'
+                + '<button type="button" data-act="inc" data-id="'+L.esc(it.p.id)+'" aria-label="One more">+</button>'
+                + '</div>'
+                + '<div class="amt">'+L.money(it.line)+'</div></div>';
+            }).join("")
+          + '<div class="sum"><span>Estimate</span><b>'+L.money(g.total)+'</b></div>'
+          + '<p class="est">An estimate from the prices this shop last confirmed'
+          + (s.asOf ? ' on '+L.esc(s.asOf) : '')
+          + '. They will total it properly at the counter.</p>'
+          + '<div class="acts">'
+          + '<button type="button" class="go" data-act="send">Send this to the shop</button>'
+          + '<button type="button" data-act="copy">Copy as text</button>'
+          + '<button type="button" data-act="print">Print</button>'
+          + '<button type="button" data-act="clear">Clear</button>'
+          + '</div>'
+          + '<div class="send"><p class="why">So they know who is collecting and roughly when. Nothing else, and none of it goes anywhere but the shop.</p>'
+          + '<div class="f"><input type="text" data-f="name" placeholder="Your name" autocomplete="name">'
+          + '<input type="tel" data-f="phone" placeholder="Phone" autocomplete="tel">'
+          + '<input type="text" data-f="when" placeholder="When you will come by"></div>'
+          + '<div class="acts"><button type="button" class="go" data-act="confirm">Create the pickup code</button></div></div>'
+          + '<div class="ticket"><h3>Show this at the counter</h3>'
+          + '<p>They scan it when you collect. That is the whole thing.</p>'
+          + '<div id="qr"></div><div class="oid"></div><code></code></div>'
+          + '</div>';
+      });
+    });
+    tripsEl.innerHTML = any ? html
+      : '<div class="empty">Nothing saved yet. <a href="/local">Find a shop near you</a> and add something to a list.</div>';
+  }
+
+  tripsEl.addEventListener("click", function(e){
+    var b = e.target.closest && e.target.closest("button[data-act]");
+    if (!b) return;
+    var trip = b.closest(".trip");
+    var town = trip.getAttribute("data-town"), shop = trip.getAttribute("data-shop");
+    var act = b.getAttribute("data-act");
+
+    if (act === "inc" || act === "dec") {
+      var id = b.getAttribute("data-id");
+      var cur = 0;
+      L.read(town).forEach(function(r){ if(r.shop===shop && r.id===id) cur = r.qty; });
+      L.setQty(town, shop, id, cur + (act === "inc" ? 1 : -1));
+      paint();
+      return;
+    }
+    if (act === "clear") { L.clear(town); paint(); return; }
+    if (act === "print") { window.print(); return; }
+    if (act === "copy") {
+      var txt = L.asText(town);
+      try { navigator.clipboard.writeText(txt).then(function(){ b.textContent="Copied"; setTimeout(function(){b.textContent="Copy as text";},1500); }, function(){}); } catch(err){}
+      return;
+    }
+    if (act === "send") { trip.querySelector(".send").classList.add("on"); b.style.display="none"; return; }
+    if (act === "confirm") { confirmSend(trip, town, shop, b); return; }
+  });
+
+  function confirmSend(trip, town, shopId, btn){
+    var g = L.grouped(town).filter(function(x){ return x.shop.id === shopId; })[0];
+    if (!g) return;
+    var f = function(k){ var el = trip.querySelector('[data-f="'+k+'"]'); return el ? el.value : ""; };
+    btn.disabled = true; btn.textContent = "Creating...";
+    fetch("/api/local-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "create",
+        shopId: shopId, shopName: g.shop.name, town: town,
+        name: f("name"), phone: f("phone"), when: f("when"),
+        items: g.items.map(function(it){
+          return { name: it.p.name, qty: it.qty, price: it.p.price, size: it.p.size || "" };
+        })
+      })
+    }).then(function(r){ return r.json(); }).then(function(j){
+      if (!j || !j.ok || !j.token) throw new Error("no token");
+      showTicket(trip, j.token);
+      trip.querySelector(".send").classList.remove("on");
+    }).catch(function(){
+      btn.disabled = false;
+      btn.textContent = "Could not create the code. Try again.";
+    });
+  }
+
+  function showTicket(trip, token){
+    var t = trip.querySelector(".ticket");
+    var url = window.location.origin + "/redeem?t=" + token;
+    t.classList.add("on");
+    t.querySelector(".oid").textContent = token.slice(0, 6).toUpperCase();
+    /* The URL is printed under the code on purpose. If the QR library did not
+       load, or the shop's camera will not focus, somebody can still type it,
+       and a pickup that needs a working CDN to happen is not a pickup. */
+    t.querySelector("code").textContent = url;
+    var box = t.querySelector("#qr");
+    box.innerHTML = "";
+    try {
+      if (window.QRCode) new QRCode(box, { text: url, width: 168, height: 168, correctLevel: QRCode.CorrectLevel.M });
+    } catch (e) {}
+    t.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  window.addEventListener("hlm:list", paint);
+  paint();
+})();
+</script>
+
+</body>
+</html>

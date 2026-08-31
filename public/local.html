@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Herbal Leaf Local: shops you can drive to</title>
+<meta name="description" content="Independent shops with a counter rather than a checkout. Build a list, take it in, pay them." />
+<!-- NOT PUBLISHED YET. Only one shop on this page is listed and it is a
+     worked example, invented so the list and the pickup code can be tried.
+     The eight real shops here are directory entries with no prices, because
+     none of them has been asked yet. The robots tag comes off on the day a
+     real shop agrees to be listed. -->
+<meta name="robots" content="noindex, nofollow" />
+<link rel="icon" href="/icon.svg" type="image/svg+xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Jost:wght@300;400;500;600;700&display=swap" />
+<style>
+  :root{--bg:#0b120d;--ink:#eaf3ec;--muted:#9fb6a6;--line:#1e3024;--card:#111d14;--card2:#16241a;
+    --terracotta:#e06b42;--terracotta-dk:#c8512a;--sage:#4ade80;--sage-dk:#22c55e;--gold:#f0b93c;
+    --display:"Fraunces",Georgia,serif;--sans:"Jost",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--radius:12px}
+  *{box-sizing:border-box} html{background:#0b120d}
+  body{margin:0;font-family:var(--sans);color:var(--ink);line-height:1.62;letter-spacing:.2px;
+    background:radial-gradient(circle at 12% 6%,rgba(224,107,66,.07),transparent 42%),radial-gradient(circle at 88% 12%,rgba(74,222,128,.05),transparent 44%),var(--bg);
+    padding-bottom:96px}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 22px}
+  a{color:var(--sage)} a:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+
+  header.top{background:rgba(8,14,10,.96);padding:14px 0;border-bottom:2px solid var(--terracotta);position:sticky;top:0;z-index:20}
+  header.top .wrap{display:flex;align-items:center;gap:14px}
+  .brand{font-family:var(--display);font-weight:900;font-size:1.1rem;letter-spacing:.8px;text-transform:uppercase;text-decoration:none;color:var(--ink)}
+  .brand small{display:block;font-family:var(--sans);font-weight:400;font-size:.6rem;letter-spacing:2.5px;color:var(--terracotta);margin-top:-3px}
+  header.top nav{margin-left:auto;display:flex;gap:14px;font-size:.86rem;font-weight:600}
+  header.top nav a{color:var(--muted);text-decoration:none} header.top nav a:hover{color:var(--sage)}
+
+  .draftbar{background:rgba(240,185,60,.10);border-bottom:1px solid rgba(240,185,60,.3);color:#d8bd77;font-size:.88rem;padding:11px 0}
+  .draftbar strong{color:var(--gold)}
+
+  .hero{padding:42px 0 10px}
+  .eyebrow{display:inline-block;font-weight:600;text-transform:uppercase;font-size:.72rem;letter-spacing:5px;color:var(--terracotta);margin-bottom:12px}
+  h1{font-family:var(--display);font-weight:900;font-size:clamp(2rem,6vw,3rem);line-height:1.06;margin:0 0 14px}
+  .lede{font-size:1.08rem;color:var(--muted);max-width:44rem;margin:0}
+
+  .pick{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:26px 0 0}
+  .pick label{font-size:.85rem;color:var(--muted);font-weight:600}
+  .pick select{font-family:var(--sans);font-size:.92rem;color:var(--ink);background:var(--card);
+    border:1.5px solid var(--line);border-radius:9px;padding:10px 14px;cursor:pointer}
+  .pick select:hover{border-color:var(--sage)}
+  .pick .n{font-size:.85rem;color:var(--muted)}
+
+  h2.town{font-family:var(--display);font-weight:900;font-size:1.6rem;margin:38px 0 4px;
+    display:flex;align-items:center;gap:14px}
+  h2.town::after{content:"";flex:1;height:2px;background:linear-gradient(90deg,rgba(224,107,66,.5),transparent)}
+
+  .shop{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin-top:14px}
+  .shop.listed{border-color:rgba(74,222,128,.4)}
+  .shop.demo{border-color:rgba(240,185,60,.45);background:var(--card2)}
+  .shophead{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+  .shop h3{font-family:var(--display);font-weight:600;font-size:1.2rem;margin:0}
+  .tag{font-size:.62rem;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+  .tag.on{background:rgba(74,222,128,.14);color:var(--sage)}
+  .tag.off{background:rgba(159,182,166,.12);color:var(--muted)}
+  .tag.demo{background:rgba(240,185,60,.16);color:var(--gold)}
+  .shop .carries{color:var(--muted);font-size:.95rem;margin:8px 0 0}
+  .meta{display:flex;flex-wrap:wrap;gap:5px 18px;margin-top:10px;font-size:.85rem;color:var(--muted)}
+  .meta b{color:var(--ink);font-weight:500}
+  .askbox{background:rgba(224,107,66,.08);border:1px solid rgba(224,107,66,.24);border-radius:9px;
+    padding:11px 14px;margin-top:13px;font-size:.88rem;color:#e8b39c}
+
+  .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:11px;margin-top:16px}
+  .item{background:rgba(8,14,10,.5);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:5px}
+  .item .cat{font-size:.6rem;letter-spacing:1.4px;text-transform:uppercase;color:var(--terracotta);font-weight:700}
+  .item .nm{font-size:.97rem;font-weight:500;line-height:1.3}
+  .item .sz{font-size:.8rem;color:var(--muted)}
+  .item .note{font-size:.85rem;color:#cfe0c6;font-style:italic;line-height:1.45;border-left:2px solid rgba(74,222,128,.35);padding-left:9px;margin-top:2px}
+  .item .row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:9px}
+  .item .pr{font-family:var(--display);font-weight:600;font-size:1.1rem}
+  .item button{background:var(--sage);color:#0b120d;border:0;border-radius:7px;padding:8px 14px;
+    font-family:var(--sans);font-weight:700;font-size:.83rem;cursor:pointer}
+  .item button:hover{background:var(--sage-dk);color:#fff}
+  .asof{font-size:.8rem;color:var(--muted);margin-top:14px;font-style:italic}
+
+  #listFab{position:fixed;right:18px;bottom:18px;z-index:60;display:none;align-items:center;gap:9px;
+    background:var(--terracotta);color:#fff;border:0;border-radius:999px;padding:14px 22px;
+    font-family:var(--sans);font-weight:700;font-size:.92rem;text-decoration:none;box-shadow:0 8px 26px rgba(200,80,40,.45)}
+  #listFab.on{display:flex}
+  #listFab b{background:rgba(255,255,255,.25);border-radius:999px;padding:1px 9px}
+
+  footer{border-top:1px solid var(--line);margin-top:56px;padding:26px 0 44px;color:var(--muted);font-size:.86rem;background:rgba(8,14,10,.6)}
+  footer p{margin:0 0 10px}
+  @media(max-width:640px){.wrap{padding:0 16px}.items{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <a class="brand" href="/">Herbal Leaf Market<small>Local</small></a>
+  <nav><a href="/">The shop</a><a href="/list">My list</a><a href="/makers">For makers</a></nav>
+</div></header>
+
+<div class="draftbar"><div class="wrap">
+  <strong>Not published yet.</strong> One shop below is a worked example so the list and the pickup code can be tried. The real shops are directory entries only: no prices, because none of them has been asked yet.
+</div></div>
+
+<div class="wrap">
+
+  <div class="hero">
+    <span class="eyebrow" id="stateEyebrow">Indiana</span>
+    <h1>Shops you can drive to</h1>
+    <p class="lede">Independent shops with a counter instead of a checkout. Build a list at home, take it in, and pay them at the till. We never take the order and nothing here touches your card.</p>
+    <div class="pick">
+      <label for="stateSel">Your state</label>
+      <select id="stateSel"></select>
+      <span class="n" id="stateNote"></span>
+    </div>
+  </div>
+
+  <div id="towns"></div>
+
+</div>
+
+<a id="listFab" href="/list">My list <b>0</b></a>
+
+<footer><div class="wrap">
+  <p><strong>Herbal Leaf Market is a price comparison and discovery service.</strong> We hold no stock, sell nothing, and never take an order. Prices shown are what each shop last confirmed to us on the date beside their name, and the shop's own total at the counter is the one that counts.</p>
+  <p>Shop names, addresses and hours are public information. Prices appear only for shops that have agreed to be listed.</p>
+  <p><a href="/">Back to the shop</a> &middot; <a href="/list">My list</a> &middot; <a href="/makers">For makers</a></p>
+</div></footer>
+
+<script src="/local-shops.js"></script>
+<script src="/js/local.js"></script>
+<script>
+(function(){
+  var L = window.HLMLocal;
+  L.localCheck();
+
+  var sel = document.getElementById("stateSel");
+  var note = document.getElementById("stateNote");
+  var eyebrow = document.getElementById("stateEyebrow");
+  var townsEl = document.getElementById("towns");
+  var fab = document.getElementById("listFab");
+
+  var states = L.states();
+  sel.innerHTML = states.map(function(s){
+    return '<option value="'+s.code+'">'+L.esc(s.name)+'</option>';
+  }).join("");
+
+  function fabCount(){
+    /* The badge counts every town's list, because the shopper's question is
+       "have I got anything saved" and not "have I got anything saved in the
+       town I am currently looking at". The list page is where they are
+       separated. */
+    var n = 0;
+    L.shops().forEach(function(s){ n += 0; });
+    var seen = {};
+    L.shops().forEach(function(s){
+      if (seen[s.town]) return;
+      seen[s.town] = 1;
+      n += L.count(s.town);
+    });
+    fab.innerHTML = 'My list <b>'+n+'</b>';
+    fab.classList.toggle("on", n > 0);
+  }
+
+  function paint(){
+    var code = sel.value;
+    var st = states.filter(function(s){ return s.code === code; })[0];
+    eyebrow.textContent = st ? st.name : "";
+    note.textContent = st
+      ? (st.shops + " shop" + (st.shops===1?"":"s") + ", " + st.listed + " listed so far")
+      : "";
+
+    townsEl.innerHTML = L.towns(code).map(function(t){
+      var shops = t.shops.map(function(s){
+        var items = L.productsFor(s.id);
+        var tag = s.demo
+          ? '<span class="tag demo">Worked example</span>'
+          : (s.listed ? '<span class="tag on">Listed</span>' : '<span class="tag off">Not listed yet</span>');
+        var meta = [];
+        if (s.address) meta.push("<span>"+L.esc(s.address)+"</span>");
+        if (s.phone)   meta.push("<span><b>"+L.esc(s.phone)+"</b></span>");
+        if (s.hours)   meta.push("<span>"+L.esc(s.hours)+"</span>");
+        if (s.web)     meta.push('<span><a href="https://'+L.esc(s.web)+'" target="_blank" rel="noopener nofollow">'+L.esc(s.web)+"</a></span>");
+
+        var body = "";
+        if (items.length) {
+          body = '<div class="items">' + items.map(function(p){
+            return '<div class="item">'
+              + (p.cat ? '<div class="cat">'+L.esc(p.cat)+'</div>' : '')
+              + '<div class="nm">'+L.esc(p.name)+'</div>'
+              + (p.size ? '<div class="sz">'+L.esc(p.size)+'</div>' : '')
+              + (p.note ? '<div class="note">'+L.esc(p.note)+'</div>' : '')
+              + '<div class="row"><span class="pr">'+L.money(p.price)+'</span>'
+              + '<button type="button" data-shop="'+L.esc(s.id)+'" data-town="'+L.esc(s.town)+'" data-id="'+L.esc(p.id)+'">Add to list</button></div>'
+              + '</div>';
+          }).join("") + '</div>'
+          + (s.asOf ? '<p class="asof">Prices last confirmed with the shop on '+L.esc(s.asOf)+'.</p>' : '');
+        } else {
+          body = '<div class="askbox"><strong>No prices here yet.</strong> '
+            + 'We have not asked '+L.esc(s.name)+' whether they want to be listed, so this is their address and nothing more. '
+            + 'If you own this shop and want a shelf here, it is free and takes about fifteen minutes: <a href="/makers">start here</a>.</div>';
+        }
+
+        return '<div class="shop '+(s.demo?'demo':(s.listed?'listed':''))+'">'
+          + '<div class="shophead"><h3>'+L.esc(s.name)+'</h3>'+tag+'</div>'
+          + (s.carries ? '<p class="carries">'+L.esc(s.carries)+'</p>' : '')
+          + (meta.length ? '<div class="meta">'+meta.join("")+'</div>' : '')
+          + body + '</div>';
+      }).join("");
+      return '<h2 class="town">'+L.esc(t.town)+'</h2>' + shops;
+    }).join("");
+  }
+
+  /* Delegated, because paint() replaces the whole tree on every state change
+     and anything bound to a button would die with it. */
+  townsEl.addEventListener("click", function(e){
+    var b = e.target.closest && e.target.closest("button[data-id]");
+    if (!b) return;
+    L.add(b.getAttribute("data-town"), b.getAttribute("data-shop"), b.getAttribute("data-id"), 1);
+    b.textContent = "Added";
+    setTimeout(function(){ b.textContent = "Add to list"; }, 1200);
+    fabCount();
+  });
+
+  sel.addEventListener("change", paint);
+  window.addEventListener("hlm:list", fabCount);
+  paint();
+  fabCount();
+})();
+</script>
+
+</body>
+</html>
