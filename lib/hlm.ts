@@ -497,7 +497,18 @@ function storeShape(s: ShopifyStore): string {
  * catalogue: it can only ever answer for a store that is deliberately off the
  * shelf. */
 export async function deckInventory(vendor: string): Promise<any[]> {
-  const store = SHOPIFY_STORES.find((s) => s.deck && s.vendor === vendor)
+  /* Deck stores AND pending ones. Both are deliberately absent from the public
+   * shelf, which is the property that makes them safe to serve here, and a
+   * pending store is the case CLAUDE.md section 5 has always needed a tool for:
+   * "run vendor_probe.py against the domain, read the product_type histogram it
+   * prints, write the include/categoryMap from what is actually there". That
+   * script needs a machine that can reach the vendor, and the box doing the
+   * editing frequently cannot. This endpoint runs on one that can.
+   *
+   * Reading a pending feed does not un-pend it. buildInventory still skips
+   * them, so nothing here can put an unexamined catalogue on the shelf; it only
+   * lets somebody LOOK at one before writing the include list. */
+  const store = SHOPIFY_STORES.find((s) => (s.deck || s.pending) && s.vendor === vendor)
   if (!store) return []
   const key = "hlm_deck_v1_" + store.prefix + "_" + storeShape(store)
   const cached = await kvGet(key)
