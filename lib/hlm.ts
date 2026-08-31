@@ -281,6 +281,25 @@ const SHOPIFY_STORES: ShopifyStore[] = [
      * include mechanism exists to keep off a shelf. */
     include: ["Bulk"],
   },
+  /* ---- PROBE CANDIDATES, NOT REGISTRATIONS ----
+   *
+   * Three shops inside a thirty minute drive of Columbus that have a website
+   * at all. Nobody has contacted any of them and none has agreed to anything;
+   * these rows exist so their feeds can be READ, which is the question that
+   * decides whether a shop is an afternoon of work or a month of it.
+   *
+   * `pending` is the right flag for the operational reason rather than the
+   * usual one: buildInventory skips it, so nothing here can reach a shopper,
+   * and /api/deck can read it, so somebody can look. Neither an affiliate
+   * registration nor a shipping entry nor a checkout route exists for any of
+   * them, and none should until there is a conversation.
+   *
+   * probeStore() in ADMIN_RPC does the same job without a code change and is
+   * the right tool once the list gets past a handful. These three predate it
+   * by about ten minutes. */
+  { vendor: "Redhead Apothecary", domain: "https://redheadapothecary.com", prefix: "rha", pending: true },
+  { vendor: "Brown County Rock Shop", domain: "https://www.browncountyrockshop.com", prefix: "bcrs", pending: true },
+  { vendor: "The Herbal Alternative", domain: "https://www.theherbalalternatives.com", prefix: "tha", pending: true },
 ]
 /* =========================================================================
  * impact.com programmes
@@ -1371,6 +1390,110 @@ const RPC: Record<string, Handler> = {
   hlmSaveMatrixOverrides: (a) => saveMatrixOverrides(a[0], a[1]),
 }
 
+/* =========================================================================
+ * probeStore: is this shop wireable, and what does it sell?
+ *
+ * The question that decides whether a town is an afternoon or a month. Before
+ * this, finding out whether a shop runs Shopify meant adding a row to
+ * SHOPIFY_STORES, deploying, and reading /api/deck, which is three minutes of
+ * work and a commit for a question with a yes or no answer. At one shop that
+ * is merely annoying. At every independent wellness shop in Indiana it is the
+ * whole project.
+ *
+ * So this takes a bare domain and answers directly: does products.json exist,
+ * how many products are behind it, what product_types are actually in use, and
+ * a handful of real titles to eyeball. That is exactly the histogram CLAUDE.md
+ * section 5 says to write an include list from, for a shop that is not in the
+ * registry and may never be.
+ *
+ * ADMIN ONLY, and not merely for tidiness. An open endpoint that fetches an
+ * arbitrary URL on request is a server-side request forgery hole: point it at
+ * an internal address and it will happily report what it finds. The password
+ * is the fix, and the https-only check below is the second lock, refusing
+ * anything that is not a public http(s) origin.
+ *
+ * A NO IS AS USEFUL AS A YES here, which is why the failure paths are typed
+ * rather than thrown. "Not Shopify" tells you the shop needs the order-guide
+ * route instead, and that is a real answer worth recording. */
+export async function probeStore(domain: string): Promise<any> {
+  let origin = String(domain || "").trim()
+  if (!origin) return { ok: false, error: "no domain" }
+  if (!/^https?:\/\//i.test(origin)) origin = "https://" + origin
+  let u: URL
+  try {
+    u = new URL(origin)
+  } catch {
+    return { ok: false, error: "unparseable domain" }
+  }
+  if (u.protocol !== "https:" && u.protocol !== "http:") {
+    return { ok: false, error: "not an http(s) origin" }
+  }
+  /* Refuse anything that is obviously not a public host. Not a complete SSRF
+   * defence on its own, which is what the admin password is for, but it stops
+   * the careless cases outright. */
+  const h = u.hostname.toLowerCase()
+  if (h === "localhost" || h.endsWith(".local") || h.endsWith(".internal") ||
+      /^\d+\.\d+\.\d+\.\d+$/.test(h) || !h.includes(".")) {
+    return { ok: false, error: "not a public host" }
+  }
+
+  const base = u.origin
+  let products: any[] = []
+  let status = 0
+  try {
+    const r = await fetch(base + "/products.json?limit=250", {
+      headers: { Accept: "application/json", "User-Agent": "Mozilla/5.0" },
+    })
+    status = r.status
+    if (r.status === 200) {
+      const data: any = await r.json()
+      products = (data && data.products) || []
+    }
+  } catch (e) {
+    return { ok: true, domain: base, shopify: false, reason: "fetch failed", detail: String(e) }
+  }
+
+  if (status !== 200) {
+    return { ok: true, domain: base, shopify: false, reason: "products.json returned " + status }
+  }
+  if (!Array.isArray(products)) {
+    return { ok: true, domain: base, shopify: false, reason: "products.json was not a product list" }
+  }
+
+  const types: Record<string, number> = {}
+  const vendors: Record<string, number> = {}
+  let inStock = 0
+  for (const p of products) {
+    const t = String((p && p.product_type) || "").trim() || "(none)"
+    types[t] = (types[t] || 0) + 1
+    const v = String((p && p.vendor) || "").trim() || "(none)"
+    vendors[v] = (vendors[v] || 0) + 1
+    if ((p.variants || []).some((x: any) => x && x.available !== false)) inStock++
+  }
+  const sorted = Object.keys(types).sort((a, b) => types[b] - types[a])
+
+  return {
+    ok: true,
+    domain: base,
+    shopify: true,
+    /* 250 is the page cap, so a full page means there is more behind it and
+     * this count is a floor rather than a total. Said out loud, because a
+     * silent 250 reads as "this shop has 250 products" and nobody questions
+     * it. */
+    products: products.length,
+    truncated: products.length >= 250,
+    inStock,
+    productTypes: sorted.map((t) => ({ type: t, n: types[t] })),
+    vendors: Object.keys(vendors).sort((a, b) => vendors[b] - vendors[a]).slice(0, 8)
+      .map((v) => ({ vendor: v, n: vendors[v] })),
+    sample: products.slice(0, 12).map((p: any) => ({
+      title: p.title,
+      type: String(p.product_type || "").trim() || "(none)",
+      price: (p.variants && p.variants[0] && p.variants[0].price) || "",
+    })),
+  }
+}
+
 /* Owner-only: first argument MUST be the admin password. The wrapper keeps the
  * handlers themselves untouched (the cron routes call sendWeeklyDigest and
  * sendWeeklyClickReport directly, without a password, guarded by CRON_SECRET). */
@@ -1381,6 +1504,8 @@ const ADMIN_RPC: Record<string, Handler> = {
   hlmSendWeeklyDigest: () => sendWeeklyDigest(),
   hlmSendWeeklyClickReport: () => sendWeeklyClickReport(),
   hlmGardenSelfTest: () => gardenSelfTest(),
+  /* probeStore(ADMIN_PW, "example.com") */
+  probeStore: (a) => probeStore(String(a[1] ?? "")),
 }
 
 export async function dispatchRpc(fn: string, args: any[]): Promise<any> {
