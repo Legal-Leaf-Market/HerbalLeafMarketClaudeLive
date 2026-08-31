@@ -7,10 +7,16 @@ export const maxDuration = 60
 
 /* The feed behind a maker's private "on deck" page.
  *
- * ?vendor=<exact vendor name>. Answers ONLY for stores marked `deck` in
- * SHOPIFY_STORES, so it cannot be used as a second door onto the live
- * catalogue: everything it can return is, by definition, a maker who is
+ * ?vendor=<exact vendor name>. Answers ONLY for stores marked `deck` or
+ * `pending` in SHOPIFY_STORES, so it cannot be used as a second door onto the
+ * live catalogue: everything it can return is, by definition, a maker who is
  * deliberately absent from the public shelf.
+ *
+ * The `pending` half is the probe CLAUDE.md section 5 asks for. Writing an
+ * include list means reading the vendor's real product_type histogram first,
+ * and the machine doing the editing often cannot reach the vendor at all.
+ * Reading a pending feed here does not un-pend it: buildInventory still skips
+ * them, so this can only let somebody look, never publish.
  *
  * The vendor name is not a secret and this endpoint is not the lock. The lock
  * is the unguessable /deck/<token> address the page lives at, and the fact that
