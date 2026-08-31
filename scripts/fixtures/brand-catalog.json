@@ -1,0 +1,97 @@
+[
+ {
+  "id": "wsh-fire-cider",
+  "vendor": "Wooden Spoon Herbs",
+  "name": "Fire Cider",
+  "category": "Tincture",
+  "price": 34.0,
+  "url": "https://woodenspoonherbs.com/products/fire-cider",
+  "inStock": true,
+  "blurb": "",
+  "variants": [
+   {
+    "id": "",
+    "title": "",
+    "price": 34.0,
+    "available": true,
+    "barcode": "012345678901"
+   }
+  ]
+ },
+ {
+  "id": "wsh-brain-bloom",
+  "vendor": "Wooden Spoon Herbs",
+  "name": "Brain Bloom",
+  "category": "Capsule",
+  "price": 34.0,
+  "url": "https://woodenspoonherbs.com/products/brain-bloom",
+  "inStock": true,
+  "blurb": "",
+  "variants": [
+   {
+    "id": "",
+    "title": "",
+    "price": 34.0,
+    "available": true,
+    "barcode": "0012345678902"
+   }
+  ]
+ },
+ {
+  "id": "wsh-tranquility-tonic",
+  "vendor": "Wooden Spoon Herbs",
+  "name": "Tranquility Tonic",
+  "category": "Tincture",
+  "price": 29.0,
+  "url": "https://woodenspoonherbs.com/products/tranquility-tonic",
+  "inStock": true,
+  "blurb": "",
+  "variants": [
+   {
+    "id": "",
+    "title": "",
+    "price": 29.0,
+    "available": true,
+    "barcode": ""
+   }
+  ]
+ },
+ {
+  "id": "wsh-magic-magnesium-tart-cherry",
+  "vendor": "Wooden Spoon Herbs",
+  "name": "Magic Magnesium - Tart Cherry",
+  "category": "Powder",
+  "price": 26.0,
+  "url": "https://woodenspoonherbs.com/products/magic-magnesium-tart-cherry",
+  "inStock": true,
+  "blurb": "",
+  "variants": [
+   {
+    "id": "",
+    "title": "",
+    "price": 26.0,
+    "available": true,
+    "barcode": ""
+   }
+  ]
+ },
+ {
+  "id": "wsh-oregano-daily-wellness",
+  "vendor": "Wooden Spoon Herbs",
+  "name": "Oregano Daily Wellness",
+  "category": "Capsule",
+  "price": 34.0,
+  "url": "https://woodenspoonherbs.com/products/oregano-daily-wellness",
+  "inStock": true,
+  "blurb": "",
+  "variants": [
+   {
+    "id": "",
+    "title": "",
+    "price": 34.0,
+    "available": true,
+    "barcode": ""
+   }
+  ]
+ }
+]
