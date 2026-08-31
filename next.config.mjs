@@ -77,6 +77,25 @@ const nextConfig = {
           source: "/makers",
           destination: "/makers.html",
         },
+        {
+          /* Same reasoning as /makers: these are addresses somebody says out
+             loud in a shop doorway, and ".html" is four extra syllables and
+             one more thing for the listener to get wrong. Rewrites rather than
+             redirects, so both spellings keep working. */
+          source: "/local",
+          destination: "/local.html",
+        },
+        {
+          source: "/list",
+          destination: "/list.html",
+        },
+        {
+          /* The one a shop actually scans. It carries ?t= and a rewrite passes
+             the query through untouched, which a redirect would also do but
+             with a round trip nobody standing at a counter should pay for. */
+          source: "/redeem",
+          destination: "/redeem.html",
+        },
       ],
     }
   },

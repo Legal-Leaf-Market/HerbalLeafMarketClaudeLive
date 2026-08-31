@@ -23,6 +23,14 @@
 User-agent: *
 Disallow: /api/
 Disallow: /deck/
+# /local, /list and /redeem are the local pickup tier, and it is not published:
+# the only shop with prices on it is a worked example, and the real shops are
+# directory entries nobody has agreed to yet. /redeem in particular carries a
+# one-time order token in its query and must never be indexed even after the
+# rest of this goes live. The pages carry noindex; this is the second lock.
+Disallow: /local
+Disallow: /list
+Disallow: /redeem
 Disallow: /admin.html
 Disallow: /facts.html
 Disallow: /stories.html
