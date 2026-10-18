@@ -1,0 +1,3813 @@
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Herbal Leaf Market: follower welcome and weekly pick</title>
+<style>
+  :root {
+    --bg: #ffffff; --panel: #f6f7f9; --panel-2: #eceef1; --border: #d8dce2;
+    --text: #16181d; --muted: #5f6672; --accent: #2f6df6; --accent-text: #ffffff;
+    --warn-bg: #fff6e5; --warn-border: #e8c88a; --warn-text: #6b4a04;
+    --badge-bg: #e3e6eb; --badge-text: #4a5160;
+    --flag-bg: #ffe9e3; --flag-text: #8a3416; --flag-border: #f0bfae;
+    --due-bg: #e2f2e6; --due-text: #1f5b31; --due-border: #b3d9be;
+    --code-bg: #eceef1;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #101216; --panel: #171a20; --panel-2: #1e222a; --border: #2b313b;
+      --text: #e7eaef; --muted: #98a1af; --accent: #4d82ff; --accent-text: #0b0d11;
+      --warn-bg: #2a2110; --warn-border: #5c4818; --warn-text: #f0d79a;
+      --badge-bg: #262b34; --badge-text: #aab3c0;
+      --flag-bg: #33190f; --flag-text: #f6b79c; --flag-border: #5e2e1c;
+      --due-bg: #12291a; --due-text: #9fd8b0; --due-border: #2b5638;
+      --code-bg: #1e222a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #101216; --panel: #171a20; --panel-2: #1e222a; --border: #2b313b;
+    --text: #e7eaef; --muted: #98a1af; --accent: #4d82ff; --accent-text: #0b0d11;
+    --warn-bg: #2a2110; --warn-border: #5c4818; --warn-text: #f0d79a;
+    --badge-bg: #262b34; --badge-text: #aab3c0;
+    --flag-bg: #33190f; --flag-text: #f6b79c; --flag-border: #5e2e1c;
+    --due-bg: #12291a; --due-text: #9fd8b0; --due-border: #2b5638;
+    --code-bg: #1e222a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px 16px 64px; background: var(--bg); color: var(--text);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); font-size: 14px; margin: 0 0 20px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; }
+  .warn { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn-text); }
+  .warn strong { display: block; margin-bottom: 4px; }
+  .warn ul { margin: 8px 0 0; padding-left: 20px; }
+  .row-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  button {
+    font: inherit; font-weight: 600; cursor: pointer; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--panel-2); color: var(--text);
+    padding: 8px 12px;
+  }
+  button.primary { background: var(--accent); color: var(--accent-text); border-color: transparent; }
+  button:hover { filter: brightness(1.06); }
+  button:disabled { opacity: 0.45; cursor: default; filter: none; }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .seg button { border: none; border-radius: 0; background: var(--panel-2); }
+  .seg button + button { border-left: 1px solid var(--border); }
+  .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); }
+  label.inline { color: var(--muted); font-size: 14px; display: inline-flex; align-items: center; gap: 6px; }
+  input[type="number"] { font: inherit; width: 64px; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+  input[type="text"], input[type="url"] { font: inherit; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+  textarea { width: 100%; min-height: 64px; font: inherit; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); resize: vertical; }
+  #status, #cadence { margin-top: 10px; font-size: 14px; color: var(--muted); min-height: 20px; }
+  ol { list-style: none; margin: 0; padding: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  li { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid var(--border); background: var(--panel); }
+  li:last-child { border-bottom: none; }
+  li.done { background: var(--panel-2); }
+  li.muted-row { opacity: 0.5; }
+  .idx { width: 28px; color: var(--muted); font-size: 13px; text-align: right; flex: none; }
+  .who { flex: 1 1 auto; min-width: 0; }
+  .handle { font-weight: 600; word-break: break-all; }
+  .name { color: var(--muted); font-size: 13px; word-break: break-word; }
+  .badges { display: flex; gap: 6px; flex: none; flex-wrap: wrap; justify-content: flex-end; }
+  .badge { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 3px 7px; border-radius: 5px; background: var(--badge-bg); color: var(--badge-text); }
+  .badge.flag { background: var(--flag-bg); color: var(--flag-text); border: 1px solid var(--flag-border); }
+  .badge.due { background: var(--due-bg); color: var(--due-text); border: 1px solid var(--due-border); }
+  .badge.state { cursor: pointer; }
+  .acts { display: flex; gap: 2px; flex: none; align-items: center; }
+  .link-btn { background: none; border: none; color: var(--accent); padding: 4px 6px; font-weight: 500; text-decoration: underline; cursor: pointer; font: inherit; }
+  h2 { font-size: 15px; margin: 0 0 8px; }
+  .foot { color: var(--muted); font-size: 13px; margin-top: 18px; }
+  .field { margin-bottom: 10px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .field .hint { display: block; font-size: 13px; font-weight: 400; color: var(--muted); margin: 0 0 5px; }
+  .field input { width: 100%; }
+  .preview {
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 12px; font-size: 14px; white-space: pre-wrap; word-break: break-word;
+  }
+  /* The save state. It is deliberately loud when there is something unsaved:
+     the whole point of this rewrite is that a message you typed and did not
+     save is a message that does not exist. */
+  .savestate { margin-top: 10px; font-size: 14px; color: var(--muted); min-height: 20px; }
+  .savestate.unsaved { color: var(--flag-text); font-weight: 600; }
+  /* The unattended settings, boxed off because they are the one part of this page
+     that acts without a person present. */
+  .autobox { margin-top: 14px; border: 1px solid var(--border); border-radius: 9px; padding: 12px 14px; background: var(--bg); }
+  .autobox h3 { font-size: 14px; margin: 0 0 8px; }
+  select { font: inherit; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); max-width: 100%; }
+  /* The run transcript. One line per account, so a finished loop can be read
+     back rather than taken on trust. */
+  .looplog {
+    margin-top: 10px; max-height: 220px; overflow: auto; border: 1px solid var(--border);
+    border-radius: 8px; background: var(--code-bg); padding: 8px 10px;
+    font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .looplog div { word-break: break-word; }
+  .looplog .good { color: var(--due-text); }
+  .looplog .bad { color: var(--flag-text); }
+  .looplog .meh { color: var(--muted); }
+  .bmk {
+    display: inline-block; padding: 9px 16px; border-radius: 8px; font-weight: 700;
+    background: var(--accent); color: var(--accent-text); text-decoration: none;
+    border: 1px solid transparent; cursor: grab;
+  }
+  kbd {
+    font: 600 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: var(--code-bg); border: 1px solid var(--border); border-bottom-width: 2px;
+    border-radius: 5px; padding: 3px 6px; white-space: nowrap;
+  }
+  .keys { margin: 10px 0 0; padding: 0; list-style: none; font-size: 14px; }
+  .keys li { display: block; background: none; border: none; padding: 3px 0; }
+  details { margin-top: 12px; }
+  summary { cursor: pointer; font-size: 14px; color: var(--muted); font-weight: 600; }
+  details pre {
+    max-height: 320px; overflow: auto; background: var(--code-bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px; font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+    margin-top: 10px;
+  }
+  .drop {
+    border: 2px dashed var(--border); border-radius: 10px; padding: 22px 16px; text-align: center;
+    color: var(--muted); font-size: 14px; cursor: pointer; background: var(--bg);
+  }
+  .drop.over { border-color: var(--accent); color: var(--text); }
+  .drop b { color: var(--text); }
+  #shotProgress { margin-top: 10px; font-size: 14px; color: var(--muted); min-height: 20px; }
+  /* The review table. Nothing imports without passing through here: OCR is
+     confident and wrong often enough that an unreviewed add would DM a stranger. */
+  .review { margin-top: 12px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .review .rrow { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-bottom: 1px solid var(--border); background: var(--panel); }
+  .review .rrow:last-child { border-bottom: none; }
+  .review .rrow.dupe { opacity: 0.5; }
+  .review input[type="text"] { flex: 1 1 180px; min-width: 0; font: 600 14px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; padding: 5px 8px; }
+  .review .rname { flex: 1 1 140px; min-width: 0; color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .review .rsrc { flex: none; color: var(--muted); font-size: 12px; }
+  @media (max-width: 640px) {
+    li { flex-wrap: wrap; }
+    .who { flex-basis: 100%; order: 2; }
+    .badges, .acts { order: 3; }
+    .review .rrow { flex-wrap: wrap; }
+    .review .rname { flex-basis: 100%; }
+  }
+</style>
+
+<div class="wrap">
+  <h1>Follower outreach for herbal_leaf_market</h1>
+  <p class="sub">
+    Two touches, not a blast. The welcome is three short messages when someone new follows.
+    The newsletter is one message about a week later carrying that week's pick. Anyone who
+    says no is muted here and never appears in a batch again.
+  </p>
+
+  <div class="card warn">
+    <strong>Worth keeping in mind</strong>
+    <ul>
+      <li>Firing the same message at dozens of accounts in one sitting is the pattern Instagram's spam heuristics watch for, and the usual result is a temporary messaging block on the account. There is no ceiling in this tool any more: the cap accepts 0 for none, and a run of 100+ is yours to make. Past roughly fifty DMs in a day from one account Instagram's own rate limiting is what you are up against rather than anything here, and the pacing numbers in section 6 are what buy room against it.</li>
+      <li>Scripted sending is against Instagram's terms, which prohibit automated interaction. Your account carries that risk.</li>
+      <li>Hemp is a US offer, and a follower list collects accounts that are nowhere near the US. Someone who cannot legally order is a mute, not a send.</li>
+      <li>One "no thanks" is the whole conversation. Mute them the moment it arrives, before the next batch.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>1. Load your followers</h2>
+    <p class="sub" style="margin: 0 0 12px">
+      The list starts empty and stays in this page's own storage, so a reload does not cost
+      you the import. Screenshot your followers list on your phone, scrolling a screen at a
+      time with a row of overlap so nothing falls in a gap, then drop the images here. Reading
+      happens on your machine: the images are never uploaded anywhere.
+    </p>
+    <div class="row-controls" style="margin-bottom: 10px">
+      <label class="inline">your own handle, never imported
+        <input type="text" id="selfHandle" style="width: 200px">
+      </label>
+    </div>
+    <div class="drop" id="drop">
+      <b>Drop follower screenshots here</b>, or click to pick them, or paste one with
+      <kbd>Ctrl</kbd> + <kbd>V</kbd>.
+      <input type="file" id="shotInput" accept="image/*" multiple hidden>
+    </div>
+    <div id="shotProgress"></div>
+
+    <details>
+      <summary>Or paste handles as text</summary>
+      <p class="sub" style="margin: 10px 0 6px">
+        One per line, with or without the @. Anything after a comma, a dash or a tab on the
+        same line is kept as the display name. Ending a handle with … or ... marks it as
+        truncated, so it links to Instagram search rather than a profile URL that would 404.
+      </p>
+      <textarea id="pasteBox" placeholder="somegrower, Some Grower&#10;another.shop - Another Shop&#10;herbal_curious…"></textarea>
+      <div class="row-controls" style="margin-top: 8px">
+        <button id="pasteParse">Read these</button>
+      </div>
+    </details>
+
+    <div id="reviewWrap" hidden>
+      <p class="sub" style="margin: 14px 0 0">
+        Check each one before adding. A handle read wrong does not fail, it opens a DM with
+        somebody unrelated, so anything the reader was unsure of starts unticked. Edit any
+        cell to fix it.
+      </p>
+      <div class="row-controls" style="margin-top: 10px">
+        <button data-review="all">Tick all</button>
+        <button data-review="none">Tick none</button>
+        <button data-review="sure">Only the confident ones</button>
+      </div>
+      <div class="review" id="review"></div>
+      <div class="row-controls" style="margin-top: 10px">
+        <button class="primary" id="reviewAdd">Add ticked to the list</button>
+        <button id="reviewCancel">Discard this read</button>
+      </div>
+    </div>
+
+    <div class="row-controls" style="margin-top: 12px">
+      <button id="rosterPreload">Load the preloaded list</button>
+      <button id="rosterExport">Export the list as JSON</button>
+      <button id="rosterClear">Clear the whole list</button>
+    </div>
+    <div class="sub" id="rosterCount" style="margin-top: 10px"></div>
+  </div>
+
+  <div class="card">
+    <h2>2. Campaign</h2>
+    <div class="row-controls">
+      <span class="seg">
+        <button id="campIntro" aria-pressed="true">Welcome, 3 messages</button>
+        <button id="campNews" aria-pressed="false">Newsletter, 1 message</button>
+      </span>
+      <label class="inline">follow up after <input type="number" id="gapDays" value="7" min="1" max="90"> days</label>
+    </div>
+    <div class="row-controls" style="margin-top: 10px">
+      <button class="primary" id="selDue">Select who is due</button>
+      <button data-select="none">Select none</button>
+      <button data-select="clean">Only exact handles</button>
+      <label class="inline">cap at <input type="number" id="capN" value="12" min="1" max="999"> per session</label>
+    </div>
+    <div id="cadence"></div>
+  </div>
+
+  <div class="card">
+    <h2>3. Open the tabs</h2>
+    <p class="sub" style="margin: 0 0 10px">
+      Chrome allows exactly one new tab per click, so this walks the list one at a time:
+      click "Open next tab" or press <kbd>O</kbd>. Allow pop-ups for this page once
+      (see below) and "Open batch" gives you the whole cap in one click.
+    </p>
+    <p class="sub" style="margin: 0 0 10px">
+      With the loop on (section 6) neither of these buttons opens a tab per person.
+      They only decide the order and who is in the batch: the loop hands the whole
+      list to ONE Instagram tab, which stays on the messages page and drafts each
+      person in turn. Nothing navigates, so there is one pop-up for the whole run
+      and no permission to grant.
+    </p>
+    <p class="sub" style="margin: 0 0 10px">
+      With the loop off they do what they say: a tab each, either their profile
+      (where the sender clicks Message) or the DM composer (where it searches for
+      the handle and takes an exact match or nothing).
+    </p>
+    <div class="row-controls">
+      <button class="primary" id="openProfiles">Queue profile tabs</button>
+      <button id="openDms">Queue DM tabs</button>
+      <button id="clearQueue" disabled>Clear queue</button>
+    </div>
+    <div class="row-controls" style="margin-top: 8px">
+      <button id="openNext" disabled>Open next tab</button>
+      <button id="openBatch" disabled>Open batch of</button>
+      <label class="inline"><input type="number" id="batchSize" value="10" min="1" max="999"> <span id="batchUnit">tabs</span></label>
+      <button id="loopStop" hidden>Stop the loop</button>
+    </div>
+    <div id="status">Nothing queued yet.</div>
+    <div id="loopLog" class="looplog" hidden></div>
+    <details>
+      <summary>How to get the whole batch per click instead of one</summary>
+      <p class="sub" style="margin: 10px 0 0">
+        Click "Open batch" once. Chrome opens one tab, blocks the rest, and puts a
+        blocked-pop-ups icon at the right hand end of the address bar. Click that icon,
+        allow pop-ups and redirects for this page, then click "Open batch" again. The
+        blocked ones were never lost, they are still queued. If Chrome will not keep that
+        setting for a local file, the one-at-a-time path needs no setting at all.
+      </p>
+    </details>
+    <p class="sub" style="margin: 10px 0 0">
+      Opening someone's tab stamps them as contacted for the current campaign, because
+      that is the only signal this page gets. If you open a tab and do not actually send,
+      click the state chip on their row to clear it.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>4. The three welcome messages</h2>
+    <p class="sub" style="margin: 0 0 12px">
+      What is in these boxes when the page first loads is a SAMPLE, nothing more. It is
+      written once, in one place, and every word of it is meant to be rewritten. Nothing
+      is baked into the sender: the bookmarklet in section 6 is built from whatever is
+      saved here, so the wording you keep is the wording that goes out.
+      <strong>Editing a box changes nothing until you press Save.</strong>
+    </p>
+    <div class="field">
+      <label for="w0">Message 1</label>
+      <span class="hint">Short and warm. Who you are, that the site is new, and a reason to look.</span>
+      <textarea id="w0"></textarea>
+    </div>
+    <div class="field">
+      <label for="w1">Message 2</label>
+      <span class="hint">
+        Just the link, on its own, so Instagram renders the site card under it rather than
+        burying it in a sentence.
+      </span>
+      <textarea id="w1" style="min-height: 48px"></textarea>
+    </div>
+    <div class="field">
+      <label for="w2">Message 3</label>
+      <span class="hint">
+        The sign off. A line break inside a box is sent as a line break, not as a second
+        message, so "Best," and your name arrive together.
+      </span>
+      <textarea id="w2" style="min-height: 56px"></textarea>
+    </div>
+    <div class="row-controls" style="margin: 14px 0 4px">
+      <label class="inline">Pause between messages <input type="number" id="gapMs" min="0" max="20000" step="100"> ms</label>
+    </div>
+    <div class="row-controls" style="margin-top: 10px">
+      <button class="primary" id="msgSave">Save these messages</button>
+      <button id="msgReset">Restore the sample wording</button>
+    </div>
+    <div class="savestate" id="msgState"></div>
+  </div>
+
+  <div class="card">
+    <h2>5. This week's pick, and the newsletter</h2>
+    <p class="sub" style="margin: 0 0 12px">
+      One product, rotated each week, from herballeafmarket.com. Use the product's own
+      share URL: that route emits the product's Open Graph tags, so Instagram renders a
+      real product card with the photo, name and price instead of the generic site card
+      every other URL on the site produces. The name and price fields below are only for
+      your own reference here, since the card carries them. UTM tags get added so this
+      traffic lands in its own campaign rather than vanishing into direct.
+    </p>
+    <div class="field">
+      <label for="pickName">Product name, exactly as the site has it</label>
+      <input type="text" id="pickName" placeholder="e.g. Blue Dream THCa Flower, 1oz">
+    </div>
+    <div class="row-controls" style="gap: 12px; align-items: flex-start">
+      <div class="field" style="flex: 0 0 140px">
+        <label for="pickPrice">Price</label>
+        <input type="text" id="pickPrice" placeholder="$44">
+      </div>
+      <div class="field" style="flex: 1 1 320px">
+        <label for="pickUrl">Product page URL</label>
+        <input type="url" id="pickUrl" placeholder="https://herballeafmarket.com/product/...">
+      </div>
+    </div>
+    <div class="field">
+      <label for="pickWeek">Campaign tag for this week</label>
+      <input type="text" id="pickWeek" placeholder="2026-w33" style="max-width: 200px">
+    </div>
+    <div class="field">
+      <label for="newsBox">The newsletter message</label>
+      <span class="hint">
+        Editable like everything else. <code>{link}</code> is where the tagged product URL
+        goes, and it goes last so Instagram attaches the preview card to it. Keep the
+        opt-out line: one person asking to be left alone is the whole conversation.
+      </span>
+      <textarea id="newsBox"></textarea>
+    </div>
+    <div id="pickWarn" class="sub" style="margin: 0 0 10px"></div>
+    <label class="inline" style="display:block;margin-bottom:6px;font-weight:600;color:var(--text)">What that produces</label>
+    <div class="preview" id="newsPreview"></div>
+    <div class="row-controls" style="margin-top: 12px">
+      <button class="primary" id="pickSave">Save this pick</button>
+    </div>
+    <div class="savestate" id="pickState"></div>
+  </div>
+
+  <div class="card">
+    <h2>6. Install the sender</h2>
+    <div class="row-controls">
+      <a class="bmk" id="bmk" href="#" title="Drag me to your bookmarks bar">Herbal Leaf sender</a>
+      <button id="copyBmk">Copy bookmarklet code</button>
+      <button id="dlUser">Download as userscript</button>
+    </div>
+    <div class="savestate" id="installState"></div>
+
+    <div class="autobox">
+      <h3>What a queued tab does on its own</h3>
+      <p class="sub" style="margin: 0 0 10px">
+        A bookmarklet cannot launch itself, and no page can inject script into
+        another site's tab: that is a browser boundary, not a missing feature. So
+        anything past "arm it with one click" needs the userscript, which the
+        browser runs on every matching page by itself.
+      </p>
+      <p class="sub" style="margin: 0 0 10px">
+        With the send mode chosen, "Run the loop over N" in section 3 opens one
+        Instagram tab, hands it the list of handles, and that tab does the rest:
+        draft, send, draft the next, without ever leaving the messages page. This
+        page keeps the transcript and the contact history as each one is confirmed.
+      </p>
+      <div class="field">
+        <label for="autoRun">When a queued tab arms</label>
+        <select id="autoRun">
+          <option value="off">Do nothing, wait for a keypress</option>
+          <option value="dialog">Open the message dialog, then wait</option>
+          <option value="send">Open the dialog and send the welcome</option>
+        </select>
+      </div>
+      <div class="field" style="margin-bottom: 6px">
+        <label class="inline" style="display: inline-flex; align-items: center; gap: 7px; font-weight: 600; color: var(--text)">
+          <input type="checkbox" id="autoClose" style="width: auto; margin: 0">
+          close the Instagram tab when the whole loop finishes
+        </label>
+        <span class="hint" style="margin-top: 4px">
+          The loop uses ONE Instagram tab for the whole run and never navigates it,
+          so there is exactly one pop-up and no permission to grant. Untick this to
+          be left on the last thread when it finishes, which is useful for checking
+          that the messages really went.
+        </span>
+      </div>
+      <div class="row-controls" style="gap: 14px">
+        <label class="inline">settle <input type="number" id="autoSettle" min="0" max="120"> s after each page loads</label>
+        <label class="inline">count down <input type="number" id="autoCountdown" min="0" max="120"> s first</label>
+        <label class="inline">leave <input type="number" id="autoBetween" min="0" max="3600"> s between tabs</label>
+        <label class="inline">stop after <input type="number" id="autoCap" min="0" max="9999"> per sitting, 0 for no cap</label>
+      </div>
+      <p class="sub" id="autoWarn" style="margin: 10px 0 0"></p>
+      <div class="row-controls" style="margin-top: 12px">
+        <button class="primary" id="autoSave">Save these settings</button>
+      </div>
+      <div class="savestate" id="autoState"></div>
+    </div>
+
+    <p class="sub" style="margin: 14px 0 0">
+      Both carry the SAVED messages and the saved pick, so save first and then re-drag or
+      re-download. Each build is stamped with a revision number, and a newer revision from
+      this page replaces whatever the browser was holding, which is what makes a change here
+      actually reach the tab. On a DM tab, click the bookmark once: a panel appears top right
+      and the hotkeys go live for that tab.
+    </p>
+    <ul class="keys">
+      <li><kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>W</kbd> sends the three welcome messages, opening the dialog first if it is not open yet.</li>
+      <li><kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd> only opens the message dialog, and sends nothing.</li>
+      <li><kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>N</kbd> sends the one newsletter message.</li>
+      <li><kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>1</kbd> / <kbd>2</kbd> / <kbd>3</kbd> sends a single welcome message.</li>
+      <li><kbd>Esc</kbd> cancels a run in progress, and otherwise hides the panel. The panel also grows a "Run the list" button when this page hands it one.</li>
+      <li><kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>I</kbd> still works as an alias for the welcome run.</li>
+    </ul>
+    <p class="sub" style="margin: 12px 0 0">
+      On a profile, opening the dialog means clicking that profile's own Message button, so
+      the thread can only be with the account whose page it is. On a DM tab it means
+      searching for the handle and taking an exact match or nothing. Either way you never
+      have to open the dialog by hand.
+    </p>
+    <p class="sub" style="margin: 12px 0 0">
+      The bookmarklet needs one click per tab, and that is a browser rule rather than a
+      choice: a <code>javascript:</code> URL cannot be opened by a script and no page can
+      inject into another site's tab. The userscript, in Violentmonkey or Tampermonkey, is
+      run by the browser on every matching page, which is why it is the one that can do the
+      whole loop unattended.
+    </p>
+    <p class="sub" style="margin: 12px 0 0">
+      The panel has its own edit box with its own Save, for a one-off tweak on the machine
+      you are sitting at. That save is real and survives reloads and other tabs, and this
+      page overrides it only when you save a new revision here.
+    </p>
+    <details>
+      <summary>What it does, in readable source</summary>
+      <pre id="srcView"></pre>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>7. Muted, and never messaged again</h2>
+    <p class="sub" style="margin: 0 0 10px">
+      Anyone who asks to be left alone goes here. Muted accounts are excluded from every
+      selection and every batch, in both campaigns, permanently. Paste handles one per
+      line or comma separated, with or without the @.
+    </p>
+    <textarea id="muteBox" placeholder="somehandle&#10;another.handle"></textarea>
+    <div class="row-controls" style="margin-top: 8px">
+      <button id="muteAdd">Mute these</button>
+      <button id="ledgerReset">Clear all contact history</button>
+    </div>
+    <div class="sub" id="muteCount" style="margin-top: 10px"></div>
+  </div>
+
+  <ol id="list"></ol>
+
+  <p class="foot" id="foot"></p>
+</div>
+
+<script type="text/plain" id="sender-source">
+(function () {
+  'use strict';
+
+  /* The Herbal Leaf Market sender, injected into an instagram.com tab.
+     NOT ONE WORD OF MESSAGE TEXT IS WRITTEN IN THIS FILE. The only place the
+     wording lives is section 4 of the sender page; the page substitutes whatever
+     you saved there into the payload slot just below. If that
+     substitution ever failed, the panel would say so and refuse to send rather
+     than fall back to something hardcoded here, because a hardcoded fallback is
+     how a stranger gets last month's wording.
+
+     Keys are namespaced hlmSender.* on purpose. The Legal Leaf sender's stored
+     messages sit on this same instagram.com origin, and two sites sharing one
+     key is two sites overwriting each other's messages. */
+
+  var MSG_KEY = 'hlmSender.messages.v1';
+  var SENT_KEY = 'hlmSender.sent.v1';
+  var HANDLE_KEY = 'hlmSender.handle';
+  var BAKED = __PAYLOAD_JSON__;
+  var GAP_MS = __GAP_MS__;
+  var AUTO = __AUTO_ARM__;
+
+  /* Which surface this tab is on. A DM page and a profile page are the two the
+     panel can do something with, and they are handled differently: on a DM page
+     the recipient has to be searched for, on a profile the recipient is whose
+     page it is.
+
+     AUTO is what tells the two builds apart. The userscript arms itself, so it
+     has to keep off the feed and the explore pages on its own. A bookmarklet
+     click is deliberate, so it always arms, wherever you are. */
+  var NOT_PROFILE = [
+    'direct', 'explore', 'reels', 'reel', 'p', 'stories', 'accounts', 'settings',
+    'about', 'legal', 'developer', 'directory', 'challenge', 'oauth', 'emails',
+    'session', 'archive', 'create', 'tv', 'igtv', 'web', 'api', 'graphql', 'ajax',
+    'your_activity', 'lite', 'download', 'privacy', 'terms', 'help'
+  ];
+  function pathBits() { return location.pathname.split('/').filter(Boolean); }
+  function onDirect() { return pathBits()[0] === 'direct'; }
+  function onProfile() {
+    var b = pathBits();
+    return b.length === 1 && /^[A-Za-z0-9._]+$/.test(b[0]) &&
+      NOT_PROFILE.indexOf(b[0].toLowerCase()) < 0;
+  }
+  function profileHandle() { return onProfile() ? pathBits()[0] : ''; }
+
+  if (window.__hlmSender) { window.__hlmSender.show(); return; }
+  if (AUTO && !onDirect() && !onProfile()) return;
+
+  /* ---------- the messages, and which copy wins ---------- */
+
+  function shape(o, rev) {
+    var w = (o && Array.isArray(o.welcome)) ? o.welcome : [];
+    return {
+      welcome: [0, 1, 2].map(function (i) { return typeof w[i] === 'string' ? w[i] : ''; }),
+      newsletter: (o && typeof o.newsletter === 'string') ? o.newsletter : '',
+      rev: rev
+    };
+  }
+
+  /* The unattended settings ride along with the build rather than being stored
+     per browser, because they decide whether a tab sends on its own and that is
+     not something a stale local copy should get to answer. */
+  var AUTO_RUN = (BAKED && typeof BAKED.autoRun === 'string') ? BAKED.autoRun : 'off';
+  /* No floors on any of these three. They were there to stop a fast run, and a
+     fast run is now a choice the page makes rather than one this file overrules.
+     0 is meaningful for each: no countdown, no gap between accounts, no settle. */
+  var COUNTDOWN_MS = Math.max(0, Number(BAKED && BAKED.countdownMs) || 0);
+  var BETWEEN_MS = Math.max(0, Number(BAKED && BAKED.betweenTabsMs) || 0);
+  var SETTLE_MS = Math.max(0, Number(BAKED && BAKED.settleMs) || 0);
+
+  /* 0 IS NO CAP, and it is the default when nothing is baked in. Every read of
+     this goes through CAPPED rather than comparing against the number, because
+     `n >= 0` is true of every send and a cap of nothing would otherwise stop the
+     run before the first one. */
+  var SITTING_CAP = Math.max(0, Number(BAKED && BAKED.capPerSitting) || 0);
+  var CAPPED = SITTING_CAP > 0;
+  var HOME_ORIGIN = (BAKED && typeof BAKED.homeOrigin === 'string') ? BAKED.homeOrigin : '';
+
+  /* Reporting back to the sender page is what lets the loop continue: the page
+     opened this tab, so window.opener is set (the launcher omits 'noopener'
+     deliberately) and postMessage crosses the origin boundary where nothing else
+     does. The payload is a verb and a handle, nothing more.
+
+     A page served from file:// has origin "null", which postMessage will not take
+     as a target, so that one case falls back to '*'. The opener is a page the
+     user opened themselves and the content is two short strings, so that is a
+     fair trade for the loop working from a local file. */
+  function reportHome(kind, handle, why) {
+    try {
+      if (!window.opener || window.opener.closed) return;
+      var target = (HOME_ORIGIN && HOME_ORIGIN !== 'null') ? HOME_ORIGIN : '*';
+      window.opener.postMessage({
+        app: 'hlm-sender', kind: kind, handle: handle || '', why: why || ''
+      }, target);
+    } catch (e) {}
+  }
+
+  function bakedMsgs() {
+    return shape(BAKED, Number(BAKED && BAKED.rev) || 0);
+  }
+
+  function storedMsgs() {
+    try {
+      var s = JSON.parse(localStorage.getItem(MSG_KEY));
+      if (s && Array.isArray(s.welcome)) return shape(s, Number(s.rev) || 0);
+    } catch (e) {}
+    return null;
+  }
+
+  /* The page is the system of record. An edit made in this panel survives
+     reloads and every other instagram.com tab, but the moment the page saves a
+     NEWER revision the baked copy wins. Without that rule, changing the wording
+     on the page and re-dragging the bookmarklet would keep sending the old
+     wording forever, which is exactly the failure this replaced. */
+  var msgs, fromPage;
+  (function () {
+    var b = bakedMsgs();
+    var s = storedMsgs();
+    if (!s || b.rev > s.rev) { msgs = b; fromPage = true; }
+    else { msgs = s; fromPage = false; }
+  })();
+
+  function persist(next) {
+    msgs = next;
+    try { localStorage.setItem(MSG_KEY, JSON.stringify(msgs)); return true; }
+    catch (e) { return false; }
+  }
+
+  /* Keyed by HANDLE rather than by the thread's URL.
+     The list runner never navigates, so every thread it opens shares one pathname,
+     and the path-keyed record below would call the second person a duplicate of
+     the first. That failed exactly that way in testing: one send, then every
+     remaining account reported "already sent on this thread". The handle is the
+     only stable identity on this route. */
+  var SENTBY_KEY = 'hlmSender.sentby.v1';
+
+  function sentFor(handle) {
+    try {
+      var m = JSON.parse(localStorage.getItem(SENTBY_KEY)) || {};
+      return m[String(handle).toLowerCase()] || null;
+    } catch (e) { return null; }
+  }
+  function markSentFor(handle, kind) {
+    if (!handle) return;
+    try {
+      var m = JSON.parse(localStorage.getItem(SENTBY_KEY)) || {};
+      var k = String(handle).toLowerCase();
+      m[k] = (m[k] && typeof m[k] === 'object') ? m[k] : {};
+      m[k][kind] = Date.now();
+      localStorage.setItem(SENTBY_KEY, JSON.stringify(m));
+    } catch (e) {}
+  }
+
+  function sentHere() {
+    try { return (JSON.parse(localStorage.getItem(SENT_KEY)) || {})[location.pathname] || null; }
+    catch (e) { return null; }
+  }
+  function markSentHere(kind) {
+    try {
+      var s = JSON.parse(localStorage.getItem(SENT_KEY)) || {};
+      var at = s[location.pathname];
+      s[location.pathname] = (at && typeof at === 'object') ? at : {};
+      s[location.pathname][kind] = 1;
+      localStorage.setItem(SENT_KEY, JSON.stringify(s));
+    } catch (e) {}
+  }
+
+  /* ---------- finding and driving Instagram's message box ---------- */
+
+  function visible(el) { return !!(el && el.offsetParent !== null); }
+
+  /* The composer is the last visible editable on the page. Selectors run from
+     most specific to least so a markup change degrades instead of breaking. */
+  function findComposer() {
+    var sels = [
+      'div[role="textbox"][contenteditable="true"]',
+      'div[contenteditable="true"]',
+      'textarea'
+    ];
+    for (var i = 0; i < sels.length; i++) {
+      var els = document.querySelectorAll(sels[i]);
+      for (var j = els.length - 1; j >= 0; j--) {
+        if (visible(els[j])) return els[j];
+      }
+    }
+    return null;
+  }
+
+  function readText(el) {
+    if (!el) return '';
+    return el.tagName === 'TEXTAREA' ? el.value : (el.innerText || el.textContent || '');
+  }
+
+  function caretToEnd(el) {
+    var sel = window.getSelection();
+    var range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  /* Instagram's composer keeps its own model and renders that model into the
+     contenteditable, so writing to the DOM proves nothing: the text can sit on
+     screen while the model stays empty, and Enter then posts a blank message.
+     Measured in Chrome: document.execCommand('insertText') fires only 'input',
+     never 'beforeinput', while real typing fires both. An editor driven off
+     beforeinput therefore ignores execCommand completely.
+
+     Hence the cascade below. It leads with the two routes that go through the
+     editor's own model (paste, then beforeinput), confirms each attempt before
+     trying the next, and reports whether the model really took the text. */
+
+  function pasteInto(el, text) {
+    try {
+      var dt = new DataTransfer();
+      dt.setData('text/plain', text);
+      el.dispatchEvent(new ClipboardEvent('paste', {
+        clipboardData: dt, bubbles: true, cancelable: true
+      }));
+      return true;
+    } catch (e) { return false; }
+  }
+
+  /* A sign-off is "Best," then a line break then a name, and that is ONE
+     message. So a newline has to arrive as a line break and never as Enter,
+     which would post the half-written message and send the name on its own.
+     A paste carries its own newlines. beforeinput cannot: insertText with a
+     newline in the data is not a thing, so the text is fed a line at a time
+     with an explicit insertLineBreak between the lines. */
+  function beforeInputInto(el, text) {
+    var lines = String(text).split(/\r?\n/);
+    var took = false;
+    for (var i = 0; i < lines.length; i++) {
+      if (i > 0) {
+        var br = new InputEvent('beforeinput', {
+          inputType: 'insertLineBreak', bubbles: true, cancelable: true
+        });
+        /* An uncancelled synthetic event performs no default action, so bailing
+           out here leaves the composer exactly as it was. */
+        if (el.dispatchEvent(br) !== false) return took;
+        took = true;
+      }
+      if (!lines[i]) continue;
+      var ev = new InputEvent('beforeinput', {
+        inputType: 'insertText', data: lines[i], bubbles: true, cancelable: true
+      });
+      /* dispatchEvent returns false when a listener called preventDefault, which
+         is how an editor says it has taken the text into its own model. */
+      if (el.dispatchEvent(ev) !== false) return took;
+      took = true;
+    }
+    return took;
+  }
+
+  function changedFrom(el, before) {
+    return function () { return readText(el) !== before; };
+  }
+
+  /* Resolves true when the text reached the editor's model, false when it got
+     no further than the DOM. */
+  async function insertText(el, text) {
+    el.focus();
+    if (el.tagName === 'TEXTAREA') {
+      var setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
+      setter.call(el, readText(el) + text);
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      return true;
+    }
+    caretToEnd(el);
+    var before = readText(el);
+
+    if (pasteInto(el, text)) {
+      try { await waitFor(changedFrom(el, before), 400); return true; } catch (e) {}
+    }
+    if (beforeInputInto(el, text)) {
+      try { await waitFor(changedFrom(el, before), 400); return true; } catch (e) {}
+    }
+    /* Last resort, and it reports false whatever happens, so the caller only
+       presses on when a live Send control agrees the model holds text. */
+    var ok = false;
+    try { ok = document.execCommand('insertText', false, text); } catch (e) {}
+    if (ok) {
+      try { await waitFor(changedFrom(el, before), 400); } catch (e) {}
+    }
+    return false;
+  }
+
+  function pressEnter(el) {
+    var o = { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true };
+    el.dispatchEvent(new KeyboardEvent('keydown', o));
+    el.dispatchEvent(new KeyboardEvent('keypress', o));
+    el.dispatchEvent(new KeyboardEvent('keyup', o));
+  }
+
+  /* A live Send control is a model-derived signal: Instagram only enables it once
+     its own model holds text.
+
+     Looked for three ways, because the two views spell it differently. The
+     new-message view has a control whose text reads "Send"; the thread view you
+     land in AFTER the first message often has an icon instead, labelled rather
+     than worded. Matching only on text found the first one and not the second,
+     which is a good way to send one message out of three. */
+  function sendControl() {
+    function live(n) {
+      if (!n || !visible(n)) return null;
+      var off = n.disabled === true || n.getAttribute('aria-disabled') === 'true';
+      return off ? null : n;
+    }
+
+    var nodes = document.querySelectorAll('div[role="button"], span[role="button"], button');
+    for (var i = nodes.length - 1; i >= 0; i--) {
+      if ((nodes[i].innerText || '').trim().toLowerCase() === 'send') {
+        var hit = live(nodes[i]);
+        if (hit) return hit;
+      }
+    }
+    for (var j = nodes.length - 1; j >= 0; j--) {
+      var lab = (nodes[j].getAttribute('aria-label') || '').trim().toLowerCase();
+      if (lab === 'send' || lab === 'send message') {
+        var hit2 = live(nodes[j]);
+        if (hit2) return hit2;
+      }
+    }
+    /* An svg carrying the label, the same shape as the pencil. */
+    var svgs = document.querySelectorAll('svg[aria-label="Send"], svg[aria-label="Send message"]');
+    for (var k = svgs.length - 1; k >= 0; k--) {
+      if (!visible(svgs[k])) continue;
+      var owner = clickableAncestor(svgs[k]);
+      var hit3 = live(owner !== svgs[k] ? owner : svgs[k].parentElement);
+      if (hit3) return hit3;
+    }
+    return null;
+  }
+
+  function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+  /* A refusal that is about ONE account rather than about the run. The loop moves
+     on from these and stops on everything else. */
+  function skipError(msg) {
+    var e = new Error(msg);
+    e.skip = true;
+    return e;
+  }
+
+  /* Instagram renders after the script arms, so nothing should touch the DOM
+     until the document has stopped loading and then had a moment on top. This is
+     the settle the whole sequence was missing. */
+  async function pageSettled() {
+    if (document.readyState !== 'complete') {
+      try { await waitFor(function () { return document.readyState === 'complete'; }, 15000); }
+      catch (e) {}
+    }
+    await sleep(SETTLE_MS);
+  }
+
+  function waitFor(test, ms) {
+    return new Promise(function (resolve, reject) {
+      var t0 = Date.now();
+      (function tick() {
+        if (test()) return resolve();
+        if (Date.now() - t0 > ms) return reject(new Error('timed out'));
+        setTimeout(tick, 120);
+      })();
+    });
+  }
+
+  /* An emptied composer is the only honest confirmation that a message left. */
+  function composerEmpty(fallback) {
+    return !readText(findComposer() || fallback).trim();
+  }
+
+  /* ---------- opening a thread from the new-message composer ----------
+     Instagram has no URL that accepts a recipient, so the launcher lands the tab
+     on /direct/new/ with the handle in the hash and this fills it in.
+
+     Instagram's router drops the hash once it has booted, so the handle is read
+     once at arm time and stashed in sessionStorage, which is per tab and so is
+     exactly one recipient per tab.
+
+     THE RULE HERE IS EXACT MATCH OR REFUSE. A fuzzy pick would open a thread with
+     a stranger and then send them three messages, which is far worse than doing
+     nothing, so a result row only counts when one of its text tokens equals the
+     handle outright. */
+
+  function wantedHandle() {
+    var m = /[#&]hlm=([^&]+)/.exec(location.hash || '');
+    if (m) {
+      var h = decodeURIComponent(m[1]).replace(/^@/, '');
+      try { sessionStorage.setItem(HANDLE_KEY, h); } catch (e) {}
+      return h;
+    }
+    try { return sessionStorage.getItem(HANDLE_KEY) || ''; } catch (e) { return ''; }
+  }
+
+  /* On a profile the recipient is not a guess, it is whose page this is. Stashing
+     it matters because clicking Message can reload the tab, and a reload loses
+     the hash: the stash is what still knows who this tab was opened for. */
+  function armedHandle() {
+    var want = wantedHandle();
+    if (want) return want;
+    var here = profileHandle();
+    if (here) { try { sessionStorage.setItem(HANDLE_KEY, here); } catch (e) {} }
+    return here;
+  }
+
+  /* A profile's Message button. Text first, then aria-label, because the label
+     is what survives when the button is icon only on a narrow window. */
+  function messageButton() {
+    var nodes = document.querySelectorAll('div[role="button"], button, a[role="link"], a');
+    for (var i = 0; i < nodes.length; i++) {
+      var n = nodes[i];
+      if (!visible(n)) continue;
+      var txt = (n.innerText || '').trim().toLowerCase();
+      var aria = (n.getAttribute('aria-label') || '').trim().toLowerCase();
+      if (txt !== 'message' && aria !== 'message') continue;
+      if (n.disabled === true || n.getAttribute('aria-disabled') === 'true') continue;
+      return clickableAncestor(n);
+    }
+    return null;
+  }
+
+  /* The new-message dialog, when one is open. Everything about drafting is scoped
+     to it, because the DM page ALSO has a search box in the inbox sidebar and a
+     handle typed into that one searches instead of drafting. */
+  function draftDialog() {
+    var dlgs = document.querySelectorAll('div[role="dialog"]');
+    for (var i = 0; i < dlgs.length; i++) {
+      if (visible(dlgs[i]) && dlgs[i].querySelector('input')) return dlgs[i];
+    }
+    return null;
+  }
+
+  /* Every visible text input on the page, used to tell the recipient field from
+     the inbox search WITHOUT depending on either one's attributes: the recipient
+     field is the input that APPEARS when the pencil is clicked, and the inbox
+     search was already there. That is true whatever Instagram decides to call
+     them, which is worth more here than any selector, because guessing at these
+     names is what has failed repeatedly. */
+  function visibleInputs() {
+    var out = [];
+    var ins = document.querySelectorAll('input');
+    for (var i = 0; i < ins.length; i++) {
+      var t = (ins[i].getAttribute('type') || 'text').toLowerCase();
+      if (t !== 'text' && t !== 'search' && t !== '') continue;
+      if (visible(ins[i])) out.push(ins[i]);
+    }
+    return out;
+  }
+
+  function newInputSince(before) {
+    var now = visibleInputs();
+    for (var i = 0; i < now.length; i++) {
+      if (before.indexOf(now[i]) < 0) return now[i];
+    }
+    return null;
+  }
+
+  /* The strict, fast path: queryBox is Instagram's own name for the recipient
+     field, and an input inside a live dialog is the next best thing. Returns null
+     rather than guessing, and draftTo falls back to the appeared-since test. */
+  function recipientBox() {
+    var q = document.querySelector('input[name="queryBox"]');
+    if (q && visible(q)) return q;
+    var dlg = draftDialog();
+    if (!dlg) return null;
+    var ins = dlg.querySelectorAll('input[type="text"], input:not([type]), input[type="search"]');
+    for (var i = 0; i < ins.length; i++) if (visible(ins[i])) return ins[i];
+    return null;
+  }
+
+  /* The pencil. Read off the live page rather than guessed at:
+       <svg aria-label="New message" role="img" 24x24><title>New message</title>...
+     Its class names are generated, so the accessibility label is the only stable
+     hook, and the clickable body is the DIV WRAPPING IT rather than a
+     role="button" ancestor. That last part is what broke the first attempt: the
+     ancestor walk found no button, fell back to the svg, and an svg has no
+     click() method at all. */
+  function newMessageButton() {
+    var svg = document.querySelector('svg[aria-label="New message"], svg[aria-label="New Message"]');
+
+    if (!svg) {
+      /* The same label also sits in a <title> inside the svg, which is a second
+         hook for when the attribute is not where it was. */
+      var titles = document.querySelectorAll('svg title');
+      for (var i = 0; i < titles.length; i++) {
+        var t = (titles[i].textContent || '').trim().toLowerCase();
+        if (t === 'new message' || t === 'new chat') { svg = titles[i].parentElement; break; }
+      }
+    }
+
+    if (svg) {
+      /* A role="button" ancestor if there is one, since that is the real control.
+         Otherwise the wrapping div, which is where the handler lives when there is
+         no role, and which also gives the larger hit area. */
+      var byRole = clickableAncestor(svg);
+      if (byRole && byRole !== svg) return byRole;
+      return svg.parentElement || svg;
+    }
+
+    /* Older and alternative shapes, kept as fallbacks. */
+    var sels = ['div[role="button"][aria-label="New message"]', 'a[href^="/direct/new"]',
+                '[aria-label="New message"]', '[aria-label="New Message"]'];
+    for (var j = 0; j < sels.length; j++) {
+      var els = document.querySelectorAll(sels[j]);
+      for (var k = 0; k < els.length; k++) {
+        if (visible(els[k])) return clickableAncestor(els[k]);
+      }
+    }
+    /* An inbox with no threads in it offers a plain button instead of a pencil. */
+    return labelledButton(['send message', 'new message', 'new chat']);
+  }
+
+  /* Last resort when the pencil cannot be found at all: load /direct/new/, which
+     opens the recipient box on its own. This is a navigation, which the whole
+     design otherwise avoids, and it is only safe BECAUSE the remaining list lives
+     in sessionStorage: the tab comes back and picks up where it left off, retrying
+     the account it was on. Capped, so a page that never yields a dialog cannot
+     turn into a reload loop. */
+  var RELOADS_KEY = 'hlmSender.reloads.v1';
+
+  function reloadsSoFar() {
+    try { return Number(sessionStorage.getItem(RELOADS_KEY)) || 0; } catch (e) { return 0; }
+  }
+  function recoverViaDirectNew(log) {
+    var n = reloadsSoFar();
+    if (n >= 2) {
+      throw new Error('no New message button on this page, and reloading /direct/new/ ' +
+        'twice did not produce one. Check that this is the Instagram Direct page and ' +
+        'that you are signed in');
+    }
+    try { sessionStorage.setItem(RELOADS_KEY, String(n + 1)); } catch (e) {}
+    log('No New message button, so reloading the composer. The list is kept.');
+    /* Hand the lock back before going, rather than relying on pagehide firing. */
+    releaseLock();
+    location.href = 'https://www.instagram.com/direct/new/';
+    /* Nothing after this runs: the document is going away. */
+    return new Promise(function () {});
+  }
+
+  /* React owns this input's value, so assigning .value directly is ignored. The
+     native setter plus an input event is what the framework listens for. */
+  function setInputValue(el, text) {
+    var setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    el.focus();
+    setter.call(el, text);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  /* A real click is a SEQUENCE, not a method call. React binds through delegated
+     listeners at the document root and some controls only respond once they have
+     seen the pointer and mouse events that precede a click. el.click() sends the
+     click alone, which is why a control can look clicked and do nothing.
+     Also: click() is an HTMLElement method and the pencil is an svg, so calling it
+     there is a TypeError rather than a click. */
+  function realClick(el) {
+    if (!el) return false;
+    var opts = { bubbles: true, cancelable: true, view: window, buttons: 1 };
+    var types = ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click'];
+    for (var i = 0; i < types.length; i++) {
+      var isPointer = types[i].indexOf('pointer') === 0;
+      var Ctor = (isPointer && window.PointerEvent) ? window.PointerEvent : window.MouseEvent;
+      try { el.dispatchEvent(new Ctor(types[i], opts)); } catch (e) {}
+    }
+    return true;
+  }
+
+  function clickableAncestor(el) {
+    for (var n = el; n && n !== document.body; n = n.parentElement) {
+      var role = n.getAttribute && n.getAttribute('role');
+      if (role === 'button' || role === 'option' || n.tagName === 'BUTTON' || n.tagName === 'LABEL') return n;
+    }
+    return el;
+  }
+
+  /* A row matches only when some whole token of its text equals the handle. */
+  function exactRow(handle) {
+    var want = String(handle).toLowerCase();
+    /* Scoped to the dialog when there is one: the inbox behind it lists people
+       too, and a row picked from there opens the wrong existing thread. */
+    var scope = draftDialog() || document;
+    var rows = scope.querySelectorAll('div[role="button"], div[role="option"], li, label');
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      if (!visible(row)) continue;
+      var txt = (row.innerText || '').trim();
+      if (!txt || txt.length > 200) continue;
+      var tokens = txt.split(/[\s\n·,]+/);
+      for (var t = 0; t < tokens.length; t++) {
+        if (tokens[t].replace(/^@/, '').toLowerCase() === want) return clickableAncestor(row);
+      }
+    }
+    return null;
+  }
+
+  function labelledButton(names) {
+    var nodes = document.querySelectorAll('div[role="button"], button');
+    for (var i = 0; i < nodes.length; i++) {
+      var t = (nodes[i].innerText || '').trim().toLowerCase();
+      if (names.indexOf(t) >= 0 && visible(nodes[i])) {
+        var off = nodes[i].disabled === true || nodes[i].getAttribute('aria-disabled') === 'true';
+        if (!off) return nodes[i];
+      }
+    }
+    return null;
+  }
+
+  /* Resolves once a composer is on screen. Opens the dialog first if needed, by
+     whichever route this tab allows. */
+  async function ensureThread(log) {
+    if (findComposer()) return;
+    if (onProfile()) return openFromProfile(log);
+    return openFromSearch(log);
+  }
+
+  /* Clicking Message on @x's profile is the SAFEST route to a thread there is:
+     that button can only open a thread with @x, so there is no search step and
+     nothing to mis-pick. The exact-match rule still applies, pointing the other
+     way: if this tab was queued for somebody else, the handle in the URL and the
+     handle in the path disagree, and the likeliest cause of that is a tab opened
+     against the wrong row. Refuse rather than message the wrong person. */
+  async function openFromProfile(log) {
+    var here = profileHandle();
+    var want = wantedHandle();
+    if (want && here && want.toLowerCase() !== here.toLowerCase()) {
+      throw new Error('this tab was queued for @' + want + ' but this profile is @' +
+        here + ', so nothing was opened');
+    }
+    var who = here || want;
+
+    /* WAIT for the button, never scan once. Instagram renders the profile header
+       after the script arms, so a single look finds nothing on a tab that has
+       just been navigated, and reports it as a private account when it is
+       nothing of the sort.
+
+       Two outcomes have to be told apart here, because they deserve opposite
+       treatment. A profile whose header HAS rendered and offers only Follow or
+       Requested cannot be messaged at all: that is this one account's answer, and
+       the run should move to the next. A profile where nothing rendered is a
+       broken or signed-out page, which is the whole run's problem and stops it.
+       Guessing either way is how a loop either dies on a private account or
+       marches through fifty of them learning nothing. */
+    log('Looking for the Message button on @' + who + '...');
+    var btn = null, headerAt = 0, gaveUp = false;
+    try {
+      await waitFor(function () {
+        btn = messageButton();
+        if (btn) return true;
+        if (!headerAt && labelledButton(['requested', 'follow', 'following', 'follow back'])) {
+          headerAt = Date.now();
+        }
+        /* Header up and still no Message button after a grace: this account is
+           simply not messageable, so stop waiting the full twenty seconds for it. */
+        if (headerAt && Date.now() - headerAt > 6000) { gaveUp = true; return true; }
+        return false;
+      }, 20000);
+    } catch (e) { /* fell through with nothing at all, handled just below */ }
+
+    if (!btn) {
+      if (gaveUp || headerAt) {
+        throw skipError('@' + who + ' has no Message button, only Follow or Requested, ' +
+          'so this one was passed over');
+      }
+      throw new Error('nothing rendered on @' + who + ' after 20s, so either the page ' +
+        'never loaded or this browser is signed out of Instagram');
+    }
+
+    /* Two clicks, because the first can land before the button has its handler
+       attached: the node is in the DOM a moment before it does anything. A click
+       that does nothing is silent, so the retry is what tells them apart. */
+    log('Opening the message dialog with @' + who + '...');
+    realClick(btn);
+    try {
+      await waitFor(function () { return !!findComposer(); }, 7000);
+    } catch (e) {
+      log('No box yet, clicking Message once more...');
+      var again = messageButton();
+      if (again) realClick(again);
+      try {
+        await waitFor(function () { return !!findComposer(); }, 12000);
+      } catch (e2) {
+        throw new Error('clicked Message on @' + who + ' but no message box appeared. ' +
+          'If the tab reloaded, the panel needs arming again on the thread');
+      }
+    }
+    /* A composer on screen is not yet a composer that will take text, so settle
+       before the first keystroke rather than racing its own editor. */
+    await sleep(SETTLE_MS);
+    log('Dialog open with @' + who + '.');
+  }
+
+  async function openFromSearch(log) {
+    var handle = wantedHandle();
+    if (!handle) {
+      throw new Error('no message box, and no handle in the URL to open one with');
+    }
+    return draftTo(handle, log);
+  }
+
+  /* Start a fresh draft to one handle WITHOUT leaving this page.
+     This is what the list runner is built on, and why it never navigates: the
+     pencil opens the new-message dialog over whatever thread is showing, the
+     recipient is picked from that dialog, and the composer that appears is the
+     same composer the sender already knows how to drive. Nothing reloads, so the
+     panel survives the whole run and there is no tab to reopen, no pop-up to be
+     blocked and no arming to redo.
+
+     EXACT MATCH OR REFUSE still governs the pick, and it matters more here than
+     anywhere: this route searches by name, so a loose match would open a thread
+     with a stranger and then send them three messages. A handle with no exact
+     result is passed over rather than guessed at. */
+  async function draftTo(handle, log) {
+    var box = recipientBox();
+    if (!box) {
+      /* Snapshot first: whatever input turns up after the click is the recipient
+         field, and the inbox search cannot be it because it was already here. */
+      var before = visibleInputs();
+      var pencil = newMessageButton();
+      if (!pencil) return recoverViaDirectNew(log);
+      log('Starting a new draft...');
+      realClick(pencil);
+      try {
+        await waitFor(function () {
+          box = recipientBox() || newInputSince(before);
+          return !!box;
+        }, 12000);
+      } catch (e) {
+        throw new Error('clicked New message but no recipient field appeared. Press ' +
+          '"What can you see?" in this panel and send me what it copies');
+      }
+    }
+    await sleep(SETTLE_MS);
+
+    log('Looking up @' + handle + '...');
+    setInputValue(box, handle);
+
+    var row = null;
+    try {
+      await waitFor(function () { return (row = exactRow(handle)); }, 9000);
+    } catch (e) {
+      /* One account's answer, not the run's: move on to the next. */
+      throw skipError('no result exactly matching @' + handle + ', so nothing was opened. ' +
+        'A changed handle, a deleted account, or one that cannot be messaged');
+    }
+
+    realClick(row);
+    await sleep(400);
+
+    /* The tick or Chat button. Its absence is fine on layouts that open the
+       thread the moment a recipient is picked. */
+    var go = labelledButton(['chat', 'next', 'done']);
+    if (go) { realClick(go); }
+
+    try {
+      await waitFor(function () { return !!findComposer(); }, 12000);
+    } catch (e) {
+      throw new Error('picked @' + handle + ' but no message box appeared');
+    }
+    /* On screen is not the same as ready to take text. */
+    await sleep(SETTLE_MS);
+    log('Draft open with @' + handle + '.');
+  }
+
+  async function sendOne(text, log) {
+    var el = findComposer();
+    if (!el) {
+      /* THE FIRST MESSAGE CREATES THE THREAD. Instagram then re-renders from the
+         new-message view into the real thread, which takes the composer away for a
+         moment and hands back a different element. Grabbing it once and giving up
+         is how one message goes and the next two do not. */
+      if (log) log('The message box went away, waiting for the thread...');
+      try {
+        await waitFor(function () { return (el = findComposer()); }, 15000);
+      } catch (e) {
+        throw new Error('the message box went away after the last message and did ' +
+          'not come back within 15s');
+      }
+      /* Freshly rendered is not the same as ready to take text. */
+      await sleep(SETTLE_MS);
+    }
+
+    var inModel = await insertText(el, text);
+
+    var btn = sendControl();
+    if (!btn) {
+      /* Send only becomes live once Instagram's own model holds the text, so a
+         moment of absence here is normal rather than a failure. */
+      try { await waitFor(function () { return (btn = sendControl()); }, 2000); } catch (e) {}
+    }
+
+    /* Refuse rather than fire Enter at a box whose model we could not reach.
+       Pressing on regardless is how you post blank messages. */
+    if (!inModel && !btn) {
+      throw new Error('the message box would not take the text, so nothing was sent');
+    }
+
+    if (log) log(btn ? 'Sending with the Send button...' : 'Sending with Enter...');
+    if (btn) realClick(btn); else pressEnter(el);
+    try {
+      await waitFor(function () { return composerEmpty(el); }, 3000);
+      return;
+    } catch (e) {}
+
+    /* One retry down the other route before giving up. */
+    var again = sendControl();
+    if (again) realClick(again); else pressEnter(el);
+    await waitFor(function () { return composerEmpty(el); }, 3000);
+  }
+
+  /* ---------- panel ---------- */
+
+  var host = document.createElement('div');
+  host.style.cssText = 'position:fixed;top:14px;right:14px;z-index:2147483647;';
+  var root = host.attachShadow({ mode: 'open' });
+  root.innerHTML = [
+    '<style>',
+    ':host,*{box-sizing:border-box}',
+    '.box{width:312px;background:#15181d;color:#e8ebf0;border:1px solid #2c333d;border-radius:11px;',
+    'box-shadow:0 10px 30px rgba(0,0,0,.45);font:13px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;overflow:hidden}',
+    '.hd{display:flex;align-items:center;gap:8px;padding:9px 11px;background:#1b1f26;border-bottom:1px solid #2c333d}',
+    '.ttl{font-weight:700;font-size:12px;letter-spacing:.02em;flex:1}',
+    '.hd button{background:none;border:none;color:#98a1af;cursor:pointer;font-size:12px;line-height:1;padding:2px 4px}',
+    '.hd button:hover{color:#e8ebf0}',
+    '.hd button.on{color:#4d82ff}',
+    '.bd{padding:11px}',
+    '.note{background:#33240f;color:#f0cf98;border:1px solid #5c4818;border-radius:7px;padding:7px 9px;margin-bottom:9px;font-size:12px}',
+    /* The unattended bar. Loud, and the Cancel is never smaller than the text
+       next to it: a countdown you cannot stop is not a countdown. */
+    '.auto{display:flex;align-items:center;gap:8px;background:#0f2a1a;color:#9fd8b0;',
+    'border:1px solid #2b5638;border-radius:7px;padding:7px 9px;margin-bottom:9px;font-size:12px}',
+    '.auto.hot{background:#33240f;color:#f0cf98;border-color:#5c4818}',
+    '.auto span{flex:1}',
+    '.auto button{font:inherit;font-weight:700;font-size:12px;padding:4px 9px;border-radius:6px;',
+    'border:1px solid #5c4818;background:#1e232b;color:#f0cf98;cursor:pointer}',
+    'button.act{width:100%;font:inherit;font-weight:700;padding:9px;border-radius:7px;border:none;',
+    'background:#4d82ff;color:#0b0d11;cursor:pointer;margin-bottom:6px}',
+    'button.act.alt{background:#1e232b;color:#c9d1dc;border:1px solid #2c333d}',
+    'button.act:disabled{opacity:.45;cursor:default}',
+    '.trio{display:flex;gap:6px}',
+    '.trio button{flex:1;font:inherit;font-weight:600;padding:6px 0;border-radius:6px;border:1px solid #2c333d;',
+    'background:#1e232b;color:#c9d1dc;cursor:pointer}',
+    '.trio button:disabled{opacity:.45;cursor:default}',
+    '.log{margin-top:9px;font-size:12px;color:#98a1af;min-height:32px;word-break:break-word}',
+    '.log.err{color:#f6a58c}',
+    '.keys{margin:9px 0 0;font-size:11px;color:#7d8695;line-height:1.6}',
+    'textarea{width:100%;min-height:44px;font:inherit;font-size:12px;padding:6px;margin-bottom:6px;border-radius:6px;',
+    'border:1px solid #2c333d;background:#0f1216;color:#e8ebf0;resize:vertical}',
+    '.edit{display:none;border-top:1px solid #2c333d;margin-top:9px;padding-top:9px}',
+    '.edit.open{display:block}',
+    '.edit label{display:block;font-size:11px;font-weight:700;color:#98a1af;margin-bottom:3px}',
+    '.ehd{font-size:11px;color:#7d8695;line-height:1.5;margin-bottom:8px}',
+    '.erow{display:flex;gap:6px;margin-top:2px}',
+    '.erow button{flex:1;font:inherit;font-size:12px;font-weight:700;padding:7px 0;border-radius:6px;cursor:pointer}',
+    '#save{border:none;background:#4d82ff;color:#0b0d11}',
+    '#save:disabled{opacity:.45;cursor:default}',
+    '#revert{border:1px solid #2c333d;background:#1e232b;color:#c9d1dc}',
+    '.estat{margin-top:7px;font-size:11px;color:#7d8695;min-height:15px}',
+    '.estat.dirty{color:#f0cf98;font-weight:700}',
+    '</style>',
+    '<div class="box">',
+    '  <div class="hd">',
+    '    <span class="ttl">Herbal Leaf</span>',
+    '    <button id="pencil" title="Edit the messages on this browser">edit</button>',
+    '    <button id="close" title="Hide (Esc)">&times;</button>',
+    '  </div>',
+    '  <div class="bd">',
+    '    <div class="note" id="dupe" style="display:none"></div>',
+    '    <div class="auto" id="autobar" style="display:none">',
+    '      <span id="autotext">Waiting.</span>',
+    '      <button id="autostop">Cancel</button>',
+    '    </div>',
+    '    <button class="act" id="runlist" style="display:none">Run the list</button>',
+    '    <button class="act alt" id="probe">What can you see?</button>',
+    '    <button class="act alt" id="dialog">Open the message dialog</button>',
+    '    <button class="act" id="welcome">Send welcome (3)</button>',
+    '    <button class="act alt" id="news">Send newsletter (1)</button>',
+    '    <div class="trio">',
+    '      <button data-one="0">1</button><button data-one="1">2</button><button data-one="2">3</button>',
+    '    </div>',
+    '    <div class="log" id="log">Ready.</div>',
+    '    <div class="keys">Alt+Shift+W welcome, Alt+Shift+D dialog, Alt+Shift+N newsletter, Alt+Shift+1/2/3 one, Esc cancel or hide</div>',
+    '    <div class="edit" id="edit">',
+    '      <div class="ehd">Editing here changes the wording on this browser only, and it takes',
+    '      effect when you press Save. Saving a newer revision on the sender page replaces it.</div>',
+    '      <label>Welcome 1</label><textarea data-r="0"></textarea>',
+    '      <label>Welcome 2</label><textarea data-r="1"></textarea>',
+    '      <label>Welcome 3</label><textarea data-r="2"></textarea>',
+    '      <label>Newsletter</label><textarea data-news></textarea>',
+    '      <div class="erow">',
+    '        <button id="save" disabled>Save</button>',
+    '        <button id="revert">Use the page version</button>',
+    '      </div>',
+    '      <div class="estat" id="estat"></div>',
+    '    </div>',
+    '  </div>',
+    '</div>'
+  ].join('');
+  (document.body || document.documentElement).appendChild(host);
+
+  var $ = function (s) { return root.querySelector(s); };
+  var logEl = $('#log');
+  var welcomeBtn = $('#welcome');
+  var dialogBtn = $('#dialog');
+  var runListBtn = $('#runlist');
+  var newsBtn = $('#news');
+  var oneBtns = Array.prototype.slice.call(root.querySelectorAll('[data-one]'));
+  var areas = Array.prototype.slice.call(root.querySelectorAll('[data-r]'));
+  var newsArea = root.querySelector('[data-news]');
+  var saveBtn = $('#save');
+  var revertBtn = $('#revert');
+  var statEl = $('#estat');
+
+  function log(msg, isErr) {
+    logEl.textContent = msg;
+    logEl.className = isErr ? 'log err' : 'log';
+  }
+  function setBusy(b) {
+    welcomeBtn.disabled = b;
+    dialogBtn.disabled = b;
+    runListBtn.disabled = b;
+    newsBtn.disabled = b;
+    oneBtns.forEach(function (x) { x.disabled = b; });
+  }
+  function refreshDupe() {
+    var who = armedHandle();
+    var s = Object.assign({}, sentHere() || {}, (who && sentFor(who)) || {});
+    var bits = [];
+    if (s.welcome) bits.push('welcome');
+    if (s.newsletter) bits.push('newsletter');
+    var el = $('#dupe');
+    if (!bits.length) { el.style.display = 'none'; return; }
+    el.textContent = 'Already sent on this thread: ' + bits.join(' and ') + '.';
+    el.style.display = 'block';
+  }
+
+  /* ---------- the edit box, and its actual Save ---------- */
+
+  var idleNote = fromPage
+    ? 'Using the wording from the sender page, revision ' + msgs.rev + '.'
+    : 'Using the wording saved on this browser.';
+
+  function editorValues() {
+    return {
+      welcome: areas.map(function (t) { return t.value; }),
+      newsletter: newsArea.value,
+      rev: bakedMsgs().rev
+    };
+  }
+  function isDirty() {
+    var v = editorValues();
+    /* JSON rather than a joined string: no separator to collide with, and no
+       invisible character in the file. */
+    return JSON.stringify(v.welcome) !== JSON.stringify(msgs.welcome) ||
+      v.newsletter !== msgs.newsletter;
+  }
+  function refreshEdit() {
+    var d = isDirty();
+    saveBtn.disabled = !d;
+    statEl.textContent = d
+      ? 'Unsaved. Nothing sends this wording until you press Save.'
+      : idleNote;
+    statEl.className = d ? 'estat dirty' : 'estat';
+  }
+  function fillEditor() {
+    areas.forEach(function (t, i) { t.value = msgs.welcome[i] || ''; });
+    newsArea.value = msgs.newsletter || '';
+    refreshEdit();
+  }
+
+  areas.concat([newsArea]).forEach(function (t) {
+    t.addEventListener('input', refreshEdit);
+  });
+
+  saveBtn.addEventListener('click', function () {
+    /* rev stays the page's, so the panel never outranks a later page save. */
+    var ok = persist(editorValues());
+    fromPage = false;
+    idleNote = ok
+      ? 'Saved on this browser, and it will outlive this tab.'
+      : 'Could not write to storage here, so this holds for this tab only.';
+    refreshEdit();
+  });
+
+  revertBtn.addEventListener('click', function () {
+    try { localStorage.removeItem(MSG_KEY); } catch (e) {}
+    msgs = bakedMsgs();
+    fromPage = true;
+    idleNote = 'Back to the sender page wording, revision ' + msgs.rev + '.';
+    fillEditor();
+  });
+
+  fillEditor();
+  refreshDupe();
+
+  $('#close').addEventListener('click', function () { host.style.display = 'none'; });
+  $('#pencil').addEventListener('click', function () {
+    var open = $('#edit').classList.toggle('open');
+    $('#pencil').className = open ? 'on' : '';
+  });
+
+  /* Instagram runs its own document level key handlers, and the DM page pulls
+     focus to the composer on a keystroke. Keeping panel keystrokes inside the
+     shadow root is what makes this box typeable at all. */
+  ['keydown', 'keypress', 'keyup', 'input', 'paste'].forEach(function (ev) {
+    root.querySelector('.box').addEventListener(ev, function (e) { e.stopPropagation(); });
+  });
+
+  /* ---------- the actual run ---------- */
+
+  var busy = false;
+
+  async function run(kind, indexes, onSent) {
+    if (busy) { log('Still sending, hold on.'); return { sent: 0, error: 'busy' }; }
+    var texts = kind === 'newsletter'
+      ? [msgs.newsletter]
+      : indexes.map(function (n) { return msgs.welcome[n]; });
+
+    /* No wording is a refusal, never a blank send. */
+    if (!texts.filter(function (t) { return (t || '').trim(); }).length) {
+      log('Nothing is configured for that. Save the wording on the sender page, or use edit here.', true);
+      return { sent: 0, error: 'no wording configured' };
+    }
+
+    busy = true; setBusy(true);
+    var sent = 0;
+    var failed = null;
+    var skipped = false;
+    try {
+      await ensureThread(log);
+      for (var i = 0; i < texts.length; i++) {
+        var text = (texts[i] || '').trim();
+        if (!text) { log('Message ' + (i + 1) + ' is empty, skipped.'); continue; }
+        log('Sending ' + (i + 1) + ' of ' + texts.length + '...');
+        await sendOne(text, log);
+        sent++;
+        if (onSent) {
+          try { onSent((indexes && indexes.length) ? indexes[i] : i); } catch (e) {}
+        }
+        if (i < texts.length - 1) await sleep(GAP_MS);
+      }
+      if (sent) { markSentHere(kind); refreshDupe(); }
+      log(sent + (sent === 1 ? ' message' : ' messages') + ' sent. Move to the next tab.');
+    } catch (e) {
+      failed = e.message;
+      skipped = !!e.skip;
+      log((skipped ? 'Passed over: ' : 'Stopped after ' + sent + ' sent: ') + e.message, true);
+    }
+    busy = false; setBusy(false);
+    /* A partial run counts as a failure: two of three messages delivered is not
+       a finished conversation, and the loop must stop rather than march on. */
+    if (!failed && sent < texts.length) failed = 'only ' + sent + ' of ' + texts.length + ' went';
+    return { sent: sent, error: failed, skip: skipped };
+  }
+
+  async function openDialog() {
+    if (busy) { log('Still working, hold on.'); return false; }
+    busy = true; setBusy(true);
+    var won = false;
+    try {
+      if (findComposer()) log('The message box is already open on this tab.');
+      else { await ensureThread(log); }
+      won = true;
+    } catch (e) { log(e.message, true); }
+    busy = false; setBusy(false);
+    return won;
+  }
+
+  welcomeBtn.addEventListener('click', function () { run('welcome', [0, 1, 2]); });
+  dialogBtn.addEventListener('click', function () { openDialog(); });
+  newsBtn.addEventListener('click', function () { run('newsletter', []); });
+  oneBtns.forEach(function (b) {
+    b.addEventListener('click', function () { run('welcome', [parseInt(b.dataset.one, 10)]); });
+  });
+
+  /* ---------- unattended mode ----------
+     Opening a batch of tabs and having every one of them fire on load is the
+     exact burst Instagram's spam heuristics act on, so this does not do that.
+     Three brakes. The first is structural and always on; the other two are now
+     settings, and 0 turns each of them off, which is a run the page asked for
+     rather than one this file talked it out of:
+
+     1. ONE TAB AT A TIME. Every instagram.com tab shares this origin's
+        localStorage, so a lock there is a lock across the whole batch. A tab
+        waits for the lock and for BETWEEN_MS since the last send, which turns
+        twelve tabs firing at once into twelve sends spaced out.
+     2. A COUNTDOWN YOU CAN STOP. Nothing irreversible happens without a visible
+        timer and a Cancel, because a tab queued against the wrong row is a
+        stranger getting three messages and there is no unsending that.
+     3. A CAP PER SITTING, shared the same way, so a runaway batch stops itself
+        at a number rather than working through the whole list. 0 means it works
+        through the whole list, which is the point of a list of 100+.
+
+     Auto mode also refuses on any thread it has already sent on, and only ever
+     runs on a tab that carries a queued handle, never on a profile you happened
+     to open yourself. It never auto-sends the newsletter: that one carries a
+     price and a link, and it gets a human. */
+
+  var LOCK_KEY = 'hlmSender.autolock.v1';
+  var LAST_KEY = 'hlmSender.autolast.v1';
+  var COUNT_KEY = 'hlmSender.autocount.v1';
+  var LOCK_TTL = 90000;        // a tab that dies mid-run must not hold it forever
+  var SITTING_GAP = 1800000;   // half an hour of quiet starts a new sitting
+  var TAB_ID = String(Date.now()) + '.' + String(Math.random()).slice(2);
+
+  var cancelled = false;
+  var autobar = $('#autobar');
+  var autotext = $('#autotext');
+
+  function showAuto(msg, hot) {
+    autobar.style.display = 'flex';
+    autobar.className = hot ? 'auto hot' : 'auto';
+    autotext.textContent = msg;
+  }
+  function hideAuto() { autobar.style.display = 'none'; }
+
+  $('#autostop').addEventListener('click', function () {
+    cancelled = true;
+    releaseLock();
+    showAuto('Cancelled. Nothing further will send on its own in this tab.', true);
+  });
+
+  function readJson(key) {
+    try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; }
+  }
+  function writeJson(key, val) {
+    try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
+  }
+
+  function lockHeldElsewhere() {
+    var cur = readJson(LOCK_KEY);
+    return !!(cur && cur.tab !== TAB_ID && (Date.now() - (cur.at || 0)) < LOCK_TTL);
+  }
+  /* localStorage has no compare-and-swap, so this is best effort: write, read
+     back, and believe it only if we are still the holder. Two tabs slipping
+     through at once costs pacing, not correctness. */
+  function takeLock() {
+    if (lockHeldElsewhere()) return false;
+    writeJson(LOCK_KEY, { tab: TAB_ID, at: Date.now() });
+    var after = readJson(LOCK_KEY);
+    return !!(after && after.tab === TAB_ID);
+  }
+  function holdLock() {
+    var cur = readJson(LOCK_KEY);
+    if (cur && cur.tab === TAB_ID) writeJson(LOCK_KEY, { tab: TAB_ID, at: Date.now() });
+  }
+  function releaseLock() {
+    var cur = readJson(LOCK_KEY);
+    if (cur && cur.tab === TAB_ID) { try { localStorage.removeItem(LOCK_KEY); } catch (e) {} }
+  }
+
+  /* A tab that goes away mid-run must not leave the lock held. Without this the
+     recovery reload came back to "another tab is running a list", which was itself
+     ninety seconds ago: the lock was its own, from before the navigation. Closing
+     the tab by hand had the same effect on the next one. */
+  window.addEventListener('pagehide', releaseLock);
+  window.addEventListener('beforeunload', releaseLock);
+
+  function sitting() {
+    var c = readJson(COUNT_KEY);
+    if (!c || (Date.now() - (c.at || 0)) > SITTING_GAP) return { n: 0, at: Date.now() };
+    return { n: Number(c.n) || 0, at: Number(c.at) || Date.now() };
+  }
+  function countSend() {
+    var s = sitting();
+    writeJson(COUNT_KEY, { n: s.n + 1, at: Date.now() });
+    return s.n + 1;
+  }
+  function sinceLast() {
+    var l = readJson(LAST_KEY);
+    return Date.now() - ((l && Number(l.at)) || 0);
+  }
+
+  function waitCancellable(ms) {
+    return new Promise(function (resolve) {
+      var t0 = Date.now();
+      (function tick() {
+        if (cancelled) return resolve(false);
+        if (Date.now() - t0 >= ms) return resolve(true);
+        setTimeout(tick, 200);
+      })();
+    });
+  }
+
+  async function countdown(ms, who) {
+    var left = Math.ceil(ms / 1000);
+    while (left > 0) {
+      if (cancelled) return false;
+      showAuto('Sending to @' + who + ' in ' + left + '. Cancel to stop.', true);
+      if (!(await waitCancellable(1000))) return false;
+      left--;
+    }
+    return !cancelled;
+  }
+
+  /* Waits for the lock and for the gap since the last send anywhere. */
+  async function waitForTurn(who) {
+    var waited = 0;
+    while (!cancelled) {
+      var gap = BETWEEN_MS - sinceLast();
+      if (!lockHeldElsewhere() && gap <= 0) {
+        if (takeLock()) return true;
+      }
+      var why = lockHeldElsewhere()
+        ? 'Another tab is sending, waiting its turn.'
+        : 'Pacing, ' + Math.ceil(gap / 1000) + 's before this tab may send.';
+      showAuto(why + ' Cancel to stop.', false);
+      if (!(await waitCancellable(1000))) return false;
+      waited += 1000;
+      if (waited > 900000) {          // fifteen minutes of never getting a turn
+        showAuto('Gave up waiting for a turn. Nothing was sent from this tab.', true);
+        return false;
+      }
+    }
+    return false;
+  }
+
+  /* ---------- the list runner: one tab, no navigation ----------
+     The sender page posts a list of handles here and this walks it, drafting each
+     one in turn from the DM page. Nothing navigates and nothing reloads, so the
+     panel and its lock and its counters all survive the whole run, which is what
+     makes this the version that works: the earlier design reopened or renavigated
+     a tab per account and every failure it had came from that.
+
+     The list arrives by postMessage from the window that opened this one. It is
+     accepted ONLY from that window, because a handle list is an instruction to
+     message real people and anything else on the internet has no business
+     supplying one. */
+
+  var runQueue = [];
+  var runTotal = 0;
+  var runDone = 0;
+  var listRunning = false;
+  var batchSeen = null;
+
+  /* THE LIST ARRIVES IN THE URL FRAGMENT, and postMessage is only a second way in.
+     The fragment is the channel already proven on this setup: it is how a single
+     handle has always reached the panel. postMessage needs window.opener to have
+     survived, needs the panel to be listening by the time the page posts, and
+     fails silently when either is not true, which is a lot of ways for a list to
+     go missing before anything visible happens.
+
+     It is kept in sessionStorage as it is worked through, which is per tab and so
+     is exactly one run. That makes a reload a recovery rather than the end of the
+     run: whatever is left is still there afterwards. */
+  var LIST_KEY = 'hlmSender.list.v1';
+
+  function cleanHandles(list) {
+    return (list || []).map(function (h) {
+      return String(h || '').trim().replace(/^@/, '').toLowerCase();
+    }).filter(function (h) { return /^[a-z0-9._]{1,30}$/.test(h); });
+  }
+
+  function readList() {
+    var m = /[#&]hlmlist=([^&]*)/.exec(location.hash || '');
+    if (m && m[1]) {
+      var fromHash = cleanHandles(decodeURIComponent(m[1]).split(','));
+      if (fromHash.length) {
+        var fresh = { handles: fromHash, done: 0, total: fromHash.length, sentIdx: 0 };
+        saveList(fresh);
+        return fresh;
+      }
+    }
+    try {
+      var st = JSON.parse(sessionStorage.getItem(LIST_KEY));
+      if (st && Array.isArray(st.handles)) {
+        return {
+          handles: cleanHandles(st.handles),
+          done: Number(st.done) || 0,
+          total: Number(st.total) || cleanHandles(st.handles).length,
+          /* How many of the three have already gone to the handle at the head.
+             The first message creates the thread, and if Instagram reloads the tab
+             doing it, a resume that started from zero would send that message
+             twice. Nobody wants the same welcome arriving again. */
+          sentIdx: Math.min(3, Math.max(0, Number(st.sentIdx) || 0))
+        };
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  function saveList(st) {
+    try {
+      if (!st || !st.handles.length) sessionStorage.removeItem(LIST_KEY);
+      else sessionStorage.setItem(LIST_KEY, JSON.stringify(st));
+    } catch (e) {}
+  }
+
+  var runSentIdx = 0;
+
+  function persistProgress() {
+    saveList(runQueue.length
+      ? { handles: runQueue, done: runDone, total: runTotal, sentIdx: runSentIdx }
+      : null);
+  }
+
+  function refreshRunBtn() {
+    if (!runQueue.length) { runListBtn.style.display = 'none'; return; }
+    runListBtn.style.display = '';
+    runListBtn.textContent = listRunning
+      ? 'Running, ' + runQueue.length + ' to go'
+      : 'Run the list (' + runQueue.length + ')';
+    runListBtn.disabled = listRunning;
+  }
+
+  function acceptQueue(handles, batch, done, total, sentIdx) {
+    if (batch && batch === batchSeen) return;        // the page re-posts until acked
+    if (listRunning) return;                         // a run in progress owns the list
+    batchSeen = batch || null;
+    runQueue = cleanHandles(handles);
+    runTotal = Number(total) || runQueue.length;
+    runDone = Number(done) || 0;
+    runSentIdx = Math.min(3, Math.max(0, Number(sentIdx) || 0));
+    persistProgress();
+    refreshRunBtn();
+    reportHome('queued', '', String(runQueue.length));
+    log('List: ' + runQueue.length + (runQueue.length === 1 ? ' account' : ' accounts') + ' to go.');
+    if (AUTO_RUN === 'send' && runQueue.length) runList();
+  }
+
+  window.addEventListener('message', function (e) {
+    /* Only the opener. No opener means no list, and the panel says so. */
+    if (!window.opener || e.source !== window.opener) return;
+    var d = e.data;
+    if (!d || typeof d !== 'object' || d.app !== 'hlm-sender') return;
+    if (d.kind === 'queue' && Array.isArray(d.handles)) acceptQueue(d.handles, d.batch);
+    if (d.kind === 'stop') {
+      cancelled = true;
+      runQueue = [];
+      refreshRunBtn();
+      showAuto('Stopped from the sender page.', true);
+    }
+  });
+
+  async function runList() {
+    if (listRunning) return;
+    if (!runQueue.length) {
+      log('No list to run. Start it from the sender page.', true);
+      return;
+    }
+    listRunning = true;
+    cancelled = false;
+    refreshRunBtn();
+
+    /* One lock for the whole run rather than one per account: this tab is doing
+       the entire list, so a second tab must not start a second run alongside it. */
+    if (lockHeldElsewhere()) {
+      showAuto('Another tab is running a list. Close it, or wait for it to finish.', true);
+      listRunning = false;
+      refreshRunBtn();
+      return;
+    }
+    takeLock();
+    var beat = setInterval(holdLock, 15000);
+
+    try {
+      await pageSettled();
+      while (runQueue.length && !cancelled) {
+        var who = runQueue[0];
+
+        var s = sitting();
+        if (CAPPED && s.n >= SITTING_CAP) {
+          showAuto('Session cap reached, ' + s.n + ' sent in this sitting. Stopping here.', true);
+          reportHome('capped', who, s.n + ' sent in this sitting, which is the cap');
+          break;
+        }
+
+        /* A note, deliberately NOT a skip. The sender page owns who gets messaged:
+           it has the roster, the contact history, the cadence and the mute list. If
+           it put somebody in this batch, that was a decision, and this tab is in no
+           position to overrule it. */
+        if (sentFor(who)) log('Note: this browser has messaged @' + who + ' before.');
+        showAuto('Drafting to @' + who + '. ' + runDone + ' of ' + runTotal + ' done.', false);
+
+        var problem = null, fatal = false;
+        try {
+          await draftTo(who, log);
+        } catch (err) {
+          problem = err.message;
+          fatal = !err.skip;
+        }
+
+        if (problem) {
+          if (fatal) {
+            showAuto('Stopped: ' + problem, true);
+            reportHome('failed', who, problem);
+            break;
+          }
+          showAuto('Passed over @' + who + '.', false);
+          reportHome('unreachable', who, problem);
+          runQueue.shift(); runDone++; runSentIdx = 0;
+          persistProgress();
+          refreshRunBtn();
+          if (runQueue.length && !(await waitCancellable(BETWEEN_MS))) break;
+          continue;
+        }
+
+        if (!(await countdown(COUNTDOWN_MS, who))) {
+          showAuto('Cancelled before anything sent.', true);
+          reportHome('failed', who, 'cancelled during the countdown');
+          break;
+        }
+
+        var idxs = [0, 1, 2].slice(runSentIdx);
+        showAuto('Sending to @' + who + '.' +
+          (runSentIdx ? ' Resuming at message ' + (runSentIdx + 1) + '.' : ''), true);
+        if (runSentIdx) log('Resuming @' + who + ' at message ' + (runSentIdx + 1) +
+          ': the first ' + runSentIdx + ' already went.');
+        var res = await run('welcome', idxs, function (origIdx) {
+          runSentIdx = origIdx + 1;
+          persistProgress();
+        });
+        if (res.error && !res.skip) {
+          showAuto('Stopped: ' + res.error, true);
+          reportHome('failed', who, res.error);
+          break;
+        }
+        if (res.error) {
+          reportHome('unreachable', who, res.error);
+        } else {
+          countSend();
+          markSentFor(who, 'welcome');
+          writeJson(LAST_KEY, { at: Date.now() });
+          reportHome('sent', who);
+        }
+
+        runQueue.shift(); runDone++; runSentIdx = 0;
+        persistProgress();
+        refreshRunBtn();
+        if (runQueue.length && !cancelled) {
+          showAuto(runDone + ' of ' + runTotal + ' done. Next in ' +
+            Math.round(BETWEEN_MS / 1000) + 's.', false);
+          if (!(await waitCancellable(BETWEEN_MS))) break;
+        }
+      }
+    } finally {
+      clearInterval(beat);
+      releaseLock();
+      listRunning = false;
+      refreshRunBtn();
+    }
+
+    if (!runQueue.length) {
+      saveList(null);
+      try { sessionStorage.removeItem(RELOADS_KEY); } catch (e) {}
+      showAuto('List finished, ' + runDone + ' of ' + runTotal + ' worked through.', false);
+    }
+    reportHome('done', '', runDone + ' of ' + runTotal);
+  }
+
+  runListBtn.addEventListener('click', function () { runList(); });
+
+  /* Reports what the sender can actually find on this page. Every failure so far
+     has come from guessing at Instagram's markup from the outside, and this turns
+     the next one into a fact: it names the pencil it found, every visible input
+     with its name and placeholder, whether anything is a dialog, and whether a
+     composer is on screen. Copied to the clipboard and logged in full. */
+  function probeDom() {
+    var out = { url: location.href, onDirect: onDirect(), onProfile: onProfile() };
+
+    var dlgs = document.querySelectorAll('div[role="dialog"]');
+    out.visibleDialogs = 0;
+    for (var i = 0; i < dlgs.length; i++) if (visible(dlgs[i])) out.visibleDialogs++;
+
+    out.pencilSvgFound = !!document.querySelector('svg[aria-label="New message"], svg[aria-label="New Message"]');
+    var btn = newMessageButton();
+    out.pencilClickTarget = btn
+      ? (btn.tagName + (btn.getAttribute && btn.getAttribute('role') ? '[role=' + btn.getAttribute('role') + ']' : '') +
+         ' class="' + String(btn.className || '').slice(0, 60) + '"')
+      : 'NOT FOUND';
+
+    out.inputs = [];
+    var ins = document.querySelectorAll('input, textarea');
+    for (var j = 0; j < ins.length; j++) {
+      if (!visible(ins[j])) continue;
+      out.inputs.push({
+        tag: ins[j].tagName,
+        type: ins[j].getAttribute('type') || '',
+        name: ins[j].getAttribute('name') || '',
+        placeholder: ins[j].getAttribute('placeholder') || '',
+        aria: ins[j].getAttribute('aria-label') || '',
+        inDialog: !!(ins[j].closest && ins[j].closest('div[role="dialog"]'))
+      });
+    }
+
+    out.recipientBoxFound = !!recipientBox();
+    var c = findComposer();
+    out.composer = c ? (c.tagName + (c.getAttribute('role') ? '[role=' + c.getAttribute('role') + ']' : '')) : 'none';
+    out.sendControlLive = !!sendControl();
+
+    out.editables = [];
+    var eds = document.querySelectorAll('[contenteditable="true"]');
+    for (var k = 0; k < eds.length; k++) {
+      if (!visible(eds[k])) continue;
+      out.editables.push(eds[k].tagName + '[role=' + (eds[k].getAttribute('role') || '') + ']');
+    }
+
+    var txt = JSON.stringify(out, null, 1);
+    try { console.log('[Herbal Leaf probe]', out); } catch (e) {}
+    try { if (navigator.clipboard) navigator.clipboard.writeText(txt); } catch (e) {}
+    log('Probe: ' + out.visibleDialogs + ' dialog(s), pencil ' + out.pencilClickTarget +
+      ', recipient box ' + (out.recipientBoxFound ? 'FOUND' : 'not found') +
+      ', ' + out.inputs.length + ' visible input(s), composer ' + out.composer +
+      '. Full detail is on the clipboard and in the console.');
+  }
+  $('#probe').addEventListener('click', probeDom);
+
+  async function autoRun() {
+    if (AUTO_RUN !== 'dialog' && AUTO_RUN !== 'send') return;
+
+    /* Only a tab this page queued. A profile you opened yourself is yours. */
+    var who = wantedHandle();
+    if (!who) return;
+
+    var done = sentHere() || {};
+    if (done.welcome) {
+      showAuto('Already sent on this thread, so nothing was sent again.', false);
+      reportHome('skipped', who, 'already sent on this thread');
+      return;
+    }
+
+    /* STEP ONE, always: let the page finish arriving. Everything that used to go
+       wrong here went wrong because the script started work on a half rendered
+       page and read "not there yet" as "not there". */
+    showAuto('Waiting for @' + who + "'s page to settle.", false);
+    await pageSettled();
+    if (cancelled) return;
+
+    if (AUTO_RUN === 'dialog') {
+      showAuto('Opening the message dialog with @' + who + '.', false);
+      var opened = await openDialog();
+      if (opened) showAuto('Dialog open. The messages are one keypress away.', false);
+      else hideAuto();
+      return;
+    }
+
+    var s = sitting();
+    if (CAPPED && s.n >= SITTING_CAP) {
+      showAuto('Session cap reached, ' + s.n + ' already sent in this sitting. ' +
+        'Nothing sent here. Send by hand, or start a new sitting later.', true);
+      reportHome('capped', who, s.n + ' sent in this sitting, which is the cap');
+      return;
+    }
+
+    if (!(await waitForTurn(who))) {
+      releaseLock();
+      reportHome('failed', who, cancelled ? 'cancelled in the tab' : 'never got a turn');
+      return;
+    }
+
+    var beat = setInterval(holdLock, 15000);
+    try {
+      if (!(await countdown(COUNTDOWN_MS, who))) {
+        showAuto('Cancelled before anything sent.', true);
+        reportHome('failed', who, 'cancelled during the countdown');
+        return;
+      }
+      showAuto('Sending to @' + who + '.', true);
+      var res = await run('welcome', [0, 1, 2]);
+      if (res.skip) {
+        /* This account, not this run. The loop carries on to the next one. */
+        showAuto('Passed over: ' + res.error, false);
+        reportHome('unreachable', who, res.error);
+        return;
+      }
+      if (res.error) {
+        showAuto('Stopped: ' + res.error, true);
+        reportHome('failed', who, res.error);
+        return;
+      }
+      var n = countSend();
+      writeJson(LAST_KEY, { at: Date.now() });
+      reportHome('sent', who);
+      /* This tab does NOT close itself. The sender page owns it and navigates it
+         to the next account, because reopening a tab per account needs pop-up
+         permission and navigating one you already have does not. Closing here
+         would hand that problem straight back. */
+      showAuto((CAPPED ? n + ' of ' + SITTING_CAP : 'Sent ' + n) +
+        ' this sitting. Waiting for the next one.', false);
+    } finally {
+      clearInterval(beat);
+      releaseLock();
+    }
+  }
+
+  /* ---------- hotkeys ---------- */
+
+  function inPanel(e) {
+    var path = e.composedPath ? e.composedPath() : [];
+    return path.indexOf(host) >= 0;
+  }
+
+  function onKey(e) {
+    if (e.repeat || e.metaKey) return;
+
+    /* Typing in the edit box must never fire a send, and Escape there should
+       let go of the field rather than hide the panel mid-edit. */
+    if (inPanel(e)) {
+      if (e.key !== 'Escape') return;
+      var t = e.composedPath()[0];
+      if (t && t.tagName === 'TEXTAREA') t.blur();
+      else host.style.display = 'none';
+      return;
+    }
+
+    var isW = e.code === 'KeyW' || e.key === 'W' || e.key === 'w';
+    var isI = e.code === 'KeyI' || e.key === 'I' || e.key === 'i';
+    var isN = e.code === 'KeyN' || e.key === 'N' || e.key === 'n';
+    var isD = e.code === 'KeyD' || e.key === 'D' || e.key === 'd';
+    var job = null;
+
+    if (e.altKey && e.shiftKey && !e.ctrlKey && isD) {
+      e.preventDefault();
+      e.stopPropagation();
+      openDialog();
+      return;
+    }
+
+    /* I stays wired as an alias for muscle memory from the older sender. */
+    if (e.altKey && e.shiftKey && !e.ctrlKey && (isW || isI)) job = ['welcome', [0, 1, 2]];
+    else if (e.altKey && e.shiftKey && !e.ctrlKey && isN) job = ['newsletter', []];
+    else if (e.altKey && e.shiftKey && !e.ctrlKey) {
+      var d = ['Digit1', 'Digit2', 'Digit3'].indexOf(e.code);
+      if (d >= 0) job = ['welcome', [d]];
+    } else if (e.key === 'Escape') {
+      /* Escape stops an unattended run before it hides anything: hiding the
+         panel mid-countdown would take the Cancel button off screen. */
+      if (autobar.style.display !== 'none' && !cancelled) {
+        cancelled = true;
+        releaseLock();
+        showAuto('Cancelled. Nothing further will send on its own in this tab.', true);
+        return;
+      }
+      if (host.style.display !== 'none') { host.style.display = 'none'; }
+      return;
+    }
+
+    if (!job) return;
+    e.preventDefault();
+    e.stopPropagation();
+    host.style.display = '';
+    run(job[0], job[1]);
+  }
+  window.addEventListener('keydown', onKey, true);
+
+  window.__hlmSender = {
+    show: function () { host.style.display = ''; log('Ready.'); },
+    run: run
+  };
+  /* The list, if this tab was given one. Read at arm time from the fragment, or
+     recovered from sessionStorage after a reload. The panel says which of those
+     happened, and says so loudly when there is no list at all, because "nothing
+     happened" with no explanation is the worst thing this can do. */
+  var startList = readList();
+  if (startList && startList.handles.length) {
+    acceptQueue(startList.handles, 'boot', startList.done, startList.total, startList.sentIdx);
+  }
+
+  var armedFor = armedHandle();
+  var where;
+  if (startList && startList.handles.length) {
+    where = 'Got a list of ' + startList.handles.length + '. ' +
+      (AUTO_RUN === 'send' ? 'Starting.' : 'Press Run the list.');
+  } else if (onProfile()) {
+    where = 'On their profile, so a send opens the dialog by clicking Message first.';
+  } else if (onDirect()) {
+    where = 'On the messages page, with no list. Start one from the sender page.';
+  } else {
+    where = 'Hotkeys are live.';
+  }
+  log((armedFor ? 'Armed for @' + armedFor + '. ' : 'Armed. ') + where);
+
+  /* Deliberately not awaited: arming must finish and the panel must be usable
+     even if the unattended run is sitting in a queue behind another tab. */
+  autoRun();
+})();
+</script>
+
+<script>
+/* ------------------------------------------------------------------ *
+ * The roster. Empty until you load one, and kept in this page's own
+ * localStorage afterwards, so a reload does not cost you the import.
+ *
+ * handle : the Instagram username.
+ * exact  : false when the handle was cut off, by the screenshot or by
+ *          Instagram's own ellipsis, so its link goes to Instagram search
+ *          rather than a profile URL that would 404.
+ * name   : the display name under the handle, when one was readable.
+ * kind   : 'shop' for a business or brand, 'person' for an individual,
+ *          'noise' for engagement-farm and default-avatar number-string
+ *          accounts. A starting guess for segmentation, not gospel. The
+ *          screenshot reader cannot infer this, so imported rows carry no
+ *          kind until you set one.
+ * geo    : 'us' or 'intl' where the profile made it obvious, otherwise absent.
+ *          A US hemp offer is noise to an account in Dubai or Bangkok.
+ * ------------------------------------------------------------------ */
+const ROSTER_KEY = "hlmOutreach.roster.v1";
+
+function loadRoster() {
+  try {
+    const r = JSON.parse(localStorage.getItem(ROSTER_KEY));
+    return Array.isArray(r) ? r.filter(f => f && typeof f.handle === "string" && f.handle) : [];
+  } catch (e) { return []; }
+}
+function saveRoster() {
+  try { localStorage.setItem(ROSTER_KEY, JSON.stringify(FOLLOWERS)); } catch (e) {}
+}
+
+let FOLLOWERS = loadRoster();
+
+/* ------------------------------------------------------------------ *
+ * The preloaded list.
+ *
+ * These handles ship inside the page, so a fresh open is this list rather
+ * than an empty roster. Once applied they live in localStorage like any
+ * hand-loaded roster: import, edit, mute, export and "Clear the whole
+ * list" all treat them identically, and none of it is special-cased.
+ *
+ * PRELOAD_ID is the whole mechanism, and it is what makes "preload this
+ * list" and "wipe whatever handles were here" ONE action rather than two.
+ * The id is stamped into localStorage the first time a build applies its
+ * list, and checked on every boot: a build whose id the browser has not
+ * seen yet REPLACES the roster with its list (discarding whatever handles
+ * were there) and records the id, so it never does it a second time. That
+ * is why clearing the list in the UI sticks across a reload instead of
+ * being quietly refilled by the seed, and why a browser still holding an
+ * older run's handles is cleaned out the first time it opens this file. To
+ * push a different list to a browser that already ran one, change the
+ * handles AND bump the id in the same edit.
+ * ------------------------------------------------------------------ */
+const PRELOAD_ID = "2026-08-14.a";
+const PRELOAD_KEY = "hlmOutreach.preload.v1";
+const PRELOAD_HANDLES = [
+  "milltaxboy", "karimadjaho3", "blackjack_organics", "mdhabibur8466", "khijarsadik",
+  "smartshop_somagarden", "chelovek.v.puti", "420_love_patient", "musalia__trending_gallerys_hig", "saliou103330",
+  "sukhvii.sinh", "mia_adnt", "wassaiccommons", "legalleafdean", "krys.t.i",
+  "hebborns_family_funfair_", "jon_snow___10101", "25ammo", "bairamgaldiiov", "boomsticks.mi",
+  "gagouland", "ashoked284", "moonlightterpz.089", "rm_graphic_.designer", "cangaceiros.fcpe",
+  "matt.e7153", "mirfieldflavours", "med.hansestadtbremen", "mfuphy", "italonerisilva2005",
+  "abhishek_saini_40042", "dshedrack875", "mahinekumari9214", "jfrsysy9", "legalleafjacob",
+  "ndiritu.jesee", "jokerliquidz", "dor.tmundliquid", "marleygrowshop420", "pablo895779",
+  "g14pharma2", "nicotia_market", "geekbar_fam_arabia", "stephen18102", "pawan_singh_rajput7771_s.s",
+  "plugberlin_", "line.t616", "soso_28102013", "peter_kapoma_jr", "tenerifesocialclub",
+  "otter.8024292", "_asadbek_1212_t_", "shahid_ansari_yt0", "dh_party_stock", "andrewsjointdania",
+  "anshulk3549", "luka.s327stgt", "mahesh1868219", "legacygrows413", "robers135",
+  "quarter_gook", "belfast.penzuth", "donanairdopovo", "aminul_hussain_007", "leavesgreen_bortanicals",
+  "satysingh23", "kang.woojin34", "atemporal_experience_", "gateaux_rodez", "savad59860",
+  "miska_olachova", "lych_lite", "shayranamoodofficeial", "xnoone808", "greyworld.xx",
+  "saumyxmusic001", "refr.eshedit", "sip.lifestyle", "cbd.liquid4", "drin_kstory",
+  "rj.18_aala_choudhary", "stomp_box_world", "joseph.kinyozi", "richlanekelso", "suraj__yadav__639244",
+  "nazrul84899", "milli.kerry", "blackcatonhisback", "reprocann.33", "sney_cam",
+  "hawkseyefarms", "alex.080726", "metrotra5", "pappu_kumar_saha9263", "calidispensary018",
+  "biliyou700_", "psyconaut_myco_labs", "eseeuquiserfalarcomdeus", "3arbi_10ipliner"
+];
+
+/* Handle strings to roster rows. Deduped case-insensitively, and marked
+   exact: true because they are given in full here, not read off a
+   screenshot where a tail can be cut off. */
+function preloadRoster() {
+  const seen = new Set();
+  return PRELOAD_HANDLES.reduce((out, raw) => {
+    const h = String(raw || "").trim().replace(/^@+/, "").toLowerCase();
+    if (!h || seen.has(h)) return out;
+    seen.add(h);
+    out.push({ handle: h, name: "", exact: true });
+    return out;
+  }, []);
+}
+
+/* Runs once per PRELOAD_ID, so it is the wipe as much as the load: it
+   REPLACES the roster. The contact ledger and the mute list live under a
+   different key and are left untouched, so a preloaded handle that was
+   already messaged or muted keeps that state. */
+function applyPreloadOnce() {
+  let seen;
+  try { seen = localStorage.getItem(PRELOAD_KEY); } catch (e) { seen = null; }
+  if (seen === PRELOAD_ID) return;
+  FOLLOWERS = preloadRoster();
+  saveRoster();
+  try { localStorage.setItem(PRELOAD_KEY, PRELOAD_ID); } catch (e) {}
+}
+
+
+const searchUrl = f => "https://www.instagram.com/explore/search/keyword/?q=" + encodeURIComponent(f.handle);
+/* ig.me/m/<handle> is a mobile app deep link and does not open a thread on
+ * desktop web. Instagram has no URL that takes a recipient, so the tab lands on
+ * the new-message composer with the handle in the hash, and the injected panel
+ * fills the recipient in from there. The hash survives the load; Instagram's
+ * router may drop it afterwards, which is why the panel stashes it per tab.
+ *
+ * The key is hlm= rather than ll=, so a tab opened by this page cannot be
+ * picked up by the Legal Leaf sender and sent the wrong site's messages. */
+const dmUrl = f => f.exact
+  ? "https://www.instagram.com/direct/new/#hlm=" + encodeURIComponent(f.handle)
+  : searchUrl(f);
+
+/* The profile route carries the same hash, and that is what makes it the better
+ * of the two. On @x's profile the sender clicks the Message button, which can
+ * only ever open a thread with @x: no search box, no result list, nothing to
+ * mis-pick. The hash is there so the tab knows which row it was opened for and
+ * can refuse if the profile it landed on is somebody else. */
+const profileUrl = f => f.exact
+  ? "https://www.instagram.com/" + encodeURIComponent(f.handle) + "/#hlm=" + encodeURIComponent(f.handle)
+  : searchUrl(f);
+
+/* ------------------------------------------------------------------ *
+ * The messages, and what saving means.
+ *
+ * SAMPLES is a starting draft and nothing else. It is the one place any
+ * default wording is written: the injected sender carries no message text of
+ * its own, and section 6 builds it from whatever is SAVED here, stamped with a
+ * revision so a newer save actually replaces what the browser was holding.
+ *
+ * Nothing on this page reads SAMPLES once something is saved, so rewriting all
+ * of it and pressing Save leaves no trace of the sample behind.
+ * ------------------------------------------------------------------ */
+const SAVE_KEY = "hlmOutreach.messages.v1";
+
+const SAMPLES = {
+  welcome: [
+    "Hey, thanks for the follow, and welcome. We just launched Herbal Leaf Market, and every vendor on it is one we genuinely adore. Have a look around, it is growing every week.",
+    "https://herballeafmarket.com",
+    "Best,\nJacob"
+  ],
+  /* {link} is where the tagged product URL lands, and it is last so Instagram
+     attaches the preview card to it. The opt-out line stays: one person asking
+     to be left alone is the whole conversation. */
+  newsletter: "This week's pick from the site. Say the word if you would rather not get these and I will stop. {link}"
+};
+
+/* countdown and betweenTabs are the two numbers that decide how fast an
+   unattended run moves. They default low enough to be usable and high enough
+   that a mis-queued tab can be caught before it sends. */
+const DEFAULTS = {
+  self: "herbal_leaf_market", gapMs: 1800,
+  autoRun: "off", autoClose: true, settle: 2, countdown: 5, betweenTabs: 6, cap: 0
+};
+const AUTO_MODES = ["off", "dialog", "send"];
+
+const asText = (v, fallback) => (typeof v === "string" ? v : fallback);
+const asNum = (v, fallback, lo, hi) => {
+  const n = parseInt(v, 10);
+  return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : fallback;
+};
+
+function shapeSaved(raw, wasStored) {
+  const o = (raw && typeof raw === "object") ? raw : {};
+  /* See limitsFreed below. Rewrites the value being read, once. */
+  if (wasStored && o.limitsFreed !== true) o.cap = 0;
+  const w = Array.isArray(o.welcome) ? o.welcome : [];
+  const p = (o.pick && typeof o.pick === "object") ? o.pick : {};
+  const gap = parseInt(o.gapMs, 10);
+  return {
+    welcome: [0, 1, 2].map(i => asText(w[i], SAMPLES.welcome[i])),
+    newsletter: asText(o.newsletter, SAMPLES.newsletter),
+    pick: {
+      name: asText(p.name, ""),
+      price: asText(p.price, ""),
+      url: asText(p.url, ""),
+      week: asText(p.week, "")
+    },
+    self: asText(o.self, DEFAULTS.self),
+    gapMs: Number.isFinite(gap) ? Math.min(20000, Math.max(0, gap)) : DEFAULTS.gapMs,
+    autoRun: AUTO_MODES.indexOf(o.autoRun) >= 0 ? o.autoRun : DEFAULTS.autoRun,
+    /* Absent means on, since it only matters in the send mode and closing the
+       tab is what makes that mode a loop rather than a pile of tabs. */
+    autoClose: o.autoClose === undefined ? DEFAULTS.autoClose : !!o.autoClose,
+    settle: asNum(o.settle, DEFAULTS.settle, 0, 120),
+    countdown: asNum(o.countdown, DEFAULTS.countdown, 0, 120),
+    betweenTabs: asNum(o.betweenTabs, DEFAULTS.betweenTabs, 0, 3600),
+    /* 0 means no cap. Asked for explicitly: a run of 100+ in one sitting was
+       being stopped by a ceiling of 99, and a ceiling you cannot raise is not a
+       setting. The pacing numbers above are what actually spaces a run out; this
+       one only ever decided when to stop. */
+    cap: asNum(o.cap, DEFAULTS.cap, 0, 9999),
+    /* A ONE-TIME MIGRATION, not a live setting. Settings saved before the cap
+       could be switched off carry the old default of 12, and leaving those alone
+       would mean the ceiling came off in the file and stayed on in the browser
+       that matters. Absent means those older settings, so the cap goes to 0 once
+       and the marker stops it happening again the next time a cap is chosen. */
+    limitsFreed: true,
+    /* rev 0 means nothing has ever been saved, so the boxes are still showing
+       the samples. Any save lands on 1 or above, which is what lets the
+       injected sender tell a published revision from a starting draft. */
+    rev: wasStored ? Math.max(1, Number(o.rev) || 1) : 0,
+    stored: !!wasStored
+  };
+}
+
+function loadSaved() {
+  try {
+    const s = JSON.parse(localStorage.getItem(SAVE_KEY));
+    if (s && typeof s === "object") return shapeSaved(s, true);
+  } catch (e) {}
+  return shapeSaved({}, false);
+}
+
+let saved = loadSaved();
+
+/* ---------- contact ledger ----------
+ * Lives in this page's localStorage, which is a different origin from
+ * instagram.com, so the in-page panel cannot see it and vice versa. This page
+ * is therefore the system of record for cadence: it stamps someone when it
+ * opens their tab, which is the only signal it gets.
+ *
+ * Shape: { "<handle>": { c: <ms first contact>, n: <ms newsletter>, o: 1 } }
+ */
+const LEDGER_KEY = "hlmOutreach.ledger.v1";
+const DAY = 86400000;
+
+function loadLedger() {
+  try { return JSON.parse(localStorage.getItem(LEDGER_KEY)) || {}; } catch (e) { return {}; }
+}
+function saveLedger(l) {
+  try { localStorage.setItem(LEDGER_KEY, JSON.stringify(l)); } catch (e) {}
+}
+let ledger = loadLedger();
+const entry = (h) => ledger[h] || {};
+
+/* Which handles this session has opened a tab for. Held separately from the
+   ledger because renderList() rebuilds every row, so a class set on an <li> is
+   gone at the next render. */
+const openedHandles = new Set();
+
+function stamp(handle, field) {
+  ledger[handle] = Object.assign({}, ledger[handle], { [field]: Date.now() });
+  saveLedger(ledger);
+}
+function setMuted(handle, on) {
+  const e = Object.assign({}, ledger[handle]);
+  if (on) e.o = 1; else delete e.o;
+  ledger[handle] = e;
+  saveLedger(ledger);
+}
+
+const gapDaysEl = document.getElementById("gapDays");
+const gapDays = () => Math.max(1, parseInt(gapDaysEl.value, 10) || 7);
+
+let campaign = "welcome";
+
+/* Muted is absolute: excluded from every selection, in both campaigns. */
+const isMuted = (f) => !!entry(f.handle).o;
+const introDone = (f) => !!entry(f.handle).c;
+const newsDone = (f) => !!entry(f.handle).n;
+const daysSinceIntro = (f) => {
+  const c = entry(f.handle).c;
+  return c ? Math.floor((Date.now() - c) / DAY) : null;
+};
+
+function isDue(f) {
+  if (isMuted(f)) return false;
+  if (campaign === "welcome") return !introDone(f);
+  return introDone(f) && !newsDone(f) && (Date.now() - entry(f.handle).c) >= gapDays() * DAY;
+}
+
+/* ---------- list rendering ---------- */
+
+const listEl = document.getElementById("list");
+const statusEl = document.getElementById("status");
+const cadenceEl = document.getElementById("cadence");
+const openNextBtn = document.getElementById("openNext");
+const openBatchBtn = document.getElementById("openBatch");
+const clearBtn = document.getElementById("clearQueue");
+
+function badge(text, cls) {
+  const b = document.createElement("span");
+  b.className = "badge" + (cls ? " " + cls : "");
+  b.textContent = text;
+  return b;
+}
+function anchor(text, url) {
+  const a = document.createElement("a");
+  a.className = "link-btn";
+  a.textContent = text;
+  a.href = url;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  return a;
+}
+
+function stateChip(f) {
+  if (isMuted(f)) return badge("muted", "flag");
+  if (newsDone(f)) return badge("newsletter sent");
+  if (introDone(f)) {
+    const d = daysSinceIntro(f);
+    const label = "welcomed " + (d === 0 ? "today" : d + "d ago");
+    return badge(label, isDue(f) ? "due" : "");
+  }
+  return badge("not contacted");
+}
+
+function renderList() {
+  const checked = new Set(
+    Array.from(listEl.querySelectorAll('input[type="checkbox"]'))
+      .filter(cb => cb.checked)
+      .map(cb => cb.dataset.handle)
+  );
+  listEl.textContent = "";
+
+  if (!FOLLOWERS.length) {
+    const li = document.createElement("li");
+    li.style.cssText = "display:block;padding:22px 14px;color:var(--muted);text-align:center";
+    li.textContent = "No followers loaded. Drop some screenshots into section 1.";
+    listEl.appendChild(li);
+    return;
+  }
+
+  FOLLOWERS.forEach((f, i) => {
+    const li = document.createElement("li");
+    li.dataset.index = i;
+    if (isMuted(f)) li.classList.add("muted-row");
+    if (openedHandles.has(f.handle)) li.classList.add("done");
+
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.dataset.handle = f.handle;
+    cb.checked = checked.has(f.handle) && !isMuted(f);
+    cb.disabled = isMuted(f);
+
+    const idx = document.createElement("span");
+    idx.className = "idx";
+    idx.textContent = (i + 1) + ".";
+
+    const who = document.createElement("div");
+    who.className = "who";
+    const h = document.createElement("div");
+    h.className = "handle";
+    h.textContent = f.exact ? "@" + f.handle : f.handle + " (partial)";
+    who.appendChild(h);
+    const bits = [f.name, f.note].filter(Boolean);
+    if (bits.length) {
+      const n = document.createElement("div");
+      n.className = "name";
+      n.textContent = bits.join(" · ");
+      who.appendChild(n);
+    }
+
+    const badges = document.createElement("div");
+    badges.className = "badges";
+    const chip = stateChip(f);
+    chip.classList.add("state");
+    chip.title = "Click to clear this account's contact history";
+    chip.addEventListener("click", () => {
+      delete ledger[f.handle];
+      saveLedger(ledger);
+      renderList();
+      refreshCadence();
+    });
+    badges.appendChild(chip);
+    if (f.kind === "shop") badges.appendChild(badge("shop"));
+    if (f.kind === "noise") badges.appendChild(badge("likely bot", "flag"));
+    if (f.geo === "intl") badges.appendChild(badge("not US", "flag"));
+    if (f.requested) badges.appendChild(badge("requested"));
+    if (!f.exact) badges.appendChild(badge("needs lookup", "flag"));
+
+    const acts = document.createElement("div");
+    acts.className = "acts";
+    acts.appendChild(anchor(f.exact ? "DM" : "Search", dmUrl(f)));
+    if (f.exact) acts.appendChild(anchor("Profile", profileUrl(f)));
+    const mute = document.createElement("button");
+    mute.className = "link-btn";
+    mute.textContent = isMuted(f) ? "unmute" : "mute";
+    mute.addEventListener("click", () => {
+      setMuted(f.handle, !isMuted(f));
+      renderList();
+      refreshCadence();
+    });
+    acts.appendChild(mute);
+
+    li.append(cb, idx, who, badges, acts);
+    listEl.appendChild(li);
+  });
+}
+
+const checkboxes = () => Array.from(listEl.querySelectorAll('input[type="checkbox"]'));
+
+function refreshCadence() {
+  const muted = FOLLOWERS.filter(isMuted).length;
+  const notContacted = FOLLOWERS.filter(f => !isMuted(f) && !introDone(f)).length;
+  const due = FOLLOWERS.filter(isDue).length;
+  const waiting = FOLLOWERS.filter(f =>
+    !isMuted(f) && introDone(f) && !newsDone(f) && !isDue(f)).length;
+  const newsSent = FOLLOWERS.filter(f => !isMuted(f) && newsDone(f)).length;
+
+  const parts = [];
+  parts.push(campaign === "welcome"
+    ? due + " never contacted and due a welcome"
+    : due + " due the newsletter now");
+  if (campaign === "newsletter" && waiting) {
+    parts.push(waiting + " contacted but not yet " + gapDays() + " days old");
+  }
+  if (campaign === "welcome" && notContacted !== due) {
+    parts.push(notContacted + " not contacted");
+  }
+  parts.push(newsSent + " already had a newsletter");
+  parts.push(muted + " muted");
+  cadenceEl.textContent = parts.join(". ") + ".";
+  document.getElementById("muteCount").textContent =
+    muted + " muted, and they are excluded from every selection and batch.";
+}
+
+/* ---------- selection ---------- */
+
+document.getElementById("selDue").addEventListener("click", () => {
+  const cap = Math.max(1, parseInt(document.getElementById("capN").value, 10) || 12);
+  let taken = 0;
+  checkboxes().forEach((cb, i) => {
+    const f = FOLLOWERS[i];
+    const want = isDue(f) && taken < cap;
+    cb.checked = want;
+    if (want) taken++;
+  });
+  statusEl.textContent = taken
+    ? "Ticked " + taken + " due account" + (taken === 1 ? "" : "s") + " for the " + campaign + "."
+    : "Nobody is due for the " + campaign + " right now.";
+});
+
+document.querySelectorAll("[data-select]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const mode = btn.dataset.select;
+    checkboxes().forEach((cb, i) => {
+      if (cb.disabled) { cb.checked = false; return; }
+      if (mode === "none") cb.checked = false;
+      else if (mode === "clean") cb.checked = FOLLOWERS[i].exact && !isMuted(FOLLOWERS[i]);
+    });
+  });
+});
+
+function setCampaign(next) {
+  campaign = next;
+  document.getElementById("campIntro").setAttribute("aria-pressed", String(next === "welcome"));
+  document.getElementById("campNews").setAttribute("aria-pressed", String(next === "newsletter"));
+  gapDaysEl.disabled = next === "welcome";
+  checkboxes().forEach(cb => { cb.checked = false; });
+  queue = []; opened = 0; total = 0;
+  openedHandles.clear();
+  renderList();
+  refreshCadence();
+  refreshQueueUI();
+}
+document.getElementById("campIntro").addEventListener("click", () => setCampaign("welcome"));
+document.getElementById("campNews").addEventListener("click", () => setCampaign("newsletter"));
+gapDaysEl.addEventListener("input", () => { refreshCadence(); renderList(); });
+
+/* ---------- tab queue ----------
+ * Measured in Chrome, and both facts shape this code:
+ *
+ * 1. One window.open per user gesture. Five calls in a single click handler
+ *    open one tab and the other four are blocked, so a whole batch on one click
+ *    only works once the page is allowed to show pop-ups.
+ * 2. Passing 'noopener' makes window.open return null even when the tab opened
+ *    fine, which is per spec. So it is omitted here: without it the return
+ *    value actually distinguishes opened from blocked.
+ *
+ * A blocked item stays at the head of the queue rather than being counted as
+ * done, so nothing is silently dropped.
+ */
+let queue = [];
+let opened = 0;
+let total = 0;
+
+const BLOCKED_HELP = "Chrome blocked that tab. Click the blocked-pop-ups icon at the " +
+  "right of the address bar, allow pop-ups for this page, then click again. Nothing was lost.";
+
+function nextUp() { return queue.length ? FOLLOWERS[queue[0].index] : null; }
+
+/* The batch button means two different things depending on whether the built
+   sender drives itself, so it says which one it is rather than leaving you to
+   guess from a number. */
+function refreshLoopUI() {
+  const armed = loopArmed();
+  openBatchBtn.textContent = armed ? "Run the loop over" : "Open batch of";
+  document.getElementById("batchUnit").textContent = armed ? "accounts" : "tabs";
+}
+
+function refreshQueueUI(extra) {
+  const nxt = nextUp();
+  refreshLoopUI();
+  openNextBtn.disabled = !nxt || loop.on;
+  openBatchBtn.disabled = !nxt || loop.on;
+  clearBtn.disabled = total === 0;
+  openNextBtn.textContent = nxt
+    ? "Open next tab: " + (nxt.exact ? "@" + nxt.handle : nxt.handle)
+    : "Open next tab";
+
+  let msg;
+  if (!total) msg = "Nothing queued yet.";
+  else if (!queue.length) msg = "All " + total + " opened. Queue is empty.";
+  else msg = "Opened " + opened + " of " + total + ", " + queue.length + " to go.";
+  statusEl.textContent = extra ? msg + " " + extra : msg;
+}
+
+/* The single Instagram tab the loop hands its list to. Kept so the page can
+ * re-point it, focus it and close it, and so a second run reuses it rather than
+ * asking Chrome for another pop-up. */
+let loopWin = null;
+
+/* Opens ONE tab for the item at the head of the queue. This is the manual path
+ * only: "Open next tab", "Open batch of", and the O key. The loop does not use it,
+ * because the loop never opens a tab per account. */
+function openOne() {
+  const item = queue[0];
+  if (!item) return false;
+  const win = window.open(item.url, "_blank");
+  if (!win) return false;
+
+  queue.shift();
+  opened++;
+  const f = FOLLOWERS[item.index];
+  if (item.stamp) stamp(f.handle, campaign === "newsletter" ? "n" : "c");
+  openedHandles.add(f.handle);
+  const li = listEl.querySelector('li[data-index="' + item.index + '"]');
+  if (li) li.classList.add("done");
+  return true;
+}
+
+function startQueue(urlFor, labelPlural, doStamp) {
+  const picked = checkboxes()
+    .map((cb, i) => (cb.checked && !isMuted(FOLLOWERS[i]) ? i : -1))
+    .filter(i => i >= 0);
+  if (!picked.length) {
+    statusEl.textContent = "Nothing ticked, so nothing to open.";
+    return;
+  }
+  queue = picked.map(i => ({ index: i, url: urlFor(FOLLOWERS[i]), stamp: doStamp }));
+  total = queue.length;
+  opened = 0;
+  openedHandles.clear();
+  listEl.querySelectorAll("li.done").forEach(li => li.classList.remove("done"));
+  /* With the loop armed, queueing only queues. Spending this click on a tab
+     would start one send outside the loop, and its report would arrive with
+     nothing to advance, which reads like the loop silently stopping. */
+  if (loopArmed()) {
+    refreshQueueUI("Queued " + total + " " + labelPlural + ". Press \"Run the loop over\" to start.");
+    renderList();
+    refreshCadence();
+    return;
+  }
+  /* Otherwise the click that queued is itself a gesture, so spend it. */
+  const ok = openOne();
+  refreshQueueUI(ok ? "Queued " + total + " " + labelPlural + "." : BLOCKED_HELP);
+  renderList();
+  refreshCadence();
+}
+
+function batchSize() {
+  return Math.max(1, parseInt(document.getElementById("batchSize").value, 10) || 10);
+}
+
+/* ---------- the loop ----------
+ * One IG tab at a time, start to finish, hands off. The page opens a tab, the
+ * sender in it opens the dialog, sends, reports back and closes itself, and this
+ * opens the next one. Slower than a wall of tabs by design: one tab open at a
+ * time is watchable, and every step lands in the transcript below.
+ *
+ * The chain needs pop-ups allowed for this page. Only the FIRST tab rides a real
+ * click; every one after it is opened from a message handler, which Chrome counts
+ * as no gesture at all. When one is blocked the loop stops and says so, with the
+ * queue untouched, rather than looking like it finished.
+ */
+let loop = { on: false, target: 0, sent: 0, skipped: 0 };
+const loopLogEl = document.getElementById("loopLog");
+const loopStopBtn = document.getElementById("loopStop");
+
+/* True when the built sender will actually drive itself and hand the tab back. */
+const loopArmed = () => saved.autoRun === "send";
+
+/* If a tab neither reports nor fails, the loop would sit there looking busy for
+ * ever. This is how long to give one account before calling it stalled: the
+ * countdown, the three messages, and enough slack for the dialog to open and for
+ * Instagram to be slow. */
+function stallMs() {
+  /* One account's worth of work, generously: two settles, up to 12s for the
+     recipient box, 9s to find an exact match, the countdown, three messages, the
+     gap before the next one, and 60s of slack for Instagram being slow. Generous
+     on purpose, since a watchdog that fires while the tab is still working would
+     stop a healthy run. */
+  return (2 * saved.settle + 21 + saved.countdown + 3 * (saved.gapMs / 1000) +
+    saved.betweenTabs + 60) * 1000;
+}
+let stallTimer = null;
+function armStall(who) {
+  clearTimeout(stallTimer);
+  stallTimer = setTimeout(() => {
+    if (!loop.on) return;
+    loopSay("no word back from @" + who + " after " + Math.round(stallMs() / 1000) +
+      "s, so the loop stopped there rather than guess.", "bad");
+    loopEnd("Loop stopped on a silent tab. Look at the Instagram tab: if the messages " +
+      "did go, the tab could not report back to this page, so tell me and I will " +
+      "switch it to a timed advance.");
+  }, stallMs());
+}
+
+function loopSay(text, cls) {
+  loopLogEl.hidden = false;
+  const line = document.createElement("div");
+  line.className = cls || "meh";
+  line.textContent = text;
+  loopLogEl.appendChild(line);
+  while (loopLogEl.children.length > 200) loopLogEl.removeChild(loopLogEl.firstChild);
+  loopLogEl.scrollTop = loopLogEl.scrollHeight;
+}
+
+/* clean is true only when the run reached its own end. Anything else leaves the
+   tab open on purpose: it is sitting on the account that went wrong, and that is
+   the only evidence of why. */
+function loopEnd(why, clean) {
+  const was = loop.on;
+  loop = { on: false, target: 0, sent: 0, skipped: 0 };
+  loopStopBtn.hidden = true;
+  clearTimeout(stallTimer);
+  clearTimeout(ackTimer);
+  stopPosting();
+  if (was) loopSay(why, "meh");
+  if (was && clean && saved.autoClose && loopWin && !loopWin.closed) {
+    try { loopWin.close(); } catch (e) {}
+  }
+  refreshQueueUI();
+}
+
+/* Hands the whole list to ONE Instagram tab and then just listens.
+ *
+ * This replaced a design that pointed a tab at one profile after another, and the
+ * difference is the point: nothing navigates now. The tab lands on the DM page
+ * once, and the sender inside it drafts each person in turn from there. That
+ * removes every failure the old shape had, in one go. No pop-up per account, no
+ * arming again after each load, no waiting for a profile header to render, and no
+ * tab lifecycle to get wrong.
+ *
+ * The list goes out by postMessage and is re-posted until the tab acknowledges it,
+ * because the tab has to boot and arm before it can listen and this page cannot
+ * know when that happened.
+ */
+let loopPost = null;
+let ackTimer = null;
+let loopAcked = false;
+
+function stopPosting() {
+  if (loopPost) { clearInterval(loopPost); loopPost = null; }
+}
+
+function postToTab(msg) {
+  if (!loopWin || loopWin.closed) return false;
+  try {
+    loopWin.postMessage(Object.assign({ app: "hlm-sender" }, msg), "https://www.instagram.com");
+    return true;
+  } catch (e) { return false; }
+}
+
+function startLoop() {
+  loopAcked = false;
+  const take = Math.min(batchSize(), queue.length);
+  const handles = queue.slice(0, take).map(it => FOLLOWERS[it.index].handle);
+  if (!handles.length) return refreshQueueUI("Nothing queued, so nothing to run.");
+
+  loop = { on: true, target: handles.length, sent: 0, skipped: 0 };
+  loopStopBtn.hidden = false;
+  loopLogEl.textContent = "";
+  loopSay("Handing " + handles.length + (handles.length === 1 ? " account" : " accounts") +
+    " to one Instagram tab. Nothing navigates from here on.", "meh");
+
+  /* THE LIST GOES IN THE URL, which is the channel that cannot silently fail.
+     postMessage below is a second route, kept because it lets a tab that is
+     already open pick up a new list, but the fragment is what the run relies on:
+     it is present before the tab has even loaded, it survives the panel arming
+     late, and it does not care whether window.opener lived.
+     /direct/new/ also opens with the recipient box already up, which is exactly
+     where drafting starts. */
+  /* The inbox rather than /direct/new/: it is certainly a real page, and it means
+     the pencil path is the one path, exercised every time, rather than a special
+     case for the first account that only shows up in one run out of N. */
+  const target = "https://www.instagram.com/direct/inbox/#hlmlist=" +
+    encodeURIComponent(handles.join(","));
+
+  /* The one pop-up of the whole run, and it rides this click. */
+  if (!loopWin || loopWin.closed) {
+    loopWin = window.open(target, "hlmSenderTab");
+  } else {
+    try { loopWin.location.href = target; } catch (e) {}
+    try { loopWin.focus(); } catch (e) {}
+  }
+  if (!loopWin) {
+    loopSay("Chrome blocked the tab, so nothing ran.", "bad");
+    loopEnd("Loop stopped.");
+    return refreshQueueUI(BLOCKED_HELP);
+  }
+
+  /* Re-post until it acks. The tab is still loading for the first second or two
+     and a message sent into a page that is not listening yet is simply lost. */
+  const batch = "b" + loop.target + "-" + handles.join(",").length + "-" + handles[0];
+  let tries = 0;
+  stopPosting();
+  loopPost = setInterval(() => {
+    if (!loop.on || ++tries > 60) return stopPosting();
+    if (!loopWin || loopWin.closed) {
+      stopPosting();
+      loopSay("The Instagram tab was closed before it took the list.", "bad");
+      return loopEnd("Loop stopped.");
+    }
+    postToTab({ kind: "queue", batch: batch, handles: handles });
+  }, 700);
+  postToTab({ kind: "queue", batch: batch, handles: handles });
+
+  /* A short, specific check BEFORE the long stall watchdog. Silence here almost
+     always means the userscript is not installed, is disabled, or is an older
+     copy that does not know about lists, and saying that beats a vague timeout
+     ninety seconds later. */
+  clearTimeout(ackTimer);
+  ackTimer = setTimeout(() => {
+    if (!loop.on || loopAcked) return;
+    loopSay("The Instagram tab has not acknowledged the list after 15s.", "bad");
+    loopSay("Check: is the userscript installed AND enabled, and is it the copy " +
+      "downloaded from this page since the loop was added? An older copy ignores " +
+      "lists entirely. The tab should say \"Got a list of N\" in its panel.", "bad");
+  }, 15000);
+
+  armStall(handles[0]);
+  refreshQueueUI("Waiting for the Instagram tab to take the list.");
+}
+
+/* Drops one handle out of the queue by name. The tab decides the order it works
+   in, so position in the queue is no longer the thing that identifies an item. */
+function dropFromQueue(handle) {
+  const i = queue.findIndex(it => FOLLOWERS[it.index] &&
+    FOLLOWERS[it.index].handle.toLowerCase() === String(handle).toLowerCase());
+  if (i >= 0) queue.splice(i, 1);
+}
+
+function loopTally() {
+  if (!loop.on) return;
+  if (loop.sent + loop.skipped >= loop.target) {
+    return loopEnd("Loop finished: " + loop.sent + " sent, " + loop.skipped + " skipped.", true);
+  }
+  refreshQueueUI("Loop running: " + (loop.sent + loop.skipped) + " of " + loop.target + " done.");
+}
+
+/* The only channel back from instagram.com, which is a different origin. The
+ * sender posts a verb and a handle; everything else is ignored, including any
+ * message from an origin that is not Instagram. */
+window.addEventListener("message", (e) => {
+  if (!/^https:\/\/(www\.)?instagram\.com$/.test(e.origin)) return;
+  const d = e.data;
+  if (!d || typeof d !== "object" || d.app !== "hlm-sender") return;
+  const who = typeof d.handle === "string" ? d.handle.slice(0, 40) : "";
+  const why = typeof d.why === "string" ? d.why.slice(0, 200) : "";
+
+  if (d.kind === "queued") {
+    loopAcked = true;
+    clearTimeout(ackTimer);
+    stopPosting();
+    loopSay("The tab has the list (" + (why || "?") + " accounts) and is working through it.", "meh");
+    armStall("the first account");
+    return refreshQueueUI("Loop running in the Instagram tab.");
+  }
+
+  if (d.kind === "sent") {
+    loop.sent++;
+    /* Stamped HERE and nowhere earlier. Opening a tab used to be the only signal
+       this page got, so it had to guess; a confirmed send is not a guess. */
+    if (who) { stamp(who, campaign === "newsletter" ? "n" : "c"); dropFromQueue(who); }
+    loopSay("sent      @" + who, "good");
+    renderList();
+    refreshCadence();
+    armStall("the next account");
+    return loopTally();
+  }
+  if (d.kind === "skipped") {
+    loop.skipped++;
+    if (who) { stamp(who, campaign === "newsletter" ? "n" : "c"); dropFromQueue(who); }
+    loopSay("skipped   @" + who + (why ? "  (" + why + ")" : ""), "meh");
+    renderList();
+    refreshCadence();
+    armStall("the next account");
+    return loopTally();
+  }
+  /* Could not be reached at all: no exact match for the handle, or nothing that
+     can be messaged. No stamp goes on, so it comes back round another day. */
+  if (d.kind === "unreachable") {
+    loop.skipped++;
+    if (who) dropFromQueue(who);
+    loopSay("no match   @" + who + (why ? "  (" + why + ")" : "") + ", moved on", "meh");
+    renderList();
+    refreshCadence();
+    armStall("the next account");
+    return loopTally();
+  }
+  if (d.kind === "capped") {
+    loopSay("stopped   @" + who + "  (" + (why || "session cap") + ")", "bad");
+    return loopEnd("Loop stopped at the per-sitting cap. Raise it in section 6, or come back later.");
+  }
+  if (d.kind === "failed") {
+    loopSay("FAILED    @" + who + (why ? "  (" + why + ")" : ""), "bad");
+    return loopEnd("Loop stopped on a failure. Nothing was stamped for that account and " +
+      "the rest are still queued. The Instagram tab is left as it was, so you can see it.");
+  }
+  if (d.kind === "done") {
+    stopPosting();
+    if (loop.on) {
+      loopSay("The tab reports it worked through " + (why || "the list") + ".", "meh");
+      loopEnd("Loop finished: " + loop.sent + " sent, " + loop.skipped + " skipped.", true);
+    }
+    return;
+  }
+});
+
+loopStopBtn.addEventListener("click", () => {
+  stopPosting();
+  postToTab({ kind: "stop" });
+  loopSay("Stopped by hand.", "meh");
+  loopEnd("Loop stopped. Whatever is still queued stayed queued.");
+});
+
+function openBatch() {
+  if (loopArmed()) return startLoop();
+  const size = batchSize();
+  let got = 0;
+  for (let k = 0; k < size && queue.length; k++) {
+    if (!openOne()) break;
+    got++;
+  }
+  renderList();
+  refreshCadence();
+  if (!got) return refreshQueueUI(BLOCKED_HELP);
+  if (got < size && queue.length) {
+    return refreshQueueUI("Chrome allowed " + got + " tab" + (got === 1 ? "" : "s") +
+      " from that click and blocked the rest, which are still queued. Allow pop-ups for " +
+      "this page to get the whole batch at once.");
+  }
+  refreshQueueUI("Opened " + got + " in that batch.");
+}
+
+document.getElementById("openDms").addEventListener("click", () => startQueue(dmUrl, "DM tabs", true));
+/* Profile tabs stamp too now. They used to be a way to look somebody up without
+ * touching their state, but they are a full send path since the sender opens the
+ * dialog from the profile, and the same rule has to apply: opening the tab is the
+ * only signal this page gets. The per-row Profile link is the one that still
+ * just looks. */
+document.getElementById("openProfiles").addEventListener("click", () => startQueue(profileUrl, "profile tabs", true));
+openNextBtn.addEventListener("click", () => {
+  const ok = openOne();
+  renderList();
+  refreshCadence();
+  refreshQueueUI(ok ? "" : BLOCKED_HELP);
+});
+openBatchBtn.addEventListener("click", openBatch);
+clearBtn.addEventListener("click", () => {
+  queue = []; opened = 0; total = 0;
+  openedHandles.clear();
+  renderList();
+  refreshQueueUI();
+});
+
+/* A keydown is a user gesture too, so O opens one tab per press. */
+window.addEventListener("keydown", (e) => {
+  if (e.ctrlKey || e.metaKey || e.altKey || (e.key !== "o" && e.key !== "O")) return;
+  const t = e.target;
+  if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+  if (!queue.length) return;
+  e.preventDefault();
+  const ok = openOne();
+  renderList();
+  refreshCadence();
+  refreshQueueUI(ok ? "" : BLOCKED_HELP);
+});
+
+/* ---------- muting in bulk ---------- */
+
+document.getElementById("muteAdd").addEventListener("click", () => {
+  const raw = document.getElementById("muteBox").value;
+  const wanted = raw.split(/[\s,]+/).map(s => s.trim().replace(/^@/, "").toLowerCase()).filter(Boolean);
+  if (!wanted.length) return;
+  let hit = 0;
+  const missed = [];
+  wanted.forEach(w => {
+    const f = FOLLOWERS.find(x => x.handle.toLowerCase() === w);
+    if (f) { setMuted(f.handle, true); hit++; } else { missed.push(w); }
+  });
+  document.getElementById("muteBox").value = "";
+  renderList();
+  refreshCadence();
+  statusEl.textContent = "Muted " + hit + "." +
+    (missed.length ? " Not on this list, so nothing to mute: " + missed.join(", ") + "." : "");
+});
+
+document.getElementById("ledgerReset").addEventListener("click", () => {
+  const muted = Object.entries(ledger).filter(([, v]) => v.o);
+  ledger = {};
+  /* Clearing history must never un-mute somebody. */
+  muted.forEach(([h]) => { ledger[h] = { o: 1 }; });
+  saveLedger(ledger);
+  renderList();
+  refreshCadence();
+  statusEl.textContent = "Contact history cleared. Mutes were kept.";
+});
+
+/* ------------------------------------------------------------------ *
+ * The editable drafts, and the Save that publishes them.
+ *
+ * Every editable box on this page reads out of one object and writes back into
+ * one localStorage key, so there is a single answer to "what is saved". The
+ * two Save buttons are the same action wearing two labels: pressing either one
+ * stores everything on the page, because a draft half saved is worse than one
+ * not saved at all.
+ * ------------------------------------------------------------------ */
+
+const welcomeBoxes = [0, 1, 2].map(i => document.getElementById("w" + i));
+const newsBox = document.getElementById("newsBox");
+const gapMsEl = document.getElementById("gapMs");
+const selfEl = document.getElementById("selfHandle");
+const pickName = document.getElementById("pickName");
+const pickPrice = document.getElementById("pickPrice");
+const pickUrl = document.getElementById("pickUrl");
+const pickWeek = document.getElementById("pickWeek");
+const autoRunEl = document.getElementById("autoRun");
+const autoCloseEl = document.getElementById("autoClose");
+const autoSettleEl = document.getElementById("autoSettle");
+const autoCountdownEl = document.getElementById("autoCountdown");
+const autoBetweenEl = document.getElementById("autoBetween");
+const autoCapEl = document.getElementById("autoCap");
+
+function applySaved() {
+  welcomeBoxes.forEach((t, i) => { t.value = saved.welcome[i]; });
+  newsBox.value = saved.newsletter;
+  gapMsEl.value = String(saved.gapMs);
+  selfEl.value = saved.self;
+  pickName.value = saved.pick.name;
+  pickPrice.value = saved.pick.price;
+  pickUrl.value = saved.pick.url;
+  pickWeek.value = saved.pick.week;
+  autoRunEl.value = saved.autoRun;
+  autoCloseEl.checked = saved.autoClose;
+  autoSettleEl.value = String(saved.settle);
+  autoCountdownEl.value = String(saved.countdown);
+  autoBetweenEl.value = String(saved.betweenTabs);
+  autoCapEl.value = String(saved.cap);
+}
+
+/* What is on screen right now, in the same shape as what is stored. */
+function draft() {
+  return shapeSaved({
+    welcome: welcomeBoxes.map(t => t.value),
+    newsletter: newsBox.value,
+    pick: {
+      name: pickName.value, price: pickPrice.value,
+      url: pickUrl.value, week: pickWeek.value
+    },
+    self: selfEl.value,
+    gapMs: gapMsEl.value,
+    autoRun: autoRunEl.value,
+    autoClose: autoCloseEl.checked,
+    settle: autoSettleEl.value,
+    countdown: autoCountdownEl.value,
+    betweenTabs: autoBetweenEl.value,
+    cap: autoCapEl.value,
+    /* The boxes are showing live values, so the migration in shapeSaved is not
+       due here. Without this it would fire on every save and quietly zero a cap
+       that had just been typed in, which is the opposite of leaving the choice
+       where it belongs. */
+    limitsFreed: true,
+    rev: saved.rev
+  }, saved.stored);
+}
+
+/* rev and stored are bookkeeping, not content, so they stay out of this. */
+function contentOf(s) {
+  return JSON.stringify([s.welcome, s.newsletter, s.pick, s.self, s.gapMs,
+    s.autoRun, s.autoClose, s.settle, s.countdown, s.betweenTabs, s.cap]);
+}
+const isDirty = () => contentOf(draft()) !== contentOf(saved);
+
+function saveAll(which) {
+  const next = draft();
+  const changed = contentOf(next) !== contentOf(saved);
+  /* A revision is only spent when something actually changed, so pressing Save
+     twice does not walk over an edit somebody made in the panel on the tab. */
+  next.rev = changed ? Math.max(1, saved.rev + 1) : Math.max(1, saved.rev);
+  next.stored = true;
+  saved = next;
+  let ok = true;
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(saved)); } catch (e) { ok = false; }
+  refreshSaveState(ok
+    ? (changed
+        ? "Saved as revision " + saved.rev + ". Re-drag the sender in section 6 so the tab picks it up."
+        : "Nothing had changed, so revision " + saved.rev + " still stands.")
+    : "Could not write to this browser's storage, so this holds for this tab only.");
+  void which;
+}
+
+function refreshSaveState(note) {
+  const dirty = isDirty();
+  const unsaved = "Unsaved changes. They are what you see, not what gets sent, until you press Save.";
+  /* A note and the unsaved warning are both true after something like restoring
+     the samples, so they are shown together rather than one hiding the other. */
+  const msg = dirty
+    ? (note ? note + " " + unsaved : unsaved)
+    : (note || (saved.stored
+        ? "Saved, revision " + saved.rev + "."
+        : "Still showing the sample wording. Nothing has been saved yet, which is fine: the sender carries the samples until you change them."));
+  ["msgState", "pickState", "autoState"].forEach(id => {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.className = "savestate" + (dirty ? " unsaved" : "");
+  });
+  const install = document.getElementById("installState");
+  install.textContent = dirty
+    ? "There are unsaved edits above, and this build carries revision " +
+      (saved.stored ? saved.rev : 0) + " instead. Save first, then re-drag."
+    : "This build carries revision " + (saved.stored ? saved.rev : 0) +
+      (saved.stored ? "." : ", the sample wording.");
+  install.className = "savestate" + (dirty ? " unsaved" : "");
+  refreshAutoWarn();
+  refreshLoopUI();
+  refreshPick();
+}
+
+/* What the current unattended setting actually means, spelled out, because this
+   is the one setting on the page that sends messages with nobody watching. */
+function refreshAutoWarn() {
+  const d = draft();
+  const el = document.getElementById("autoWarn");
+  let msg;
+  if (d.autoRun === "off") {
+    msg = "Off. A queued tab arms and waits for you, which is the safe default and " +
+      "needs no pop-up permission.";
+  } else if (d.autoRun === "dialog") {
+    msg = "A queued tab will open the message dialog by itself and then stop. Nothing " +
+      "sends without a keypress.";
+  } else {
+    msg = "One Instagram tab takes the whole list and stays on the messages page. " +
+      "Per account: start a new draft, type the handle, take an EXACT match or pass " +
+      "over, " + (d.settle ? "wait " + d.settle + "s for the composer, " : "") +
+      (d.countdown
+        ? "count down " + d.countdown + "s where you can still cancel, "
+        : "send with NO countdown, so there is nothing to cancel, ") +
+      "send the three messages confirming each one left" +
+      (d.betweenTabs ? ", then wait " + d.betweenTabs + "s and draft the next. " : ", then draft the next straight away. ") +
+      (d.cap
+        ? "Stops after " + d.cap + " in a sitting, on the first real failure, or on a tab " +
+          "that goes quiet. "
+        : "NO CAP: it works through the whole list, however long, stopping only on the " +
+          "first real failure or a tab that goes quiet. ") +
+      "A handle with no exact match is passed over and the run carries on. " +
+      "Scripted sending is against Instagram\u0027s terms and unattended sending is the version " +
+      "of it their heuristics are looking for, so read the transcript.";
+  }
+  el.textContent = msg;
+  el.style.color = d.autoRun === "send" ? "var(--flag-text)" : "var(--muted)";
+  el.style.fontWeight = d.autoRun === "send" ? "600" : "400";
+}
+
+/* Three buttons, one action. Whichever you press, everything on the page is
+   stored: a page where half your edits are saved is worse than one where none
+   are, because you cannot tell which half. */
+document.getElementById("msgSave").addEventListener("click", () => saveAll("messages"));
+document.getElementById("pickSave").addEventListener("click", () => saveAll("pick"));
+document.getElementById("autoSave").addEventListener("click", () => saveAll("auto"));
+
+document.getElementById("msgReset").addEventListener("click", () => {
+  welcomeBoxes.forEach((t, i) => { t.value = SAMPLES.welcome[i]; });
+  newsBox.value = SAMPLES.newsletter;
+  refreshSaveState("Sample wording put back in the boxes.");
+});
+
+/* ---------- this week's pick, and the newsletter text ---------- */
+
+/* UTM tags so DM traffic lands in its own campaign instead of direct. */
+function taggedUrl(pick) {
+  const raw = (pick.url || "").trim();
+  if (!raw) return "";
+  try {
+    const u = new URL(raw);
+    u.searchParams.set("utm_source", "instagram");
+    u.searchParams.set("utm_medium", "dm");
+    u.searchParams.set("utm_campaign", "pick-of-the-week");
+    const wk = (pick.week || "").trim();
+    if (wk) u.searchParams.set("utm_content", wk);
+    return u.toString();
+  } catch (e) {
+    return raw;
+  }
+}
+
+/* The card under the link already shows the photo, the name and the price, so
+   repeating them in the text just makes the message longer. {link} is the only
+   substitution, and a template without it gets the URL appended, since a
+   newsletter with no link in it is a dead end. */
+function renderNewsletter(tpl, pick) {
+  const link = taggedUrl(pick) || "{link}";
+  const body = String(tpl || "");
+  if (body.indexOf("{link}") >= 0) return body.split("{link}").join(link);
+  return body.trim() ? body.trim() + " " + link : link;
+}
+
+function refreshPick() {
+  const d = draft();
+  const missing = [];
+  if (!d.pick.name.trim()) missing.push("product name");
+  if (!d.pick.price.trim()) missing.push("price");
+  if (!d.pick.url.trim()) missing.push("URL");
+  const warn = document.getElementById("pickWarn");
+  warn.textContent = missing.length
+    ? "Placeholders still in the message: " + missing.join(", ") +
+      ". Fill these in before sending, they must be a real product at a real price."
+    : "";
+  warn.style.color = missing.length ? "var(--flag-text)" : "var(--muted)";
+  document.getElementById("newsPreview").textContent = renderNewsletter(d.newsletter, d.pick);
+  refreshBookmarklet();
+}
+
+/* ---------- bookmarklet and userscript build ----------
+ * The injector source lives in the text/plain block above so there is one copy
+ * of it to read and edit, and it contains no message text at all. The SAVED
+ * messages and the pause are substituted in, then the whole thing is
+ * percent-encoded into a javascript: URL.
+ *
+ * Built from `saved` and never from the live boxes, so what you drag is what
+ * you kept. The install card says loudly when those two have drifted apart.
+ */
+const RAW_SOURCE = document.getElementById("sender-source").textContent;
+const bmkLink = document.getElementById("bmk");
+
+function buildSource(auto) {
+  const payload = {
+    welcome: saved.welcome.slice(),
+    newsletter: renderNewsletter(saved.newsletter, saved.pick),
+    autoRun: saved.autoRun,
+    /* autoClose is deliberately NOT in here. The tab never closes itself now:
+       this page owns it and navigates it, so closing is a page-side decision at
+       the end of the run. */
+    settleMs: saved.settle * 1000,
+    countdownMs: saved.countdown * 1000,
+    betweenTabsMs: saved.betweenTabs * 1000,
+    capPerSitting: saved.cap,
+    /* Where to post the report back to. A page opened from a file has origin
+       "null", which postMessage will not accept as a target, and the sender
+       falls back to '*' for exactly that case. */
+    homeOrigin: location.origin || "",
+    rev: saved.stored ? saved.rev : 0
+  };
+  /* Replacement functions, not strings: a message containing $& or $$ would
+     otherwise be read as a replacement pattern, and a price is one keystroke
+     away from exactly that. */
+  const src = RAW_SOURCE
+    .replace("__PAYLOAD_JSON__", () => JSON.stringify(payload))
+    .replace("__GAP_MS__", () => String(saved.gapMs))
+    /* The bookmarklet is a deliberate click, so it arms wherever you are. The
+       userscript is run by the browser on every matching page, so it has to
+       decide for itself and keep off the feed. */
+    .replace("__AUTO_ARM__", () => (auto ? "true" : "false"));
+  /* A surviving placeholder is a sender that throws before it can report
+     anything, so it gets caught here instead of on a DM tab. This has already
+     happened once: the token was also named in a comment above the line that
+     uses it, and replace() took the comment. */
+  if (/__PAYLOAD_JSON__|__GAP_MS__|__AUTO_ARM__/.test(src)) {
+    throw new Error("the sender source kept a placeholder, so it carries no messages");
+  }
+  return src;
+}
+function refreshBookmarklet() {
+  let src;
+  try { src = buildSource(false); }
+  catch (e) {
+    bmkLink.removeAttribute("href");
+    document.getElementById("srcView").textContent = "Build failed: " + e.message;
+    document.getElementById("installState").textContent =
+      "Build failed, so there is nothing to drag: " + e.message;
+    document.getElementById("installState").className = "savestate unsaved";
+    return;
+  }
+  bmkLink.href = "javascript:" + encodeURIComponent(src);
+  document.getElementById("srcView").textContent = src.trim();
+}
+
+/* Every editable control reports in, so the unsaved warning is never stale. */
+[].concat(welcomeBoxes, [newsBox, gapMsEl, selfEl, pickName, pickPrice, pickUrl, pickWeek,
+  autoRunEl, autoCloseEl, autoSettleEl, autoCountdownEl, autoBetweenEl, autoCapEl])
+  .forEach(el => {
+    el.addEventListener("input", () => refreshSaveState());
+    el.addEventListener("change", () => refreshSaveState());
+  });
+
+/* Same single source, wrapped in a userscript header, and this is the build that
+ * matters for the loop: the browser runs it on every matching page, so a queued
+ * tab arms with no click at all. The match list has to cover profile pages now,
+ * which cannot be told from other top-level routes by pattern, so the script
+ * checks the path itself and stays off the feed and the explore pages. */
+document.getElementById("dlUser").addEventListener("click", () => {
+  const header = [
+    "// ==UserScript==",
+    "// @name         Herbal Leaf Market: welcome and weekly pick",
+    "// @namespace    herbal-leaf-market.outreach",
+    "// @version      1.1",
+    "// @description  Open the message dialog and send the welcome messages, on a DM tab or straight from a profile",
+    "// @match        https://www.instagram.com/direct/*",
+    "// @match        https://instagram.com/direct/*",
+    "// @match        https://www.instagram.com/*/",
+    "// @match        https://instagram.com/*/",
+    "// @run-at       document-idle",
+    "// @grant        none",
+    "// ==/UserScript==",
+    ""
+  ].join("\n");
+  const blob = new Blob([header + buildSource(true)], { type: "text/javascript" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "herbal-leaf-sender.user.js";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+});
+
+document.getElementById("copyBmk").addEventListener("click", async () => {
+  const btn = document.getElementById("copyBmk");
+  try {
+    await navigator.clipboard.writeText(bmkLink.href);
+    btn.textContent = "Copied, paste it as a bookmark URL";
+  } catch (e) {
+    btn.textContent = "Copy failed, drag the blue button instead";
+  }
+  setTimeout(() => { btn.textContent = "Copy bookmarklet code"; }, 2600);
+});
+
+function refreshFoot() {
+  const n = FOLLOWERS.length;
+  const partial = FOLLOWERS.filter(f => !f.exact).length;
+  const count = document.getElementById("rosterCount");
+  if (!n) {
+    count.textContent = "The list is empty. Load it from screenshots above.";
+    document.getElementById("foot").textContent =
+      "No accounts loaded yet. Nothing on this page can send anything until there are some.";
+    return;
+  }
+  const shops = FOLLOWERS.filter(f => f.kind === "shop").length;
+  const noise = FOLLOWERS.filter(f => f.kind === "noise").length;
+  const intl = FOLLOWERS.filter(f => f.geo === "intl").length;
+  count.textContent = n + (n === 1 ? " account" : " accounts") + " in the list" +
+    (partial ? ", " + partial + " with a partial handle" : "") + ".";
+  const extra = (shops || noise || intl)
+    ? " Tagged so far: " + shops + " shops or brands, " + noise + " that look like bots, " +
+      intl + " visibly outside the US."
+    : "";
+  document.getElementById("foot").textContent =
+    n + (n === 1 ? " account" : " accounts") + " loaded: " + (n - partial) +
+    " with an exact handle, " + partial + " truncated and pointed at Instagram search " +
+    "instead, since a guessed tail would 404." + extra;
+}
+
+/* ------------------------------------------------------------------ *
+ * Reading followers off screenshots.
+ *
+ * Instagram publishes no export and its API does not hand a business its own
+ * follower list, so a screenshot is the only route that does not involve
+ * scraping the site. The reading is done here in the page by tesseract.js,
+ * fetched once from a CDN on first use: the images never leave the machine,
+ * which matters because a follower list is other people's data.
+ *
+ * The output is REVIEWED, never added straight in. OCR is confident and wrong
+ * often enough that an unchecked import does not fail visibly, it opens a DM
+ * with somebody unrelated, and that is a worse outcome than reading nothing.
+ * ------------------------------------------------------------------ */
+
+const TESSERACT_SRC = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+
+/* Instagram's own chrome. Every one of these is a valid handle by shape, and
+   the row buttons in particular appear once per row, so without this list the
+   commonest "follower" in any import is @message. */
+const CHROME = new Set([
+  "message", "requested", "following", "follow", "followback", "remove", "removed",
+  "confirm", "delete", "cancel", "done", "edit", "share", "search", "subscriptions",
+  "followers", "flagged", "flag", "sort", "by", "date", "followed", "latest", "earliest",
+  "suggested", "for", "you", "verified", "new", "all", "instagram", "profile", "story",
+  "stories", "reels", "posts", "tagged", "close", "friends"
+]);
+
+/* The giveaway that a line holds a HANDLE rather than a display name: Instagram
+   puts the row button on the handle's line and never on the name's. Both look
+   alike to OCR otherwise, since plenty of display names ("comme222",
+   "geekbar_arabia", "Stickybanditofficial") are handle-shaped. */
+const ROW_BUTTON = /\b(message|requested|follow(?:ing|back)?|remove)\b/i;
+
+/* The tab row over the list, "417 followers 1,105 following Subscriptions Fla".
+   It contains "following", so it reads as a row button and the line looks like
+   an account; the counts are then rejected as numbers and the scan walks on to
+   the tab labels, where a truncated "Flagged" arrives as a perfectly plausible
+   handle. Recognising the line by its shape kills that whatever the labels are
+   cut down to, which is better than blacklisting "fla" and meeting "flag" next
+   time on a wider phone. */
+const CHROME_LINE = /\d[\d,.]*\s*follow(?:ers|ing)\b/i;
+
+function cleanHandle(raw) {
+  let s = String(raw || "").trim().replace(/^@+/, "");
+  let truncated = false;
+  /* Instagram truncates a long handle with its own ellipsis, and a screenshot
+     clips one at the edge. Either way the tail is unknown, so the row is marked
+     partial and links to search instead of a profile URL that would 404. */
+  if (/(…|\.{3})$/.test(s)) { truncated = true; s = s.replace(/(…|\.{3})$/, ""); }
+  s = s.toLowerCase().replace(/[^a-z0-9._]/g, "").replace(/^\.+/, "");
+  if (!truncated) s = s.replace(/\.+$/, "");     // a handle cannot end in a dot
+  return { handle: s, truncated: truncated };
+}
+
+function looksLikeHandle(s) {
+  if (!s || s.length < 2 || s.length > 30) return false;
+  if (!/^[a-z0-9._]+$/.test(s)) return false;
+  if (/^\d+$/.test(s)) return false;             // "417", "1,105": the counts, not people
+  if (/\.\./.test(s)) return false;
+  return !CHROME.has(s);
+}
+
+function selfHandle() { return cleanHandle(selfEl.value).handle; }
+
+function firstHandleToken(line) {
+  for (const part of line.split(/\s+/)) {
+    if (ROW_BUTTON.test(part)) continue;
+    const c = cleanHandle(part);
+    if (!looksLikeHandle(c.handle)) continue;
+    /* "sure" decides whether the row arrives ticked. A token that needed
+       characters stripped to become legal is a token the reader misread, and it
+       has to be looked at rather than quietly corrected. */
+    const asRead = String(part).trim().replace(/^@+/, "").toLowerCase();
+    return { handle: c.handle, truncated: c.truncated, sure: !c.truncated && c.handle === asRead };
+  }
+  return null;
+}
+
+function parseScreenshotText(text, src) {
+  const lines = String(text || "").split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const buttonLines = lines.filter(l => ROW_BUTTON.test(l)).length;
+  const out = [];
+  for (let i = 0; i < lines.length; i++) {
+    if (CHROME_LINE.test(lines[i])) continue;
+    /* With the buttons legible, only their lines are rows, and the display
+       names drop out for free. Without them (a narrow crop, a bad read) fall
+       back to every handle-shaped line and let the review catch the names. */
+    if (buttonLines >= 3 && !ROW_BUTTON.test(lines[i])) continue;
+    const tok = firstHandleToken(lines[i]);
+    if (!tok) continue;
+    const next = lines[i + 1];
+    const name = (next && !ROW_BUTTON.test(next) && !/^\d+$/.test(next)) ? next.replace(/\s+/g, " ") : "";
+    out.push({ handle: tok.handle, truncated: tok.truncated, sure: tok.sure, name: name, src: src });
+  }
+  return out;
+}
+
+function parsePastedText(raw) {
+  return String(raw || "").split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(line => {
+    const bits = line.split(/\s*(?:,|\t|\||\s[-–]\s)\s*/);
+    const c = cleanHandle(bits[0]);
+    if (!looksLikeHandle(c.handle)) return null;
+    return {
+      handle: c.handle, truncated: c.truncated, sure: !c.truncated,
+      name: (bits[1] || "").trim(), src: "pasted"
+    };
+  }).filter(Boolean);
+}
+
+/* ---------- the reader ---------- */
+
+let tessPromise = null;
+function loadTesseract() {
+  if (window.Tesseract) return Promise.resolve(window.Tesseract);
+  if (tessPromise) return tessPromise;
+  tessPromise = new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = TESSERACT_SRC;
+    s.onload = () => window.Tesseract ? resolve(window.Tesseract) : reject(new Error("script loaded but empty"));
+    s.onerror = () => reject(new Error("could not fetch the reader"));
+    document.head.appendChild(s);
+  });
+  return tessPromise;
+}
+
+const progressEl = document.getElementById("shotProgress");
+const reviewWrap = document.getElementById("reviewWrap");
+const reviewEl = document.getElementById("review");
+let pending = [];
+
+async function readShots(files) {
+  const list = Array.from(files).filter(f => /^image\//.test(f.type));
+  if (!list.length) { progressEl.textContent = "Those were not images."; return; }
+  progressEl.textContent = "Fetching the reader, one time only...";
+  let T;
+  try { T = await loadTesseract(); }
+  catch (e) {
+    progressEl.textContent = "The reader could not be fetched, so this needs a connection the " +
+      "first time. Paste the handles as text instead, under the toggle above.";
+    return;
+  }
+  const found = [];
+  for (let i = 0; i < list.length; i++) {
+    const f = list[i];
+    progressEl.textContent = "Reading " + (i + 1) + " of " + list.length + ": " + f.name;
+    let worker;
+    try {
+      worker = await T.createWorker("eng", 1, {
+        logger: m => {
+          if (m.status === "recognizing text") {
+            progressEl.textContent = "Reading " + (i + 1) + " of " + list.length + ": " +
+              f.name + "  " + Math.round(m.progress * 100) + "%";
+          }
+        }
+      });
+      const res = await worker.recognize(f);
+      found.push.apply(found, parseScreenshotText(res.data && res.data.text, f.name));
+    } catch (e) {
+      progressEl.textContent = "Could not read " + f.name + ": " + ((e && e.message) || e);
+    } finally {
+      if (worker) { try { await worker.terminate(); } catch (e) {} }
+    }
+  }
+  offerForReview(found, list.length + (list.length === 1 ? " screenshot" : " screenshots"));
+}
+
+/* ---------- review ---------- */
+
+function offerForReview(rows, what) {
+  const self = selfHandle();
+  const seenHere = new Set();
+  pending = rows.filter(r => {
+    if (self && r.handle === self) return false;      // your own handle heads every screenshot
+    if (seenHere.has(r.handle)) return false;         // screenshots overlap by design
+    seenHere.add(r.handle);
+    return true;
+  });
+  if (!pending.length) {
+    progressEl.textContent = "Read " + what + " and found no handles. If the crop is tight " +
+      "around the names, include the Message buttons: that column is how a handle is told " +
+      "from a display name.";
+    reviewWrap.hidden = true;
+    return;
+  }
+  progressEl.textContent = "Read " + what + ": " + pending.length + " to check below.";
+  renderReview();
+}
+
+function existingHandles() { return new Set(FOLLOWERS.map(f => f.handle.toLowerCase())); }
+
+function renderReview() {
+  const have = existingHandles();
+  reviewEl.textContent = "";
+  pending.forEach((r, i) => {
+    const dupe = have.has(r.handle.toLowerCase());
+    const row = document.createElement("div");
+    row.className = "rrow" + (dupe ? " dupe" : "");
+
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.dataset.i = i;
+    cb.checked = r.sure && !dupe;
+    cb.disabled = dupe;
+
+    const inp = document.createElement("input");
+    inp.type = "text";
+    inp.value = r.handle;
+    inp.addEventListener("input", () => {
+      pending[i].handle = cleanHandle(inp.value).handle;
+      pending[i].edited = true;
+    });
+
+    const nm = document.createElement("span");
+    nm.className = "rname";
+    nm.textContent = r.name || "";
+
+    row.appendChild(cb);
+    row.appendChild(inp);
+    row.appendChild(nm);
+    if (dupe) row.appendChild(badge("already in the list"));
+    else if (r.truncated) row.appendChild(badge("partial", "flag"));
+    else if (!r.sure) row.appendChild(badge("check this", "flag"));
+
+    const src = document.createElement("span");
+    src.className = "rsrc";
+    src.textContent = r.src || "";
+    row.appendChild(src);
+
+    reviewEl.appendChild(row);
+  });
+  reviewWrap.hidden = false;
+}
+
+function commitReview() {
+  const have = existingHandles();
+  let added = 0;
+  Array.from(reviewEl.querySelectorAll('input[type="checkbox"]')).forEach(cb => {
+    if (!cb.checked) return;
+    const r = pending[Number(cb.dataset.i)];
+    if (!r || !looksLikeHandle(r.handle) || have.has(r.handle.toLowerCase())) return;
+    have.add(r.handle.toLowerCase());
+    /* exact is the field the rest of the page already keys on: false sends the
+       row to Instagram search instead of a profile URL. A handle whose tail was
+       cut off is exactly that case. kind and geo stay unset, because a
+       screenshot cannot tell you whether an account is a shop or where it is. */
+    FOLLOWERS.push({
+      handle: r.handle,
+      name: r.name || "",
+      exact: !r.truncated,
+      note: r.truncated ? "handle was cut off, tail unknown" : undefined
+    });
+    added++;
+  });
+  saveRoster();
+  pending = [];
+  reviewWrap.hidden = true;
+  progressEl.textContent = added + (added === 1 ? " account added." : " accounts added.");
+  renderList();
+  refreshCadence();
+  refreshFoot();
+}
+
+/* ---------- wiring ---------- */
+
+const drop = document.getElementById("drop");
+const shotInput = document.getElementById("shotInput");
+
+drop.addEventListener("click", () => shotInput.click());
+shotInput.addEventListener("change", () => { readShots(shotInput.files); shotInput.value = ""; });
+["dragenter", "dragover"].forEach(ev =>
+  drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach(ev =>
+  drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => { if (e.dataTransfer) readShots(e.dataTransfer.files); });
+document.addEventListener("paste", e => {
+  if (!e.clipboardData) return;
+  const imgs = Array.from(e.clipboardData.files || []).filter(f => /^image\//.test(f.type));
+  if (imgs.length) { e.preventDefault(); readShots(imgs); }
+});
+
+document.getElementById("pasteParse").addEventListener("click", () => {
+  const box = document.getElementById("pasteBox");
+  offerForReview(parsePastedText(box.value), "the pasted text");
+});
+
+document.querySelectorAll("[data-review]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const mode = btn.dataset.review;
+    Array.from(reviewEl.querySelectorAll('input[type="checkbox"]')).forEach(cb => {
+      if (cb.disabled) return;
+      const r = pending[Number(cb.dataset.i)];
+      cb.checked = mode === "all" ? true : mode === "none" ? false : !!(r && r.sure);
+    });
+  });
+});
+
+document.getElementById("reviewAdd").addEventListener("click", commitReview);
+document.getElementById("reviewCancel").addEventListener("click", () => {
+  pending = [];
+  reviewWrap.hidden = true;
+  progressEl.textContent = "Discarded.";
+});
+
+document.getElementById("rosterExport").addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify(FOLLOWERS, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "followers.json";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+});
+
+document.getElementById("rosterClear").addEventListener("click", () => {
+  if (!FOLLOWERS.length) return;
+  if (!confirm("Remove all " + FOLLOWERS.length + " accounts from the list? Your contact " +
+               "history and mutes are kept, so re-importing the same people restores their state. " +
+               "The preloaded list can be loaded again with the button beside this one."))
+    return;
+  FOLLOWERS = [];
+  saveRoster();
+  /* The queue holds positions in the list, so it cannot outlive it. */
+  queue = [];
+  renderList();
+  refreshCadence();
+  refreshQueueUI();
+  refreshFoot();
+});
+
+/* Adds any preloaded handles the list does not already have, without
+   touching anything else on it. Non-destructive on purpose: "Clear the
+   whole list" is the wipe, this is the way back to the shipped list after
+   one, and it never silently drops handles imported since. */
+document.getElementById("rosterPreload").addEventListener("click", () => {
+  const list = preloadRoster();
+  const have = new Set(FOLLOWERS.map(f => f.handle.toLowerCase()));
+  let added = 0;
+  list.forEach(f => {
+    if (have.has(f.handle.toLowerCase())) return;
+    have.add(f.handle.toLowerCase());
+    FOLLOWERS.push(f);
+    added++;
+  });
+  saveRoster();
+  renderList();
+  refreshCadence();
+  refreshQueueUI();
+  refreshFoot();
+  /* refreshFoot has just rewritten the count line; layer a one-off result
+     over it so the click is acknowledged. */
+  document.getElementById("rosterCount").textContent = added
+    ? "Added " + added + (added === 1 ? " account" : " accounts") +
+      " from the preloaded list of " + list.length + "."
+    : "All " + list.length + " preloaded accounts are already in the list.";
+});
+
+/* ---------- boot ---------- */
+
+/* The preloaded list wipes and lands before anything reads the roster. */
+applyPreloadOnce();
+applySaved();
+renderList();
+refreshCadence();
+refreshQueueUI();
+refreshSaveState();
+gapDaysEl.disabled = true;
+
+refreshFoot();
+</script>
