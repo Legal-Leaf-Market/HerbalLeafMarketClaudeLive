@@ -147,7 +147,7 @@
     if (findCard(FOCUS_ID)) return; // it's actually here; nothing to say
     try {
       if (typeof window.hlmToast === "function") {
-        window.hlmToast("That find isn't showing right now — it may be sold out.");
+        window.hlmToast("That find isn't showing right now. It may be sold out.");
       }
     } catch (e) {}
   }
