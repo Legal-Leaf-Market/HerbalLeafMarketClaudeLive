@@ -26,6 +26,11 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://herballeafmarket.com/natural-smoke-shop.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://herballeafmarket.com/terms.html</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>

@@ -636,10 +636,10 @@ var _gardenPrompted=false;
 function toggleWish(id){ id=baseId(id); var adding=!WISH[id]; if(adding) WISH[id]=1; else delete WISH[id]; saveWish();
   var btn=document.querySelector('.wish-btn[data-id="'+id+'"]'); if(btn){ btn.classList.toggle("on",adding); btn.setAttribute("aria-pressed",adding); }
   buildFilters(); if(wishMode) render();
-  if(adding){ if(isLoggedIn()){ hlmToast("Saved \u2764 \u2014 we'll email your Garden alert"); gardenNotify(id); } else { hlmToast("Saved to My Garden \u2764"); gardenMaybePrompt(); } }
+  if(adding){ if(isLoggedIn()){ hlmToast("Saved \u2764. We'll email your Garden alert"); gardenNotify(id); } else { hlmToast("Saved to My Garden \u2764"); gardenMaybePrompt(); } }
   else { hlmToast("Removed from My Garden"); } }
 function gardenNotify(id){ if(typeof google==="undefined"||!google.script||!google.script.run) return; var u=getUser(); if(!u||!u.email) return;
-  var it=gardenItemSnapshot(id); if(!it) return; google.script.run.withSuccessHandler(function(){}).withFailureHandler(function(err){ hlmToast("Couldn't send your Garden alert \u2014 I'll retry next save."); }).hlmWatchItem({email:u.email,name:u.name||"",item:it}); }
+  var it=gardenItemSnapshot(id); if(!it) return; google.script.run.withSuccessHandler(function(){}).withFailureHandler(function(err){ hlmToast("Couldn't send your Garden alert. I'll retry next save."); }).hlmWatchItem({email:u.email,name:u.name||"",item:it}); }
 function gardenFlushWatches(){ try{ var u=getUser(); if(!u||!u.email) return; if(typeof google==="undefined"||!google.script||!google.script.run) return;
   gardenAllSnapshots().forEach(function(it){ if(!it) return; google.script.run.withSuccessHandler(function(){}).withFailureHandler(function(){}).hlmWatchItem({email:u.email,name:u.name||"",item:it}); }); }catch(e){} }
 function gardenMaybePrompt(){ if(_gardenPrompted){ return; } _gardenPrompted=true; openGarden(); }
@@ -988,11 +988,13 @@ function renderCart(){ var body=document.getElementById("cartBody"); if(!body)re
   grand+='<div class="cart-grand-row"><span>Est. out-the-door</span><span>$'+gOTD.toFixed(2)+(gShipUnknown?' + shipping':'')+'</span></div></div>';
   body.innerHTML=html+grand+acct+'<p class="cart-note">Totals are <strong>estimates</strong> including each maker\'s typical shipping &amp; your code. Final price (incl. tax &amp; exact shipping) shows at each maker\'s checkout.</p><button class="cart-clear" onclick="clearCart()">Empty cart</button>'; }
 
-function cbdCrossBanner(){ return '<a class="xsell" href="'+SISTER_URL+'" target="_blank" rel="noopener" onclick="hlmTrack(\'sister-banner\',{vendor:\'Legal Leaf Market\',category:\'CBD\'})"><span class="xsell-emoji" aria-hidden="true"></span><span class="xsell-txt"><b>Want more &mdash; and more affordable &mdash; CBD?</b> Our sister shop <u>Legal Leaf Market</u> carries a wider CBD selection at friendlier prices.</span><span class="xsell-go">Visit Legal Leaf Market &rarr;</span></a>'; }
+function cbdCrossBanner(){ return '<a class="xsell" href="'+SISTER_URL+'" target="_blank" rel="noopener" onclick="hlmTrack(\'sister-banner\',{vendor:\'Legal Leaf Market\',category:\'CBD\'})"><span class="xsell-emoji" aria-hidden="true"></span><span class="xsell-txt"><b>Want more CBD, at friendlier prices?</b> Our sister shop <u>Legal Leaf Market</u> carries a wider CBD selection at friendlier prices.</span><span class="xsell-go">Visit Legal Leaf Market &rarr;</span></a>'; }
 function cannaChip(p){ var label="",tip=""; if(isCBG(p)){ label="CBG"; tip="Cannabigerol - non-intoxicating. Early research suggests calming effects."; } else if(isCBD(p)){ label="CBD"; tip="Cannabidiol - non-intoxicating. FDA-approved (Epidiolex) for certain seizures."; } if(!label) return "";
   return '<a class="canna-chip" href="'+FACTS_URL+'" target="_top" title="'+tip+' Tap to learn more."><span class="ci">\u24D8</span> '+label+' &middot; non-intoxicating <span class="cl">learn</span></a>'; }
 function injectProductLd(items){ var el=document.getElementById("hlmProductLd"); if(!el) return;
-  var list=items.slice(0,40).map(function(p,i){ return {"@type":"ListItem","position":i+1,"item":{"@type":"Product","name":p.name||"","brand":{"@type":"Brand","name":p.vendor||""},"category":p.category||"","image":p.image||undefined,"offers":{"@type":"Offer","priceCurrency":"USD","price":(Number(p.price)||0).toFixed(2),"availability":(p.inStock===false?"https://schema.org/OutOfStock":"https://schema.org/InStock")}}}; });
+  /* Only items with a real price: an Offer at $0.00 is a claim Google flags
+     and a shopper would not find at the maker's checkout. */
+  var list=items.filter(function(p){ return Number(p.price)>0 && p.name; }).slice(0,40).map(function(p,i){ return {"@type":"ListItem","position":i+1,"item":{"@type":"Product","name":p.name||"","brand":{"@type":"Brand","name":p.vendor||""},"category":p.category||"","image":p.image||undefined,"offers":{"@type":"Offer","priceCurrency":"USD","price":Number(p.price).toFixed(2),"availability":(p.inStock===false?"https://schema.org/OutOfStock":"https://schema.org/InStock")}}}; });
   try{ el.textContent=JSON.stringify({"@context":"https://schema.org","@type":"ItemList","itemListElement":list}); }catch(e){} }
 
 /* ========= BUILD YOUR RITUAL v2 (grounded + 3 bundles + thumbs + smart pairing) ========= */
@@ -1055,12 +1057,12 @@ function ritualRegenerate(){ var goalKey=_ritualGoal; var k=K(); if(!goalKey||!k
 function ritualRender(){ var b=document.getElementById("ritualBody"); var k=K(); if(!b||!k) return; var G=k.goals[_ritualGoal];
   if(!_ritualBundles.length){ b.innerHTML='<div class="ritual-head2"><button class="ritual-back" onclick="ritualShowGoals()">&larr;</button><h4>'+G.emoji+' '+G.title+'</h4></div><p class="ritual-lead">Inventory is thin for this goal at your current evidence setting. Try another goal, or lower the evidence floor in Admin.</p>'; return; }
   var showBadge=rule("showEvidenceBadges",true), crossCBD=rule("crossSellCBD",true);
-  var head='<div class="ritual-head2"><button class="ritual-back" onclick="ritualShowGoals()">&larr;</button><h4>'+G.emoji+' '+G.title+'</h4></div><p class="ritual-lead" style="margin:0 0 12px">'+G.ritual+' &mdash; here are 3 options. \uD83D\uDC4D / \uD83D\uDC4E to tune, then add your favorite.</p>';
+  var head='<div class="ritual-head2"><button class="ritual-back" onclick="ritualShowGoals()">&larr;</button><h4>'+G.emoji+' '+G.title+'</h4></div><p class="ritual-lead" style="margin:0 0 12px">'+G.ritual+': here are 3 options. \uD83D\uDC4D / \uD83D\uDC4E to tune, then add your favorite.</p>';
   var cards=_ritualBundles.map(function(bundle,bi){ var total=0,coup=0;
     var items=bundle.map(function(x,ii){ var p=x.p; var cp=getCoupon(p.vendor); var price=Number(p.price)||0; var disc=cp?price*(1-cp.percent/100):price; total+=disc; if(cp)coup+=(price-disc);
       var img=p.image?'<img src="'+hlmImg(p.image)+'" alt="'+p.name+'" width="54" height="54" style="width:54px;height:54px;object-fit:cover;border-radius:9px;border:1px solid var(--line)" onerror="this.style.display=\'none\'">':'<div style="width:54px;height:54px;border-radius:9px;background:#eef0e2"></div>';
-      var xbtn='<button class="ritual-x" title="Not this one \u2014 teach my ritual" onclick="ritualXItem('+bi+','+ii+')">&times;</button>';
-      if(x.wrap){ return '<div class="ritual-item">'+xbtn+'<div>'+img+'</div><div class="ritual-info"><div class="ritual-name">'+p.name+'</div><div class="ritual-vendor">'+p.vendor+' <span class="ev-badge tier-traditional">wrap</span></div><div class="ritual-claim">Papers &amp; wraps to roll your ritual &mdash; added by default. Tap \u00d7 to teach fewer wraps.</div></div></div>'; }
+      var xbtn='<button class="ritual-x" title="Not this one: teach my ritual" onclick="ritualXItem('+bi+','+ii+')">&times;</button>';
+      if(x.wrap){ return '<div class="ritual-item">'+xbtn+'<div>'+img+'</div><div class="ritual-info"><div class="ritual-name">'+p.name+'</div><div class="ritual-vendor">'+p.vendor+' <span class="ev-badge tier-traditional">wrap</span></div><div class="ritual-claim">Papers &amp; wraps to roll your ritual, added by default. Tap \u00d7 to teach fewer wraps.</div></div></div>'; }
       var badge=showBadge?'<span class="ev-badge '+tierClass(x.tier)+'">'+(x.compound.tierLabel||x.tier)+'</span>':'';
       var xs=(crossCBD&&isCBD(p))?'<a class="ritual-xs" href="'+SISTER_URL+'" target="_blank" rel="noopener" onclick="hlmTrack(\'sister-ritual\',{vendor:\'Legal Leaf Market\'})">more CBD \u2197</a>':'';
       return '<div class="ritual-item">'+xbtn+'<div>'+img+'</div><div class="ritual-info"><div class="ritual-name">'+p.name+'</div><div class="ritual-vendor">'+p.vendor+' '+badge+'</div><div class="ritual-claim">'+(x.compound.structureFn||"")+'</div><div class="ritual-cite">'+(x.compound.label||"")+' &middot; '+(x.compound.cite||"")+'</div>'+xs+'</div></div>'; }).join("");
@@ -1072,8 +1074,8 @@ function ritualVote(bundleIdx,dir){ var bundle=_ritualBundles[bundleIdx]; if(!bu
   hlmToast(dir>0?"More like this \uD83D\uDC4D updating picks\u2026":"Noted \uD83D\uDC4E fewer of those\u2026"); ritualRegenerate(); }
 /* item-level teach: x down-weights that compound (or wraps) and re-rolls this option */
 function ritualXItem(bundleIdx,idx){ var bundle=_ritualBundles[bundleIdx]; if(!bundle) return; var x=bundle[idx]; if(!x) return;
-  if(x.wrap){ RITUAL_FB["__wrap"]=Math.max(-6,wrapFB()-1); hlmToast("Got it \u2014 fewer wraps from now on \uD83C\uDF3F"); }
-  else if(x.cid){ RITUAL_FB[x.cid]=(RITUAL_FB[x.cid]||0)-2; if(RITUAL_FB[x.cid]<-3)RITUAL_FB[x.cid]=-3; hlmToast("Noted \u2014 less of that in your rituals"); }
+  if(x.wrap){ RITUAL_FB["__wrap"]=Math.max(-6,wrapFB()-1); hlmToast("Got it, fewer wraps from now on \uD83C\uDF3F"); }
+  else if(x.cid){ RITUAL_FB[x.cid]=(RITUAL_FB[x.cid]||0)-2; if(RITUAL_FB[x.cid]<-3)RITUAL_FB[x.cid]=-3; hlmToast("Noted, less of that in your rituals"); }
   saveRitualFB(); hlmTrack("ritual-x",{category:_ritualGoal, product:(x.p&&x.p.name)||""});
   var n=3, replacement=null, tries=0;
   while(!replacement && tries<10){ tries++; var bnew=ritualBuildBundle(_ritualGoal,n); if(!bnew) break; var sig=bnew.map(function(y){return y.p.id;}).sort().join("|");
@@ -1241,7 +1243,7 @@ function render(){
   else if(activeSort==="az"){ items.sort(function(a,b){ return nssRank(a)-nssRank(b)||(a.name||"").localeCompare(b.name||""); }); }
   else { items.sort(function(a,b){ return catRank(a.category)-catRank(b.category)||(a.category||"").localeCompare(b.category||"")||nssRank(a)-nssRank(b)||(a.vendor||"").localeCompare(b.vendor||"")||hwRank(a)-hwRank(b)||seriesKey(a).localeCompare(seriesKey(b))||(a.name||"").localeCompare(b.name||""); }); }
   var showHeaders=(!wishMode&&activeSort==="featured"&&activeStore==="All"&&!activeCat); updateCounts(items.length); injectProductLd(items);
-  if(!items.length){ grid.innerHTML=wishMode?'<div class="empty">Your Garden is empty &mdash; tap the \u2764 on any product to save it here.</div>':'<div class="empty">No botanicals found. Try another whisper.</div>'; return; }
+  if(!items.length){ grid.innerHTML=wishMode?'<div class="empty">Your Garden is empty. Tap the \u2764 on any product to save it here.</div>':'<div class="empty">No botanicals found. Try another whisper.</div>'; return; }
   var lastCat=null; var showXsell=catSelected("CBD");
   var body=items.map(function(p){ var header=""; if(showHeaders&&p.category!==lastCat){ lastCat=p.category; header='<h2 class="cat-header"><span>'+p.category+'</span></h2>'; }
     var orig=Number(p.price)||0, coupon=getCoupon(p.vendor), priceHtml, couponHtml="";
